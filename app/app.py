@@ -4,33 +4,33 @@ import requests
 
 from toloka2MediaServer.config_parser import load_configurations, get_toloka_client
 from toloka2MediaServer.clients.dynamic import dynamic_client_init
-from toloka2MediaServer.main_logic import add_release_by_url, update_release_by_name, update_releases, search_torrents, get_torrent, add_torrent
+from toloka2MediaServer.main_logic import add_release_by_url, update_release_by_name, update_releases, search_torrents
+from toloka2MediaServer.main_logic import get_torrent as get_torrent_external
+from toloka2MediaServer.main_logic import add_torrent as add_torrent_external
 from toloka2MediaServer.models.config import Config
 from toloka2MediaServer.logger_setup import setup_logging
 
+def initiate_config():
+    app_config_path='data/app.ini'
+    title_config_path='data/titles.ini'
+    logger_path = 'data/app_web.log'
 
+    app_config, titles_config, application_config = load_configurations(app_config_path,title_config_path)
+    toloka=get_toloka_client(application_config)
+    logger=setup_logging(logger_path)
 
-app_config_path='data/app.ini'
-title_config_path='data/titles.ini'
+    config = Config(
+        logger=logger,
+        toloka=toloka,
+        app_config=app_config,
+        titles_config=titles_config,
+        application_config=application_config
+    )
 
-app_config, titles_config, application_config = load_configurations(app_config_path,title_config_path)
-
-logging.basicConfig(
-    filename='data/app_web.log',  # Name of the file where logs will be written
-    filemode='a',  # Append mode, which will append the logs to the file if it exists
-    format='%(asctime)s - %(levelname)s - %(message)s',  # Format of the log messages
-    level=logging.DEBUG #log level from config
-)
-
-config = Config(
-    logger=logging,
-    toloka=get_toloka_client(application_config),
-    app_config=app_config,
-    titles_config=titles_config,
-    application_config=application_config
-)
-
-config.client = dynamic_client_init(config)
+    client = dynamic_client_init(config)
+    config.client = client
+    
+    return config
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Set this to a strong secret value
@@ -61,15 +61,13 @@ def index():
 
 @app.route('/get_titles', methods=['GET'])
 def get_titles():
-    app_config, titles_config, application_config = load_configurations(app_config_path,title_config_path)
-    titles = titles_config
-    
+    config = initiate_config()
     # Extract sections from the ConfigParser object
     sections = {}
-    for section in titles.sections():
+    for section in config.titles_config.sections():
         options = {}
-        for option in titles.options(section):
-            options[option] = titles.get(section, option)
+        for option in config.titles_config.options(section):
+            options[option] = config.titles_config.get(section, option)
         sections[section] = options
 
     # Convert the sections data to JSON format
@@ -80,14 +78,16 @@ def get_titles():
 
 @app.route('/get_torrents', methods=['GET'])
 def get_torrents():
+    config = initiate_config()
     # Extract the search parameter from the URL query string
     search_query = request.args.get('query', default=None, type=str)
     
     if search_query:
         # Convert data to JSON format
-        torrents = search_torrents(search_query, logger)
+        config.args = search_query
+        torrents = search_torrents(config)
+        
         response = jsonify(torrents)
-
         # Return the JSON response
         return response, 200
     else:
@@ -95,14 +95,16 @@ def get_torrents():
 
 @app.route('/get_torrent', methods=['GET'])
 def get_torrent():
+    config = initiate_config()
     # Extract the search parameter from the URL query string
     id = request.args.get('id', default=None, type=str)
     
     if id:
+        config.args = id
         # Convert data to JSON format
-        torrent = get_torrent(id, logger)
+        torrent = get_torrent_external(config)
+        
         response = jsonify(torrent)
-
         # Return the JSON response
         return response, 200
     else:
@@ -110,14 +112,15 @@ def get_torrent():
 
 @app.route('/add_torrent', methods=['GET'])
 def add_torrent():
+    config = initiate_config()
     # Extract the search parameter from the URL query string
     id = request.args.get('id', default=None, type=str)
     
     if id:
+        config.args = id
         # Convert data to JSON format
-        add_torrent(id, logger)
-        
-
+        add_torrent(config)
+        output = add_torrent_external(config)
         # Return the JSON response
         return [], 200
     else:
@@ -127,6 +130,7 @@ def add_torrent():
 def add_release():
     # Process the URL to add release
     try:
+        config = initiate_config()
         requestData = RequestData(
             url = request.form['url'],
             season = request.form['season'],
@@ -137,11 +141,10 @@ def add_release():
 
 
         #--add --url https://toloka.to/t675888 --season 02 --index 2 --correction 0 --title "Tsukimichi -Moonlit Fantasy-"
-
-        operation_result = add_release_by_url(requestData, logger)
+        config.args = requestData
+        operation_result = add_release_by_url(config)
         output = serialize_operation_result(operation_result)
         output = jsonify(output)
-        
         return output, 200
     except Exception as e:
         message = f'Error: {str(e)}'
@@ -151,10 +154,12 @@ def add_release():
 def update_release():
     # Process the name to update release
     try:
+        config = initiate_config()
         requestData = RequestData(
             codename = request.form['codename']
         )
-        operation_result = update_release_by_name(requestData, requestData.codename, logger)
+        config.args = requestData
+        operation_result = update_release_by_name(config)
         output = serialize_operation_result(operation_result)
         output = jsonify(output)
         
@@ -167,11 +172,12 @@ def update_release():
 def update_all_releases():
     # Process to update all releases
     try:
+        config = initiate_config()
         requestData = RequestData()
-        operation_result = update_releases(requestData, logger)
+        config.args = requestData
+        operation_result = update_releases(config)
         output = serialize_operation_result(operation_result)
         output = jsonify(output)
-        
         return output, 200
     except Exception as e:
         message = f'Error: {str(e)}'
