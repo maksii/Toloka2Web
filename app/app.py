@@ -2,33 +2,40 @@ import logging
 from flask import Flask, jsonify, request, render_template, session, Response
 import requests
 
-import toloka2MediaServer
-import toloka2MediaServer.config_parser
+from toloka2MediaServer.config_parser import load_configurations, get_toloka_client
+from toloka2MediaServer.clients.dynamic import dynamic_client_init
+from toloka2MediaServer.main_logic import add_release_by_url, update_release_by_name, update_releases, search_torrents, get_torrent, add_torrent
+from toloka2MediaServer.models.config import Config
+from toloka2MediaServer.logger_setup import setup_logging
 
 
-app_config, titles_config, application_config = toloka2MediaServer.config_parser.load_configurations(
-        app_config_path='data/app.ini',
-        title_config_path='data/titles.ini'
-    )
 
-config = toloka2MediaServer.model.Config(
-    toloka=toloka2MediaServer.config_parser.get_toloka_client(application_config),
+app_config_path='data/app.ini'
+title_config_path='data/titles.ini'
+
+app_config, titles_config, application_config = load_configurations(app_config_path,title_config_path)
+
+logging.basicConfig(
+    filename='data/app_web.log',  # Name of the file where logs will be written
+    filemode='a',  # Append mode, which will append the logs to the file if it exists
+    format='%(asctime)s - %(levelname)s - %(message)s',  # Format of the log messages
+    level=logging.DEBUG #log level from config
+)
+
+config = Config(
+    logger=logging,
+    toloka=get_toloka_client(application_config),
     app_config=app_config,
     titles_config=titles_config,
     application_config=application_config
 )
 
-config.client = toloka2MediaServer.config_parser.dynamic_client_init(config)
+config.client = dynamic_client_init(config)
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Set this to a strong secret value
 
-logger = logging.basicConfig(
-    filename='toloka2MediaServer/data/app_web.log',  # Name of the file where logs will be written
-    filemode='a',  # Append mode, which will append the logs to the file if it exists
-    format='%(asctime)s - %(levelname)s - %(message)s',  # Format of the log messages
-    level=logging.DEBUG #log level from config
-)
+
 class RequestData:
     url: str = ""
     season: int = 0
@@ -49,31 +56,13 @@ class RequestData:
 
 @app.route('/', methods=['GET'])
 def index():
-    titles = toloka2MediaServer.config.update_titles()
-    # Creating a list of dictionaries, each containing the data for the selected keys
-    data = []
-    codenames =[]
-    keys = ['torrent_name', 'publish_date', 'guid']
-    for section in titles.sections():
-        codenames.append(section)
-        section_data = {'codename': section}
-        for key in keys:
-            section_data[key] = titles.get(section, key)
-        data.append(section_data)
 
-    # Define column headers and rename them
-    columns = {
-        'codename': 'Codename',
-        'torrent_name': 'Name',
-        'publish_date': 'Last Updated',
-        'guid': 'URL'
-    }
-    output = session.pop('output', {})   
-    return render_template('index.html', data=data, columns=columns, codenames=codenames, output=output)
+    return render_template('index.html')
 
 @app.route('/get_titles', methods=['GET'])
 def get_titles():
-    titles = toloka2MediaServer.config.update_titles()
+    app_config, titles_config, application_config = load_configurations(app_config_path,title_config_path)
+    titles = titles_config
     
     # Extract sections from the ConfigParser object
     sections = {}
@@ -96,7 +85,7 @@ def get_torrents():
     
     if search_query:
         # Convert data to JSON format
-        torrents = toloka2MediaServer.main_logic.search_torrents(search_query, logger)
+        torrents = search_torrents(search_query, logger)
         response = jsonify(torrents)
 
         # Return the JSON response
@@ -111,7 +100,7 @@ def get_torrent():
     
     if id:
         # Convert data to JSON format
-        torrent = toloka2MediaServer.main_logic.get_torrent(id, logger)
+        torrent = get_torrent(id, logger)
         response = jsonify(torrent)
 
         # Return the JSON response
@@ -126,7 +115,7 @@ def add_torrent():
     
     if id:
         # Convert data to JSON format
-        toloka2MediaServer.main_logic.add_torrent(id, logger)
+        add_torrent(id, logger)
         
 
         # Return the JSON response
@@ -149,7 +138,7 @@ def add_release():
 
         #--add --url https://toloka.to/t675888 --season 02 --index 2 --correction 0 --title "Tsukimichi -Moonlit Fantasy-"
 
-        operation_result = toloka2MediaServer.main_logic.add_release_by_url(requestData, logger)
+        operation_result = add_release_by_url(requestData, logger)
         output = serialize_operation_result(operation_result)
         output = jsonify(output)
         
@@ -165,7 +154,7 @@ def update_release():
         requestData = RequestData(
             codename = request.form['codename']
         )
-        operation_result = toloka2MediaServer.main_logic.update_release_by_name(requestData, requestData.codename, logger)
+        operation_result = update_release_by_name(requestData, requestData.codename, logger)
         output = serialize_operation_result(operation_result)
         output = jsonify(output)
         
@@ -179,7 +168,7 @@ def update_all_releases():
     # Process to update all releases
     try:
         requestData = RequestData()
-        operation_result = toloka2MediaServer.main_logic.update_releases(requestData, logger)
+        operation_result = update_releases(requestData, logger)
         output = serialize_operation_result(operation_result)
         output = jsonify(output)
         
