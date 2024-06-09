@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block additional_head %}
+
+<script src="../static/studio-details.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Begin page content -->
+<!-- Begin page content -->
+<main class="flex-shrink-0">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Studio Details Column -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" id="studioName">Studio Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted" id="studioTelegram">telegram</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Anime Titles Column -->
+            <div class="col-md-9">
+                <table id="titlesTable" class="table table-striped" style="width:100%">
+                </table>
+            </div>
+        </div>
+
+    </div>
+    </main>
+{% endblock %}

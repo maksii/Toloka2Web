@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block additional_head %}
+
+<script src="../static/anime-details.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Begin page content -->
+<main class="flex-shrink-0">
+        <div class="container-fluid">
+            <!-- Anime Details Section -->
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title" id="animeTitle">Anime Title</h5>
+                            <p class="card-text" id="animeDescription">Description</p>
+                            <div class="external-links">
+                                <a href="#" id="linkMal" target="_blank">MAL</a>
+                                <a href="#" id="linkImdb" target="_blank">IMDb</a>
+                                <!-- Additional links can be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Related Animes Table -->
+            <div class="row mt-4">
+                <div class="col">
+                    <h4>Related Animes</h4>
+                    <table id="relatedAnimeTable" class="table table-striped" style="width:100%">
+                    </table>
+                </div>
+            </div>
+    
+            <!-- Voiceover Studios Table -->
+            <div class="row mt-4">
+                <div class="col">
+                    <h4>Voiceover Studios</h4>
+                    <table id="studiosTable" class="table table-striped" style="width:100%">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

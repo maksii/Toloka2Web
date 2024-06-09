@@ -26,8 +26,8 @@ Episode = Base.classes.episode
 def get_anime_by_id(anime_id):
     session = Session()
     anime = session.query(Anime).options(
-        joinedload(Anime.type).load_only("name"),
-        joinedload(Anime.status).load_only("name"),
+        joinedload(Anime.type).load_only(Type.name),
+        joinedload(Anime.status).load_only(Status.name),
         joinedload(Anime.franchise)
     ).get(anime_id)
     session.close()
@@ -58,6 +58,12 @@ def list_all_studios():
     session.close()
     return serialize(studios)
 
+def list_all_anime():
+    session = Session()
+    studios = session.query(Anime).all()
+    session.close()
+    return serialize(studios)
+
 def search_studio_by_name(partial_name):
     session = Session()
     # Create an alias for Fundub to join with FundubSynonym
@@ -75,6 +81,12 @@ def search_studio_by_name(partial_name):
     session.close()
     return serialize(studios)
 
+def search_studio_by_id(studio_id):
+    session = Session()
+    studios = session.query(Fundub).filter(Fundub.id == studio_id).all()
+    session.close()
+    return serialize(studios)
+
 def get_studios_by_anime_id(anime_id):
     session = Session()
     studios = session.query(Fundub).join(
@@ -83,7 +95,7 @@ def get_studios_by_anime_id(anime_id):
     session.close()
     return serialize(studios)
 
-def get_animes_by_studio_id(studio_id):
+def get_anime_by_studio_id(studio_id):
     session = Session()
     animes = session.query(Anime).join(
         AnimeFundub, Anime.id == AnimeFundub.anime_id
@@ -100,8 +112,21 @@ def get_episodes_by_anime_id(anime_id):
 # Helper function to serialize SQLAlchemy objects to JSON
 def serialize(data):
     if isinstance(data, list):
+        # Recursively serialize each item in the list
         return [serialize(item) for item in data]
     elif hasattr(data, '__dict__'):
-        return {column: getattr(data, column) for column in data.__dict__ if not column.startswith('_')}
+        # Serialize SQLAlchemy model objects
+        result = {}
+        for column in data.__dict__:
+            if not column.startswith('_'):  # Skip private and protected attributes
+                attr = getattr(data, column)
+                if hasattr(attr, '__dict__') or isinstance(attr, list):
+                    # Recursively serialize nested objects or lists
+                    result[column] = serialize(attr)
+                else:
+                    # Serialize simple attributes
+                    result[column] = attr
+        return result
     else:
+        # Return simple data types directly
         return data

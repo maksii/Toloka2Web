@@ -2,7 +2,7 @@
 
 from flask import jsonify, request, render_template, Response
 
-from app.services_db import get_animes_by_studio_id, list_all_studios, search_studio_by_name
+from app.services_db import get_anime_by_id, get_anime_by_name, get_anime_by_studio_id, get_related_animes, get_studios_by_anime_id, list_all_anime, list_all_studios, search_studio_by_id, search_studio_by_name
 from .services import (
     initiate_config, get_titles_logic, get_torrent_logic, add_torrent_logic,
     add_release_logic, update_release_logic, update_all_releases_logic,
@@ -18,11 +18,21 @@ def configure_routes(app):
     @app.route('/studios')
     def studios():
         return render_template('studios.html')
+    
+    @app.route('/studios/<int:studio_id>')
+    def studio_detail(studio_id):
+        # You might fetch studio details from a database based on studio_id
+        return render_template('studio_detail.html', studio_id=studio_id)
 
     @app.route('/anime')
     def anime():
         return render_template('anime.html')
-
+    
+    @app.route('/anime/<int:anime_id>')
+    def anime_detail(anime_id):
+        # You might fetch anime details from a database based on anime_id
+        return render_template('anime_detail.html', anime_id=anime_id)
+    
     @app.route('/settings')
     def settings():
         return render_template('settings.html')
@@ -73,10 +83,34 @@ def configure_routes(app):
     def list_voice_studios():
         return jsonify(list_all_studios())
 
-    @app.route('/list_titles_by_studio', methods=['GET'])
-    def list_titles_by_studio():
-        studio_id = request.args.get('studio_id')
-        return jsonify(get_animes_by_studio_id(studio_id))
+    @app.route('/list_titles_by_studio/<int:studio_id>', methods=['GET'])
+    def list_titles_by_studio(studio_id):
+        return jsonify(get_anime_by_studio_id(studio_id))
+    
+    @app.route('/get_studio_details/<int:studio_id>', methods=['GET'])
+    def get_studio_details(studio_id):
+        return jsonify(search_studio_by_id(studio_id))
+    
+    @app.route('/list_anime', methods=['GET'])
+    def list_anime():
+        return jsonify(list_all_anime())
+
+    @app.route('/search_anime_by_name', methods=['GET'])
+    def search_anime_by_name():
+        query = request.args.get('query')
+        return jsonify(get_anime_by_name(query))
+
+    @app.route('/get_anime_by_id/<int:anime_id>', methods=['GET'])
+    def get_anime_byid(anime_id):
+        return jsonify(get_anime_by_id(anime_id))
+
+    @app.route('/get_anime_by_id/<int:anime_id>/related', methods=['GET'])
+    def get_anime_by_id_related(anime_id):
+        return jsonify(get_related_animes(anime_id))
+
+    @app.route('/get_anime_by_id/<int:anime_id>/studios', methods=['GET'])
+    def get_anime_by_id_studios(anime_id):
+        return jsonify(get_studios_by_anime_id(anime_id))
 
     @app.route('/search_titles_from_streaming_site', methods=['GET'])
     def search_titles_from_streaming_site():
