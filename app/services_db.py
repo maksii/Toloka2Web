@@ -18,8 +18,8 @@ Status = Base.classes.status
 Franchise = Base.classes.franchise
 RelatedAnime = Base.classes.related_anime
 Fundub = Base.classes.fundub
-#FundubSynonym = Base.classes.fundub_synonym
-#AnimeFundub = Base.classes.anime_fundub
+FundubSynonym = Base.classes.fundub_synonym
+AnimeFundub = Base.classes.anime_fundub
 Episode = Base.classes.episode
 
 # Service functions
@@ -31,7 +31,7 @@ def get_anime_by_id(anime_id):
         joinedload(Anime.franchise)
     ).get(anime_id)
     session.close()
-    return anime
+    return serialize(anime)
 
 def get_anime_by_name(partial_name):
     session = Session()
@@ -42,7 +42,7 @@ def get_anime_by_name(partial_name):
         )
     ).all()
     session.close()
-    return animes
+    return serialize(animes)
 
 def get_related_animes(anime_id):
     session = Session()
@@ -50,13 +50,13 @@ def get_related_animes(anime_id):
         RelatedAnime, Anime.id == RelatedAnime.anime_id2
     ).filter(RelatedAnime.anime_id1 == anime_id).all()
     session.close()
-    return related_animes
+    return serialize(related_animes)
 
 def list_all_studios():
     session = Session()
     studios = session.query(Fundub).all()
     session.close()
-    return studios
+    return serialize(studios)
 
 def search_studio_by_name(partial_name):
     session = Session()
@@ -73,7 +73,7 @@ def search_studio_by_name(partial_name):
         )
     ).all()
     session.close()
-    return studios
+    return serialize(studios)
 
 def get_studios_by_anime_id(anime_id):
     session = Session()
@@ -81,7 +81,7 @@ def get_studios_by_anime_id(anime_id):
         AnimeFundub, Fundub.id == AnimeFundub.fundub_id
     ).filter(AnimeFundub.anime_id == anime_id).distinct().all()
     session.close()
-    return studios
+    return serialize(studios)
 
 def get_animes_by_studio_id(studio_id):
     session = Session()
@@ -89,13 +89,13 @@ def get_animes_by_studio_id(studio_id):
         AnimeFundub, Anime.id == AnimeFundub.anime_id
     ).filter(AnimeFundub.fundub_id == studio_id).distinct().all()
     session.close()
-    return animes
+    return serialize(animes)
 
 def get_episodes_by_anime_id(anime_id):
     session = Session()
     episodes = session.query(Episode).filter_by(anime_id=anime_id).all()
     session.close()
-    return episodes
+    return serialize(episodes)
 
 # Helper function to serialize SQLAlchemy objects to JSON
 def serialize(data):
