@@ -15,6 +15,18 @@ def configure_routes(app):
     def index():
         return render_template('index.html')
 
+    @app.route('/studios')
+    def studios():
+        return render_template('studios.html')
+
+    @app.route('/anime')
+    def anime():
+        return render_template('anime.html')
+
+    @app.route('/settings')
+    def settings():
+        return render_template('settings.html')
+
     @app.route('/get_titles', methods=['GET'])
     def get_titles():
         return jsonify(get_titles_logic())

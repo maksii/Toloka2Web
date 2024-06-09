@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Toloka2MediaServer{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='color-modes.js') }}"></script>
+    {% block additional_head %}{% endblock %}
+</head>
+<body class="d-flex flex-column h-100">
+    <!-- Theme switcher, SVG definitions, and navbar go here -->
+    {% include 'partials/theme_switcher.html' %}
+    {% include 'partials/navbar.html' %}
+    
+    <!-- Main content area -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    {% include 'partials/footer.html' %}
+    
+    {% block additional_scripts %}{% endblock %}
+</body>
+</html>
