@@ -2,4 +2,4 @@
 # Start cron
 cron
 # Start the web server
-exec python -m toloka2Web
+exec python -m app
