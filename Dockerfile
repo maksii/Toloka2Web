@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Add the config folder as a volume
-VOLUME /app/toloka2MediaServer/data
+VOLUME /app/data
 
 # Define the default cron schedule
 ENV CRON_SCHEDULE="0 8 * * *"

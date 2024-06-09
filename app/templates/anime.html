@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block additional_head %}
+
+<script src="static/anime.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Begin page content -->
+<main class="flex-shrink-0">
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="alert alert-info" role="alert">
+                The information provided is a backup of the public API provided by AnimeOn site.
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <table id="animeTable" class="table table-striped" style="width:100%">
+            </table>
+        </div>
+    </div>
+</div>
+</main>
+{% endblock %}
