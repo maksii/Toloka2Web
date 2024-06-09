@@ -111,12 +111,10 @@ def update_release_logic(request):
         message = f'Error: {str(e)}'
         return f'{"error": {message}}'
 
-def update_all_releases_logic(request):
+def update_all_releases_logic():
     # Process to update all releases
     try:
         config = initiate_config()
-        requestData = RequestData()
-        config.args = requestData
         operation_result = update_releases(config)
         output = serialize_operation_result(operation_result)
         
