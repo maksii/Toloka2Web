@@ -12,6 +12,7 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
                 return `<a href="/studios/${data}">${data}</a>`;
@@ -21,7 +22,7 @@ $(document).ready(function() {
                 return `<a href="${data}">${data}</a>`;
             }, visible: true },
         ],
-        order: [[2, 'des']],
+        order: [[2, 'asc']],
         layout: {
             topStart: {
                 buttons: [

@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 
 {% block additional_head %}
-
-<script src="static/titles.js"></script>
-<script src="static/toloka.js"></script>
+<script src="{{ url_for('static', filename='/js/titles.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/toloka.js') }}"></script>
 {% endblock %}
 
 {% block content %}
