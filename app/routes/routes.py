@@ -1,13 +1,21 @@
 # routes.py
 
-from flask import request, render_template
+from flask import redirect, request, render_template, url_for
+from flask_login import login_required, login_user, logout_user
+from flask_principal import Permission, RoleNeed
+
+from app.models.login_form import LoginForm
+from app.models.registration_form import RegistrationForm
+from app.models.user import User
+from app.app import db 
 
 from ..services import (
     proxy_image_logic
 )
 
-def configure_routes(app):
+def configure_routes(app, login_manager):
     @app.route('/')
+    @login_required
     def index():
         return render_template('index.html')
 
@@ -19,3 +27,37 @@ def configure_routes(app):
     def proxy_image():
         url = request.args.get('url')
         return proxy_image_logic(url)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        form = LoginForm()
+        if request.method == 'POST':
+            username = request.form['username']
+            password = request.form['password']
+            user = User.query.filter_by(username=username).first()
+            if user and user.check_password(password):
+                login_user(user)
+                return redirect(url_for('index'))
+            else:
+                return 'Invalid username or password'
+        return render_template('login.html', form=form)
+    
+    @app.route('/register', methods=['GET', 'POST'])
+    def register():
+        form = RegistrationForm()
+        if form.validate_on_submit():
+            user = User(username=form.username.data)
+            user.set_password(form.password.data)
+            # Check if this is the first user
+            if User.query.count() == 0:
+                user.roles = 'admin'
+            else:
+                user.roles = 'user'
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('login'))
+        return render_template('register.html', form=form)

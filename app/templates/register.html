@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block additional_head %}
+<link href="{{ url_for('static', filename='/css/signin.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<main class="form-signin w-100 m-auto">
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <img class="mb-4" src="{{ url_for('static', filename='img/full-logo.png') }}" alt="" width="250" height="250">
+        <h1 class="h3 mb-3 fw-normal">Please Register</h1>
+
+        <div class="form-floating mb-3">
+            {{ form.username(class_="form-control", id="floatingUsername", placeholder="Username") }}
+            {{ form.username.label(class_="form-label", for="floatingUsername") }}
+            {% for error in form.username.errors %}
+            <div class="invalid-feedback">
+                {{ error }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-floating mb-3">
+            {{ form.password(class_="form-control", id="floatingPassword", placeholder="Password") }}
+            {{ form.password.label(class_="form-label", for="floatingPassword") }}
+            {% for error in form.password.errors %}
+            <div class="invalid-feedback">
+                {{ error }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-floating mb-3">
+            {{ form.confirm_password(class_="form-control", id="floatingConfirmPassword", placeholder="Confirm Password") }}
+            {{ form.confirm_password.label(class_="form-label", for="floatingConfirmPassword") }}
+            {% for error in form.confirm_password.errors %}
+            <div class="invalid-feedback">
+                {{ error }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Register</button>
+        <p class="mt-5 mb-3 text-muted">© 2024</p>
+    </form>
+</main>
+{% endblock %}
