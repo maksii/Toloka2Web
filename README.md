@@ -60,7 +60,7 @@ copy configs and db into /path/to/config/
    Використовуйте наступну команду для запуску контейнера:
 
    ```bash
-   docker run -d -p 5000:5000 -v /path/to/your/config:/app/Toloka2Web/data --name toloka maksii/toloka2web:latest
+   docker run -d -p 5000:5000 -v /path/to/your/config:/app/data --name toloka maksii/toloka2web:latest
    ```
 
    Замініть `/path/to/your/config` на шлях до вашої папки конфігурації.
@@ -86,7 +86,7 @@ copy configs and db into /path/to/config/
        ports:
          - "5000:5000"
        volumes:
-         - /path/to/your/config:/app/Toloka2Web/data
+         - /path/to/your/config:/app/data
        restart: unless-stopped
    ```
 
