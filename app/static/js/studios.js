@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var table = $('#studiosTable').DataTable({
         ajax: {
-            url: '/list_voice_studios',
+            url: '/api/studio',
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {

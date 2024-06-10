@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var table = $('#animeTable').DataTable({
         ajax: {
-            url: '/list_anime',
+            url: '/api/anime',
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {

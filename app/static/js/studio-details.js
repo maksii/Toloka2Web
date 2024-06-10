@@ -4,14 +4,14 @@ $(document).ready(function() {
     const studioId = segments.pop();
 
     // Fetch and display studio details
-    $.getJSON(`../get_studio_details/${studioId}`, function(data) {
+    $.getJSON(`../api/studio//${studioId}`, function(data) {
         $('#studioName').text(data[0].name);
         $('#studioTelegram').text(data[0].telegram);
     });
 
     var table = $('#titlesTable').DataTable({
         ajax: {
-            url:  `../list_titles_by_studio/${studioId}`,
+            url:  `../api/studio/${studioId}/anime`,
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {

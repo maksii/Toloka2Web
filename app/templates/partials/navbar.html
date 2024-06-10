@@ -12,10 +12,10 @@
                         <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'studios' %}active{% endif %}" href="{{ url_for('studios') }}">Studios</a>
+                        <a class="nav-link {% if request.endpoint == 'studio.studios' %}active{% endif %}" href="{{ url_for('studio.studios') }}">Studios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'anime' %}active{% endif %}" href="{{ url_for('anime') }}">Anime</a>
+                        <a class="nav-link {% if request.endpoint == 'anime.anime' %}active{% endif %}" href="{{ url_for('anime.anime') }}">Anime</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">Settings</a>

@@ -12,7 +12,7 @@ $(document).ready(function () {
             // Initialize DataTable
             table = $('#torrentTable').DataTable({
                 ajax: {
-                    url: "/get_torrents?query=" + query,
+                    url: "/api/toloka?query=" + query,
                     dataSrc: function(json) {
                         var result = json;
                         return result;
@@ -105,7 +105,7 @@ $(document).ready(function () {
                     tr.addClass('shown');
 
                     $.ajax({
-                        url: '/get_torrent?id=' + data.url,
+                        url: '/api/toloka/' + data.url,
                         type: 'GET',
                         success: function (detail) {
                             var childData = formatDetail(detail, data);
@@ -138,7 +138,7 @@ $(document).ready(function () {
             initialized = true;
             $('#torrentTable').show();
         } else {
-            table.ajax.url('/get_torrents?query=' + query).load();
+            table.ajax.url('/api/toloka?query=' + query).load();
         }
     });
     
@@ -206,10 +206,10 @@ $(document).ready(function () {
         console.log('Add action triggered', rowData, childData);
 
         $.ajax({
-            url: '/add_torrent?id=' + rowData.torrent_url,
-            type: 'GET',
+            url: '/api/toloka/' + rowData.torrent_url,
+            type: 'POST',
             success: function (detail) {
-                console.log('Not implemented YET', detail);
+                console.log('Added', detail);
             }
         });
 
