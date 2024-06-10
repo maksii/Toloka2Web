@@ -18,9 +18,12 @@ $(document).ready(function() {
             }, visible: true },
             { data: 'titleUa', title: 'UA', visible: true },
             { data: 'titleEn', title: 'EN', visible: true },
+            { data: 'season', title: 'Season', visible: true },
+            { data: 'type.name', title: 'Type', visible: true },
+            { data: 'status.name', title: 'Status', visible: true },
             { data: 'releaseDate', title: 'releaseDate', visible: true },
         ],
-        order: [[3, 'des']],
+        order: [[6, 'des']],
         layout: {
             topStart: {
                 buttons: [

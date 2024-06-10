@@ -48,7 +48,11 @@ def get_related_animes(anime_id):
     session = Session()
     related_animes = session.query(Anime).join(
         RelatedAnime, Anime.id == RelatedAnime.anime_id2
-    ).filter(RelatedAnime.anime_id1 == anime_id).all()
+    ).filter(RelatedAnime.anime_id1 == anime_id).options(
+        joinedload(Anime.type).load_only(Type.name),
+        joinedload(Anime.status).load_only(Status.name),
+        joinedload(Anime.franchise)
+    ).all()
     session.close()
     return serialize(related_animes)
 
@@ -60,7 +64,11 @@ def list_all_studios():
 
 def list_all_anime():
     session = Session()
-    studios = session.query(Anime).all()
+    studios = session.query(Anime).options(
+        joinedload(Anime.type).load_only(Type.name),
+        joinedload(Anime.status).load_only(Status.name),
+        joinedload(Anime.franchise)
+    ).all()
     session.close()
     return serialize(studios)
 
