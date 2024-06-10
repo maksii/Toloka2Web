@@ -1,17 +1,7 @@
 $(document).ready(function() {
-    const url = new URL(window.location.href);
-    const segments = url.pathname.split('/');
-    const studioId = segments.pop();
-
-    // Fetch and display studio details
-    $.getJSON(`../get_studio_details/${studioId}`, function(data) {
-        $('#studioName').text(data[0].name);
-        $('#studioTelegram').text(data[0].telegram);
-    });
-
-    var table = $('#titlesTable').DataTable({
+    var table = $('#animeTable').DataTable({
         ajax: {
-            url:  `../list_titles_by_studio/${studioId}`,
+            url: '/list_anime',
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {
@@ -67,6 +57,9 @@ $(document).ready(function() {
         }
     });
 
+    window.refreshTable = function() {
+        table.ajax.reload();
+    };
 
 });
 

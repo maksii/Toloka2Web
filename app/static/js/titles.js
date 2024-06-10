@@ -12,6 +12,7 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: 'codename', title: 'Codename', visible: true },
             { data: 'torrent_name', title: 'Torrent Name', visible: true },

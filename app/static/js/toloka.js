@@ -18,16 +18,26 @@ $(document).ready(function () {
                         return result;
                     }
                 },
+                responsive: true,
                 columns: [
+                    {   // Responsive control column
+                        className: 'control',
+                        orderable: false,
+                        data: null,
+                        defaultContent: '',
+                        responsivePriority: 1
+                    },
                     {
                         className: 'details-control',
+                        title: 'Expand',
                         orderable: false,
                         data: null,
                         defaultContent: '',
                         render: function () {
                             return ' <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>';
                         },
-                        width: "15px"
+                        width: "15px",
+                        responsivePriority: 2
                     },
                     { data: "forum", title: 'Forum', visible: true },
                     { data: "name", title: 'Title', visible: true },
