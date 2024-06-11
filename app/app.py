@@ -50,6 +50,7 @@ def create_app():
     from .routes.toloka import toloka_bp
     from .routes.mal import mal_bp
     from .routes.tmdb import tmdb_bp
+    from .routes.settings import setting_bp
     
     app.register_blueprint(anime_bp)
     app.register_blueprint(release_bp)
@@ -58,8 +59,9 @@ def create_app():
     app.register_blueprint(toloka_bp)
     app.register_blueprint(mal_bp)
     app.register_blueprint(tmdb_bp)
+    app.register_blueprint(setting_bp)
 
-    configure_routes(app, login_manager)
+    configure_routes(app, login_manager, admin_permission, user_permission)
 
     return app
 

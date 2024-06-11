@@ -1,11 +1,24 @@
 {% extends 'base.html' %}
 
 {% block additional_head %}
+
+<script src="{{ url_for('static', filename='/js/settings.js') }}"></script>s
 {% endblock %}
 
 {% block content %}
 <!-- Begin page content -->
 <main class="flex-shrink-0">
-
-    </main>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <table id="settingsTable" class="table table-striped" style="width:100%">
+            </table>
+        </div>
+    </div>
+</div>
+</main>
 {% endblock %}

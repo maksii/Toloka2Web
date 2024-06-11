@@ -6,6 +6,11 @@ from app.models.application_settings import ApplicationSettings
 from app.models.releases import Releases
 from app.models.base import db
 
+def read_all_settings_from_db():
+    settings = ApplicationSettings.query.all()
+    
+    return serialize(settings)
+
 def load_settings_from_db_and_write_to_ini(file_path):
     """
     Loads all settings from the database and writes them to an INI file.
@@ -90,3 +95,27 @@ def read_releases_ini_and_sync_to_db(file_path):
         release.guid = config.get(section, 'guid')
         
     db.session.commit()
+    
+    
+# Helper function to serialize SQLAlchemy objects to JSON
+# TBD copypasse refactor
+def serialize(data):
+    if isinstance(data, list):
+        # Recursively serialize each item in the list
+        return [serialize(item) for item in data]
+    elif hasattr(data, '__dict__'):
+        # Serialize SQLAlchemy model objects
+        result = {}
+        for column in data.__dict__:
+            if not column.startswith('_'):  # Skip private and protected attributes
+                attr = getattr(data, column)
+                if hasattr(attr, '__dict__') or isinstance(attr, list):
+                    # Recursively serialize nested objects or lists
+                    result[column] = serialize(attr)
+                else:
+                    # Serialize simple attributes
+                    result[column] = attr
+        return result
+    else:
+        # Return simple data types directly
+        return data

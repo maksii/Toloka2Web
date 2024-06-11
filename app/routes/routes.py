@@ -1,8 +1,8 @@
 # routes.py
 
-from flask import flash, redirect, request, render_template, url_for, get_flashed_messages
-from flask_login import login_required, login_user, logout_user
-from flask_principal import Permission, RoleNeed
+from flask import current_app, flash, redirect, request, render_template, url_for, get_flashed_messages
+from flask_login import current_user, login_required, login_user, logout_user
+from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
 
 from app.models.login_form import LoginForm
 from app.models.registration_form import RegistrationForm
@@ -13,13 +13,14 @@ from ..services.services import (
     proxy_image_logic
 )
 
-def configure_routes(app, login_manager):
+def configure_routes(app, login_manager, admin_permission, user_permission):
     @app.route('/')
     @login_required
     def index():
         return render_template('index.html')
 
     @app.route('/settings')
+    @admin_permission.require(http_exception=403)
     def settings():
         return render_template('settings.html')
 
@@ -42,6 +43,7 @@ def configure_routes(app, login_manager):
                 user = User.query.filter_by(username=username).first()
                 if user and user.check_password(password):
                     login_user(user)
+                    identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
                     return redirect(url_for('index'))
                 else:
                     flash('Invalid username or password', 'error')
@@ -68,6 +70,20 @@ def configure_routes(app, login_manager):
     @app.route('/logout')
     @login_required 
     def logout():
-        logout_user() 
+        logout_user()
+        identity_changed.send(app, identity=AnonymousIdentity()) 
         flash('You have been logged out.', 'info')
         return redirect(url_for('login')) 
+
+    @identity_loaded.connect_via(app)
+    def on_identity_loaded(sender, identity):
+        # Set the identity user object
+        identity.user = current_user
+    
+        # Add the UserNeed to the identity
+        if hasattr(current_user, 'id'):
+            identity.provides.add(UserNeed(current_user.id))
+    
+        # Assuming the User model has a list of roles, update the identity with the roles that the user provides
+        if hasattr(current_user, 'roles'):
+            identity.provides.add(RoleNeed(current_user.roles))
