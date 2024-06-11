@@ -11,6 +11,25 @@ def read_all_settings_from_db():
     
     return serialize(settings)
 
+def init_web_settings():
+    add_new_setting('toloka2web', 'open_registration', 'True')
+    add_new_setting('toloka2web', 'mal_api', '')
+    add_new_setting('toloka2web', 'tmdb_api', '')
+
+def add_new_setting(section, key, value):
+    new_setting = ApplicationSettings(section=section, key=key, value=value)
+    db.session.add(new_setting)
+    db.session.commit()
+    
+def update_setting(id, section, key, value):
+    setting = ApplicationSettings.query.filter_by(id=id).first()
+    setting.id = id
+    setting.section = section
+    setting.section = key
+    setting.section = value
+    db.session.add(setting)
+    db.session.commit()
+
 def load_settings_from_db_and_write_to_ini(file_path):
     """
     Loads all settings from the database and writes them to an INI file.

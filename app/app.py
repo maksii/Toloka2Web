@@ -4,7 +4,7 @@ from flask_principal import Principal, Permission, RoleNeed
 from flask_bcrypt import Bcrypt
 import os
 
-from app.services.config_service import read_releases_ini_and_sync_to_db, read_settings_ini_and_sync_to_db
+from app.services.config_service import init_web_settings, read_releases_ini_and_sync_to_db, read_settings_ini_and_sync_to_db
 from .models.base import db  # Importing db from base model
 from .models.user import bcrypt  # Importing bcrypt instance
 
@@ -29,6 +29,7 @@ def create_app():
         if not ApplicationSettings.query.first():
             app_config_path='data/app.ini'
             read_settings_ini_and_sync_to_db(app_config_path)
+            init_web_settings()
             pass
         if not Releases.query.first():
             title_config_path='data/titles.ini'
