@@ -1,6 +1,6 @@
 # routes.py
 
-from flask import redirect, request, render_template, url_for
+from flask import flash, redirect, request, render_template, url_for, get_flashed_messages
 from flask_login import login_required, login_user, logout_user
 from flask_principal import Permission, RoleNeed
 
@@ -35,15 +35,18 @@ def configure_routes(app, login_manager):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         form = LoginForm()
-        if request.method == 'POST':
-            username = request.form['username']
-            password = request.form['password']
-            user = User.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                login_user(user)
-                return redirect(url_for('index'))
-            else:
-                return 'Invalid username or password'
+        if form.validate_on_submit():
+            try:
+                username = form.username.data
+                password = form.password.data
+                user = User.query.filter_by(username=username).first()
+                if user and user.check_password(password):
+                    login_user(user)
+                    return redirect(url_for('index'))
+                else:
+                    flash('Invalid username or password', 'error')
+            except Exception as e:
+                flash('Login failed due to an unexpected error', 'error')
         return render_template('login.html', form=form)
     
     @app.route('/register', methods=['GET', 'POST'])
