@@ -6,6 +6,7 @@ Flask-Login
 Flask-Principal
 Flask-Bcrypt
 Flask-SQLAlchemy
+Flask-WTF
 SQLAlchemy
 requests
 configparser
