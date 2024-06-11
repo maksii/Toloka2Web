@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Releases(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    section = db.Column(db.String(100), nullable=False, unique=True)
     episode_index = db.Column(db.Integer)
     season_number = db.Column(db.String(10))
     ext_name = db.Column(db.String(10))
@@ -15,4 +15,4 @@ class Releases(db.Model):
     hash = db.Column(db.String(40))
     adjusted_episode_number = db.Column(db.Integer)
     guid = db.Column(db.String(50))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
