@@ -1,8 +1,8 @@
 from flask_login import UserMixin
+from .base import db
 from flask_bcrypt import Bcrypt
-from app.app import db 
 
-bcrypt = Bcrypt()  # You will need to initialize this with the app context in your main app file
+bcrypt = Bcrypt()  # This will be initialized in the app.py
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
