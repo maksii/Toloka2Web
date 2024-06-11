@@ -12,6 +12,7 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
                 return `<a href="/anime/${data}">${data}</a>`;

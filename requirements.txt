@@ -2,5 +2,9 @@ git+https://github.com/CakesTwix/toloka2python
 git+https://github.com/CakesTwix/Toloka2MediaServer
 git+https://github.com/maksii/Stream2MediaServer
 Flask
+Flask-Login
+Flask-Principal
+Flask-Bcrypt
 SQLAlchemy
 requests
+configparser
