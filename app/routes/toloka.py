@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required
 
-from app.services import add_torrent_logic, get_torrent_logic, get_torrents_logic
+from app.services.services import add_torrent_logic, get_torrent_logic, get_torrents_logic
 
 
 toloka_bp = Blueprint('toloka', __name__)

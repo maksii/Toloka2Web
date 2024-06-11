@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from app.services import add_title_from_streaming_site, search_titles_from_streaming_site
+from app.services.services import add_title_from_streaming_site, search_titles_from_streaming_site
 
 
 stream_bp = Blueprint('stream', __name__)

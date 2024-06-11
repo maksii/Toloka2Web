@@ -41,12 +41,16 @@ def create_app():
     from .routes.stream import stream_bp
     from .routes.studio import studio_bp
     from .routes.toloka import toloka_bp
-
+    from .routes.mal import mal_bp
+    from .routes.tmdb import tmdb_bp
+    
     app.register_blueprint(anime_bp)
     app.register_blueprint(release_bp)
     app.register_blueprint(stream_bp)
     app.register_blueprint(studio_bp)
     app.register_blueprint(toloka_bp)
+    app.register_blueprint(mal_bp)
+    app.register_blueprint(tmdb_bp)
 
     configure_routes(app, login_manager)
 

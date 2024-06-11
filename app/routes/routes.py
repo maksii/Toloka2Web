@@ -9,7 +9,7 @@ from app.models.registration_form import RegistrationForm
 from app.models.user import User
 from app.app import db 
 
-from ..services import (
+from ..services.services import (
     proxy_image_logic
 )
 

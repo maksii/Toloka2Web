@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required
 
-from app.services import add_release_logic, get_titles_logic, update_all_releases_logic, update_release_logic
+from app.services.services import add_release_logic, get_titles_logic, update_all_releases_logic, update_release_logic
 
 release_bp = Blueprint('release', __name__)
 

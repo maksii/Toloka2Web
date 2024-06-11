@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request
 
-from app.services_db import get_anime_by_studio_id, list_all_studios, search_studio_by_id, search_studio_by_name
+from app.services.services_db import get_anime_by_studio_id, list_all_studios, search_studio_by_id, search_studio_by_name
 
 
 studio_bp = Blueprint('studio', __name__)
