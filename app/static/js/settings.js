@@ -3,13 +3,7 @@ $(document).ready(function() {
         ajax: {
             url: '/api/settings',
             dataSrc: function(json) {
-                var result = [];
-                Object.keys(json).forEach(function(key) {
-                    var item = json[key];
-                    item.codename = key;
-                    result.push(item);
-                });
-                return result;
+                return json;
             }
         },
         responsive: true,
@@ -119,11 +113,47 @@ $(document).ready(function() {
         });
     });
 
-    $('#settingsTable tbody').on('click', 'button.save', function() {
+    $('#settingsTable tbody').on('click', 'button.save', function(event) {
         var row = table.row($(this).parents('tr'));
         var rowData = row.data();
 
-        console.log('Saving data', rowData);
+        console.log('Original data', rowData);
+
+        var inputs = $('input', row.node());
+        var updatedData = {};
+        updatedData.section = inputs[0].value;
+        updatedData.key = inputs[1].value;
+        updatedData.value = inputs[2].value;
+
+        let target = event.target;
+            target.disabled = true;
+            target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+
+            let formData = new FormData();
+            formData.append('id', rowData.id);
+            formData.append('section', updatedData.section);
+            formData.append('key', updatedData.key);
+            formData.append('value', updatedData.value);
+    
+            fetch(`/api/settings/${rowData.id}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(detail => {
+                target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+                target.disabled = false;
+                table.ajax.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+                target.disabled = false;
+            });
+        
+
+
+
     });
 
     $('#settingsTable tbody').on('click', 'button.reset', function() {

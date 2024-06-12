@@ -10,7 +10,16 @@
         {{ form.hidden_tag() }}
         <img class="mb-4" src="{{ url_for('static', filename='img/full-logo.png') }}" alt="" width="250" height="250"  style="margin-left: 25px;">
         <h1 class="h3 mb-3 fw-normal">Please Register</h1>
-
+        {% for message in get_flashed_messages(category_filter=["error"]) %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% for message in get_flashed_messages(category_filter=["info"]) %}
+        <div class="alert alert-info" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
         <div class="form-floating mb-3">
             {{ form.username(class_="form-control", id="floatingUsername", placeholder="Username") }}
             {{ form.username.label(class_="form-label", for="floatingUsername") }}

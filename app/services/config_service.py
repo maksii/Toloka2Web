@@ -25,8 +25,8 @@ def update_setting(id, section, key, value):
     setting = ApplicationSettings.query.filter_by(id=id).first()
     setting.id = id
     setting.section = section
-    setting.section = key
-    setting.section = value
+    setting.key = key
+    setting.value = value
     db.session.add(setting)
     db.session.commit()
 

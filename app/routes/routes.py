@@ -4,6 +4,7 @@ from flask import current_app, flash, redirect, request, render_template, url_fo
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
 
+from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
 from app.models.registration_form import RegistrationForm
 from app.models.user import User
@@ -54,17 +55,22 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
     @app.route('/register', methods=['GET', 'POST'])
     def register():
         form = RegistrationForm()
-        if form.validate_on_submit():
-            user = User(username=form.username.data)
-            user.set_password(form.password.data)
-            # Check if this is the first user
-            if User.query.count() == 0:
-                user.roles = 'admin'
-            else:
-                user.roles = 'user'
-            db.session.add(user)
-            db.session.commit()
-            return redirect(url_for('login'))
+        open_registration = ApplicationSettings.query.filter_by(key='open_registration').first()
+        if getattr(open_registration, 'value', None) and open_registration.value.lower() == 'true':
+            if form.validate_on_submit():
+                user = User(username=form.username.data)
+                user.set_password(form.password.data)
+                # Check if this is the first user
+                if User.query.count() == 0:
+                    user.roles = 'admin'
+                else:
+                    user.roles = 'user'
+                db.session.add(user)
+                db.session.commit()
+                flash('Account registered', 'info')
+                return redirect(url_for('login'))
+        else:
+            flash('Registration is closed or not set.', 'error')
         return render_template('register.html', form=form)
 
     @app.route('/logout')
