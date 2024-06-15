@@ -7,7 +7,7 @@ RUN apk add --no-cache \
     curl \
     git \
     dcron \
-    ffmpeg \
+    ffmpeg 
 
 # Create a group and user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
