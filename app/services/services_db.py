@@ -163,7 +163,7 @@ def update_database():
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an exception for HTTP errors
-        with open(local_db_path, 'wb') as f:
+        with open(local_db_path, 'wb', encoding='utf-8') as f:
             f.write(response.content)
         print("Database has been updated successfully.")
     except requests.RequestException as e:

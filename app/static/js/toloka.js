@@ -211,12 +211,20 @@ $(document).ready(function () {
     function performAddAction(rowData, childData) {
         console.log('Add action triggered', rowData, childData);
 
-        $.ajax({
-            url: '/api/toloka/' + rowData.torrent_url,
-            type: 'POST',
-            success: function (detail) {
-                console.log('Added', detail);
-            }
+        fetch("/api/toloka/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Add other headers as required, e.g., for authentication tokens
+            },
+            body: JSON.stringify(rowData) 
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
 
         document.querySelector('#offcanvasTopSearchResults > div.offcanvas-header > button').click()

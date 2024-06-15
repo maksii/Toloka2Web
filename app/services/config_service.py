@@ -42,7 +42,7 @@ def load_settings_from_db_and_write_to_ini(file_path):
             config.add_section(setting.section)
         config.set(setting.section, setting.key, setting.value)
     
-    with open(file_path, 'w') as configfile:
+    with open(file_path, 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
 def read_settings_ini_and_sync_to_db(file_path):
@@ -50,7 +50,7 @@ def read_settings_ini_and_sync_to_db(file_path):
     Reads settings from an INI file and synchronizes them to the database.
     """
     config = configparser.ConfigParser()
-    config.read(file_path)
+    config.read(file_path, encoding='utf-8')
     
     for section in config.sections():
         for key, value in config.items(section):
@@ -85,7 +85,7 @@ def load_releases_from_db_and_write_to_ini(file_path):
         config.set(section, 'adjusted_episode_number', str(release.adjusted_episode_number))
         config.set(section, 'guid', release.guid)
     
-    with open(file_path, 'w') as configfile:
+    with open(file_path, 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
 def read_releases_ini_and_sync_to_db(file_path):
@@ -93,7 +93,7 @@ def read_releases_ini_and_sync_to_db(file_path):
     Reads release data from an INI file and synchronizes them to the database.
     """
     config = configparser.ConfigParser()
-    config.read(file_path)
+    config.read(file_path, encoding='utf-8')
     
     for section in config.sections():
         release = Releases.query.filter_by(section=section).first()

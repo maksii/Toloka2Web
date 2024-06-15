@@ -12,7 +12,7 @@ def download_file(url, path):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        with open(path, 'wb') as f:
+        with open(path, 'wb', encoding='utf-8') as f:
             f.write(response.content)
         print(f"File downloaded and saved as {path}.")
     except requests.RequestException as e:
@@ -40,7 +40,7 @@ def initialize_app():
     titles_ini_path = "data/titles.ini"
     if not os.path.exists(titles_ini_path):
         print("titles.ini not found. Creating an empty titles.ini...")
-        open(titles_ini_path, 'a').close()  # This will create an empty file
+        open(titles_ini_path, 'a', encoding='utf-8').close()  # This will create an empty file
     else:
         print("titles.ini already exists.")
 

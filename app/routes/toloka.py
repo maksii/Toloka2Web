@@ -25,7 +25,7 @@ def get_torrents():
 def get_torrent(release_id):
     return jsonify(get_torrent_logic(release_id))
 
-@toloka_bp.route('/api/toloka/<string:release_id>', methods=['POST'])
+@toloka_bp.route('/api/toloka/', methods=['POST'])
 @login_required
-def add_torrent(release_id):
-    return jsonify(add_torrent_logic(release_id))
+def add_torrent():
+    return jsonify(add_torrent_logic(request))

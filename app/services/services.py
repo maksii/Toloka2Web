@@ -1,6 +1,6 @@
 # services.py
 
-from flask import Response
+from flask import Response, json
 import requests
 from toloka2MediaServer.config_parser import load_configurations, get_toloka_client
 from toloka2MediaServer.clients.dynamic import dynamic_client_init
@@ -50,8 +50,8 @@ def get_torrents_logic(query):
     if query:
         config = initiate_config()
         config.args = query
-        torrent = search_torrents(config)
-        return torrent
+        search_result = search_torrents(config)
+        return search_result.response
     else:
         return {}
     
@@ -59,15 +59,24 @@ def get_torrent_logic(id):
     if id:
         config = initiate_config()
         config.args = id
-        torrent = get_torrent_external(config)
-        return torrent
+        search_result = get_torrent_external(config)
+        return search_result.response
     else:
         return {}
 
-def add_torrent_logic(id):
-    if id:
+def add_torrent_logic(request):
+    if request:
+        
+        # Decode byte string to string and parse as JSON
+        data = json.loads(request.data.decode('utf-8'))
+
+        # Extract the torrent_url
+        torrent_url = data.get('torrent_url', None)
+        
         config = initiate_config()
-        config.args = id
+        config.args = RequestData(
+            url = torrent_url
+        ) 
         output = add_torrent_external(config)
         return output
     else:
