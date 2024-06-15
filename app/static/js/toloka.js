@@ -12,10 +12,16 @@ $(document).ready(function () {
             // Initialize DataTable
             table = $('#torrentTable').DataTable({
                 ajax: {
-                    url: "/api/toloka?query=" + query,
+                    url: "/api/toloka?query=" + query,        
                     dataSrc: function(json) {
+                        if (json.error) {
+                            return [];  // Return an empty array to DataTables
+                        }
                         var result = json;
                         return result;
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.log(xhr.responseJSON.error)
                     }
                 },
                 responsive: true,

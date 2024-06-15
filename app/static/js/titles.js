@@ -3,6 +3,9 @@ $(document).ready(function() {
         ajax: {
             url: 'api/releases',
             dataSrc: function(json) {
+                if (json.error) {
+                    return [];  // Return an empty array to DataTables
+                }
                 var result = [];
                 Object.keys(json).forEach(function(key) {
                     var item = json[key];
@@ -10,6 +13,9 @@ $(document).ready(function() {
                     result.push(item);
                 });
                 return result;
+            },
+            error: function(xhr, error, thrown) {
+                console.log(xhr.responseJSON.error)
             }
         },
         responsive: true,
