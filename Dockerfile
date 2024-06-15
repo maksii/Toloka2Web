@@ -1,7 +1,13 @@
-FROM python:3.10-alpine
+FROM python:3.12.4-alpine3.20
 
-# Install necessary packages
-RUN apk add --no-cache ffmpeg dcron sudo
+# Install system dependencies
+RUN apk add --no-cache \
+    sudo \
+    bash \
+    curl \
+    git \
+    dcron \
+    ffmpeg \
 
 # Create a group and user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
