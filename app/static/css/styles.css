@@ -101,3 +101,8 @@ main > .container-fluid {
 .card-body {
   min-height: 190px;
 }
+
+.toast-body {
+  max-height: 300px; 
+  overflow-y: auto; 
+}
