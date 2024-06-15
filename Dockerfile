@@ -26,13 +26,15 @@ VOLUME /app/downloads
 
 # Set file ownership
 RUN chown -R appuser:appgroup /app
-USER appuser
-
 ENV PORT=5000
 
 # Copy and prepare the entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Switch to the non-root user
+USER appuser
+
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Set default cron schedule and command to start cron
