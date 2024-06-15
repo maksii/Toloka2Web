@@ -60,7 +60,7 @@ copy configs and db into /path/to/config/
    Використовуйте наступну команду для запуску контейнера:
 
    ```bash
-   docker run -d -p 5000:5000 -v /path/to/your/config:/app/Toloka2Web/data --name toloka maksii/toloka2web:latest
+   docker run -d -p 5000:5000 -v /path/to/your/config:/app/data --name toloka maksii/toloka2web:latest
    ```
 
    Замініть `/path/to/your/config` на шлях до вашої папки конфігурації.
@@ -86,7 +86,7 @@ copy configs and db into /path/to/config/
        ports:
          - "5000:5000"
        volumes:
-         - /path/to/your/config:/app/Toloka2Web/data
+         - /path/to/your/config:/app/data
        restart: unless-stopped
    ```
 
@@ -121,6 +121,20 @@ We welcome contributions from the community. Here are a few ways you can help:
 We appreciate your contributions and look forward to collaborating with you!
 
 ---
+
+### Author's Vision
+
+#### Purpose of the Project
+The primary objective of this project is to streamline the process of downloading, naming, and organizing anime series on my Plex media server. While the project is designed to be somewhat flexible and not exclusively tied to anime content, it predominantly caters to this genre. This is because other types of content, such as movies and TV series, can be efficiently managed using existing tools that interact well with trackers like Utopia, which adhere to naming conventions and integrate seamlessly with the arr suite of applications.
+
+#### Challenges Addressed
+One of the challenges specific to the Ukrainian anime community is that local studios often do not upload their content to trackers. When they do, the naming conventions are inconsistent and varied. This project aims to mitigate these issues by providing a more standardized approach to content management.
+
+#### Contribution and Development
+If you have specific requests regarding functionality, support for different torrent clients, trackers, or sites, please feel free to create an issue or submit a pull request (PR). While I will prioritize issues that align with my ongoing work, I welcome all contributions. Please note that I am not a professional Python or frontend developer; therefore, the project may contain suboptimal code that will likely require refactoring as I continue to learn and improve the software.
+
+#### Політика внесків та мови
+PR, що містять коментарі в коді українською мовою або будь-якою іншою мовою, крім англійської, будуть відхилені без додаткового розгляду. Локалізація UI/UX та загальна локалізація будуть виконані мною українською мовою як мій останній внесок у цей проєкт. Наразі я не планую витрачати зусилля на постійно змінюваний інтерфейс користувача, особливо враховуючи, що більшість коду знаходиться на ранній стадії прототипу. PR, які вводять українську мову на даному етапі, будуть відхилені, окрім випадків, коли ви готові забезпечувати їхню підтримку на тижневій основі.
 
 ## License
 

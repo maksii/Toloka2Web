@@ -1,8 +1,11 @@
 $(document).ready(function() {
     var table = $('#dataTableTitles').DataTable({
         ajax: {
-            url: '/get_titles',
+            url: 'api/releases',
             dataSrc: function(json) {
+                if (json.error) {
+                    return [];  // Return an empty array to DataTables
+                }
                 var result = [];
                 Object.keys(json).forEach(function(key) {
                     var item = json[key];
@@ -10,8 +13,12 @@ $(document).ready(function() {
                     result.push(item);
                 });
                 return result;
+            },
+            error: function(xhr, error, thrown) {
+                console.log(xhr.responseJSON.error)
             }
         },
+        responsive: true,
         columns: [
             { data: 'codename', title: 'Codename', visible: true },
             { data: 'torrent_name', title: 'Torrent Name', visible: true },
@@ -94,7 +101,7 @@ $(document).ready(function() {
                             node[0].disabled = true;
                             node[0].innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
 
-                            fetch('/update_all_releases', { method: 'POST' })
+                            fetch('/api/releases/', { method: 'POST' })
                             .then(response => response.json())
                             .then(result => {
                                 node[0].innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update All';
@@ -140,7 +147,7 @@ $(document).ready(function() {
             let formData = new FormData();
             formData.append('codename', row.codename);
     
-            fetch('/update_release', {
+            fetch('/api/releases/update', {
                 method: 'POST',
                 body: formData
             })
@@ -209,26 +216,7 @@ $(document).ready(function() {
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
         submitButton.disabled = true;
         const formData = new FormData(releaseForm);
-        const response = await fetch('/add_release', {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        submitButton.innerHTML = 'Submit';
-        submitButton.disabled = false;
-
-        const bsOperationOffcanvas = new bootstrap.Offcanvas('#offcanvasOperationResults')
-        generateOffCanvas(result);  // Display operation status
-        bsOperationOffcanvas.toggle()
-        window.refreshTable();
-    });
-
-    releaseForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-        submitButton.disabled = true;
-        const formData = new FormData(releaseForm);
-        const response = await fetch('/add_release', {
+        const response = await fetch('/api/releases', {
             method: 'POST',
             body: formData
         });

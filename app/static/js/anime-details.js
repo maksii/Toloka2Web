@@ -4,7 +4,7 @@ $(document).ready(function() {
     const animeId = segments.pop();
 
     // Fetch and display anime details
-    $.getJSON(`../get_anime_by_id/${animeId}`, function(data) {
+    $.getJSON(`../api/anime/${animeId}`, function(data) {
         $('#animeTitle').text(data.titleEn);
         $('#animeDescription').text(data.description);
         $('#linkMal').attr('href', `https://myanimelist.net/anime/${data.malId}`);
@@ -15,7 +15,7 @@ $(document).ready(function() {
 
     var table = $('#relatedAnimeTable').DataTable({
         ajax: {
-            url:  `../get_anime_by_id/${animeId}/related`,
+            url:  `../api/anime/${animeId}/related`,
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {
@@ -26,15 +26,19 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
                 return `<a href="/anime/${data}">${data}</a>`;
             }, visible: true },
             { data: 'titleUa', title: 'UA', visible: true },
             { data: 'titleEn', title: 'EN', visible: true },
+            { data: 'season', title: 'Season', visible: true },
+            { data: 'type.name', title: 'Type', visible: true },
+            { data: 'status.name', title: 'Status', visible: true },
             { data: 'releaseDate', title: 'releaseDate', visible: true },
         ],
-        order: [[3, 'des']],
+        order: [[6, 'des']],
         layout: {
             topStart: {
                 buttons: [
@@ -73,7 +77,7 @@ $(document).ready(function() {
 
     var table = $('#studiosTable').DataTable({
         ajax: {
-            url:  `../get_anime_by_id/${animeId}/studios`,
+            url:  `../api/anime/${animeId}/studios`,
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {
@@ -84,6 +88,7 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
                 return `<a href="/studios/${data}">${data}</a>`;

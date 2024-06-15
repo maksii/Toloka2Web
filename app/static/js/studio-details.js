@@ -1,7 +1,17 @@
 $(document).ready(function() {
-    var table = $('#animeTable').DataTable({
+    const url = new URL(window.location.href);
+    const segments = url.pathname.split('/');
+    const studioId = segments.pop();
+
+    // Fetch and display studio details
+    $.getJSON(`../api/studio//${studioId}`, function(data) {
+        $('#studioName').text(data[0].name);
+        $('#studioTelegram').text(data[0].telegram);
+    });
+
+    var table = $('#titlesTable').DataTable({
         ajax: {
-            url: '/list_anime',
+            url:  `../api/studio/${studioId}/anime`,
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {
@@ -12,6 +22,7 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
                 return `<a href="/anime/${data}">${data}</a>`;
@@ -20,7 +31,7 @@ $(document).ready(function() {
             { data: 'titleEn', title: 'EN', visible: true },
             { data: 'releaseDate', title: 'releaseDate', visible: true },
         ],
-        order: [[2, 'des']],
+        order: [[3, 'des']],
         layout: {
             topStart: {
                 buttons: [
@@ -57,9 +68,6 @@ $(document).ready(function() {
         }
     });
 
-    window.refreshTable = function() {
-        table.ajax.reload();
-    };
 
 });
 

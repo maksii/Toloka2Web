@@ -1,17 +1,7 @@
 $(document).ready(function() {
-    const url = new URL(window.location.href);
-    const segments = url.pathname.split('/');
-    const studioId = segments.pop();
-
-    // Fetch and display studio details
-    $.getJSON(`../get_studio_details/${studioId}`, function(data) {
-        $('#studioName').text(data[0].name);
-        $('#studioTelegram').text(data[0].telegram);
-    });
-
-    var table = $('#titlesTable').DataTable({
+    var table = $('#studiosTable').DataTable({
         ajax: {
-            url:  `../list_titles_by_studio/${studioId}`,
+            url: '/api/studio',
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {
@@ -22,15 +12,17 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
-                return `<a href="/anime/${data}">${data}</a>`;
+                return `<a href="/studios/${data}">${data}</a>`;
             }, visible: true },
-            { data: 'titleUa', title: 'UA', visible: true },
-            { data: 'titleEn', title: 'EN', visible: true },
-            { data: 'releaseDate', title: 'releaseDate', visible: true },
+            { data: 'name', title: 'Name', visible: true },
+            { data: "telegram", title: 'telegram', render: function(data, type, row) {
+                return `<a href="${data}">${data}</a>`;
+            }, visible: true },
         ],
-        order: [[3, 'des']],
+        order: [[2, 'asc']],
         layout: {
             topStart: {
                 buttons: [
@@ -67,6 +59,9 @@ $(document).ready(function() {
         }
     });
 
+    window.refreshTable = function() {
+        table.ajax.reload();
+    };
 
 });
 

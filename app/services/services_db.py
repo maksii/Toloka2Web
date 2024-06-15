@@ -3,24 +3,31 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import or_
 
-# Database setup
-engine = create_engine('sqlite:///data/anime_data.db')
-Session = sessionmaker(bind=engine)
+# Global variables for database models
+Anime, Type, Status, Franchise, RelatedAnime, Fundub, FundubSynonym, AnimeFundub, Episode = (None,) * 9
+Session = None
 
-# Reflect the existing database into a new model
-Base = automap_base()
-Base.prepare(engine, reflect=True)
+def initialize_database():
+    global Anime, Type, Status, Franchise, RelatedAnime, Fundub, FundubSynonym, AnimeFundub, Episode, Session
 
-# Map the models
-Anime = Base.classes.anime
-Type = Base.classes.type
-Status = Base.classes.status
-Franchise = Base.classes.franchise
-RelatedAnime = Base.classes.related_anime
-Fundub = Base.classes.fundub
-FundubSynonym = Base.classes.fundub_synonym
-AnimeFundub = Base.classes.anime_fundub
-Episode = Base.classes.episode
+    # Database setup
+    engine = create_engine('sqlite:///data/anime_data.db')
+    Session = sessionmaker(bind=engine)
+
+    # Reflect the existing database into a new model
+    Base = automap_base()
+    Base.prepare(engine, reflect=True)
+
+    # Map the models
+    Anime = Base.classes.anime
+    Type = Base.classes.type
+    Status = Base.classes.status
+    Franchise = Base.classes.franchise
+    RelatedAnime = Base.classes.related_anime
+    Fundub = Base.classes.fundub
+    FundubSynonym = Base.classes.fundub_synonym
+    AnimeFundub = Base.classes.anime_fundub
+    Episode = Base.classes.episode
 
 # Service functions
 def get_anime_by_id(anime_id):
@@ -48,7 +55,11 @@ def get_related_animes(anime_id):
     session = Session()
     related_animes = session.query(Anime).join(
         RelatedAnime, Anime.id == RelatedAnime.anime_id2
-    ).filter(RelatedAnime.anime_id1 == anime_id).all()
+    ).filter(RelatedAnime.anime_id1 == anime_id).options(
+        joinedload(Anime.type).load_only(Type.name),
+        joinedload(Anime.status).load_only(Status.name),
+        joinedload(Anime.franchise)
+    ).all()
     session.close()
     return serialize(related_animes)
 
@@ -60,7 +71,11 @@ def list_all_studios():
 
 def list_all_anime():
     session = Session()
-    studios = session.query(Anime).all()
+    studios = session.query(Anime).options(
+        joinedload(Anime.type).load_only(Type.name),
+        joinedload(Anime.status).load_only(Status.name),
+        joinedload(Anime.franchise)
+    ).all()
     session.close()
     return serialize(studios)
 
@@ -130,3 +145,31 @@ def serialize(data):
     else:
         # Return simple data types directly
         return data
+    
+import requests
+import os
+
+def update_database():
+    # URL of the database file in the GitHub repository
+    url = "https://github.com/maksii/Stream2MediaServer/raw/main/data/anime_data.db"
+    
+    # Local path where the database should be stored
+    local_db_path = "data/anime_data.db"
+    
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(local_db_path), exist_ok=True)
+    
+    # Download the file
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        with open(local_db_path, 'wb', encoding='utf-8') as f:
+            f.write(response.content)
+        print("Database has been updated successfully.")
+    except requests.RequestException as e:
+        print(f"Failed to download the database: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    initialize_database()

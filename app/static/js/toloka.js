@@ -12,22 +12,38 @@ $(document).ready(function () {
             // Initialize DataTable
             table = $('#torrentTable').DataTable({
                 ajax: {
-                    url: "/get_torrents?query=" + query,
+                    url: "/api/toloka?query=" + query,        
                     dataSrc: function(json) {
+                        if (json.error) {
+                            return [];  // Return an empty array to DataTables
+                        }
                         var result = json;
                         return result;
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.log(xhr.responseJSON.error)
                     }
                 },
+                responsive: true,
                 columns: [
+                    {   // Responsive control column
+                        className: 'control',
+                        orderable: false,
+                        data: null,
+                        defaultContent: '',
+                        responsivePriority: 1
+                    },
                     {
                         className: 'details-control',
+                        title: 'Expand',
                         orderable: false,
                         data: null,
                         defaultContent: '',
                         render: function () {
                             return ' <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>';
                         },
-                        width: "15px"
+                        width: "15px",
+                        responsivePriority: 2
                     },
                     { data: "forum", title: 'Forum', visible: true },
                     { data: "name", title: 'Title', visible: true },
@@ -95,7 +111,7 @@ $(document).ready(function () {
                     tr.addClass('shown');
 
                     $.ajax({
-                        url: '/get_torrent?id=' + data.url,
+                        url: '/api/toloka/' + data.url,
                         type: 'GET',
                         success: function (detail) {
                             var childData = formatDetail(detail, data);
@@ -128,7 +144,7 @@ $(document).ready(function () {
             initialized = true;
             $('#torrentTable').show();
         } else {
-            table.ajax.url('/get_torrents?query=' + query).load();
+            table.ajax.url('/api/toloka?query=' + query).load();
         }
     });
     
@@ -195,12 +211,20 @@ $(document).ready(function () {
     function performAddAction(rowData, childData) {
         console.log('Add action triggered', rowData, childData);
 
-        $.ajax({
-            url: '/add_torrent?id=' + rowData.torrent_url,
-            type: 'GET',
-            success: function (detail) {
-                console.log('Not implemented YET', detail);
-            }
+        fetch("/api/toloka/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Add other headers as required, e.g., for authentication tokens
+            },
+            body: JSON.stringify(rowData) 
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
 
         document.querySelector('#offcanvasTopSearchResults > div.offcanvas-header > button').click()

@@ -1,7 +1,7 @@
 $(document).ready(function() {
-    var table = $('#studiosTable').DataTable({
+    var table = $('#animeTable').DataTable({
         ajax: {
-            url: '/list_voice_studios',
+            url: '/api/anime',
             dataSrc: function(json) {
                 var result = [];
                 Object.keys(json).forEach(function(key) {
@@ -12,16 +12,19 @@ $(document).ready(function() {
                 return result;
             }
         },
+        responsive: true,
         columns: [
             { data: "id", title: 'ID', render: function(data, type, row) {
-                return `<a href="/studios/${data}">${data}</a>`;
+                return `<a href="/anime/${data}">${data}</a>`;
             }, visible: true },
-            { data: 'name', title: 'Name', visible: true },
-            { data: "telegram", title: 'telegram', render: function(data, type, row) {
-                return `<a href="${data}">${data}</a>`;
-            }, visible: true },
+            { data: 'titleUa', title: 'UA', visible: true },
+            { data: 'titleEn', title: 'EN', visible: true },
+            { data: 'season', title: 'Season', visible: true },
+            { data: 'type.name', title: 'Type', visible: true },
+            { data: 'status.name', title: 'Status', visible: true },
+            { data: 'releaseDate', title: 'releaseDate', visible: true },
         ],
-        order: [[2, 'des']],
+        order: [[6, 'des']],
         layout: {
             topStart: {
                 buttons: [
