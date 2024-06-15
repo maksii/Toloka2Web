@@ -41,9 +41,10 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
             try:
                 username = form.username.data
                 password = form.password.data
+                remember = form.remember_me.data
                 user = User.query.filter_by(username=username).first()
                 if user and user.check_password(password):
-                    login_user(user)
+                    login_user(user, remember=remember)
                     identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
                     return redirect(url_for('index'))
                 else:
