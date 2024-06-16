@@ -1,36 +1,47 @@
-# Use an official Python runtime as a parent image
-FROM python:3
+FROM python:3.12.4-alpine3.20
 
-# Set the working directory in the container
+# Install system dependencies
+RUN apk add --no-cache \
+    sudo \
+    bash \
+    curl \
+    git \
+    dcron \
+    ffmpeg \
+    tzdata
+
+# Set the timezone to Kiev, Ukraine
+ENV TZ=Europe/Kiev
+RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Create a group and user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
+# Install Python dependencies
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the Python script and any other necessary files
 COPY . .
 
-# Add the config folder as a volume
+# Define volumes
 VOLUME /app/data
+VOLUME /app/downloads
 
-# Define the default cron schedule
-ENV CRON_SCHEDULE="0 8 * * *"
+# Set file ownership
+RUN chown -R appuser:appgroup /app
+ENV PORT=5000
 
-# Add the cron job to run toloka2transmission
-ADD crontab /etc/cron.d/cron-job
-RUN chmod 0644 /etc/cron.d/cron-job
-RUN touch /var/log/cron.log
-
-# Start cron service
-CMD cron && tail -f /var/log/cron.log
-
-# Make port available to the world outside this container
-EXPOSE 5000
-
-# Define environment variable
-ENV PORT 5000
-
-# Start-up script to run both cron and the web server
+# Copy and prepare the entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["docker-entrypoint.sh"]
+
+# Switch to the non-root user
+USER appuser
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# Set default cron schedule and command to start cron
+ENV CRON_SCHEDULE="0 8 * * *"
+CMD ["crond", "-f", "-d", "8"]
