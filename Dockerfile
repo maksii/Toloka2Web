@@ -7,7 +7,12 @@ RUN apk add --no-cache \
     curl \
     git \
     dcron \
-    ffmpeg 
+    ffmpeg \
+    tzdata
+
+# Set the timezone to Kiev, Ukraine
+ENV TZ=Europe/Kiev
+RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Create a group and user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
