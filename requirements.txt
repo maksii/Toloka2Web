@@ -10,3 +10,4 @@ Flask-WTF
 SQLAlchemy
 requests
 configparser
+setuptools

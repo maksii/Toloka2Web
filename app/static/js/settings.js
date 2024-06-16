@@ -166,6 +166,56 @@ $(document).ready(function() {
         });
     });
 
+    const showToastButton = document.getElementById('showToast');
+
+    showToastButton.addEventListener('click', () => {
+        fetch('/api/settings/versions')
+        .then(response => response.json())
+        .then(data => {
+            const formattedContent = formatContent(data);
+            showVersionToast("Installed Packages", formattedContent);
+        })
+        .catch(error => console.error('Error fetching version data:', error));
+        });
+
+        function showVersionToast(title, content) {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastHTML = `
+                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+                    <div class="toast-header">
+                        <strong class="me-auto">${title}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            const toastElement = new bootstrap.Toast(toastContainer.lastElementChild);
+            toastElement.show();
+
+            toastContainer.lastElementChild.addEventListener('hidden.bs.toast', function () {
+                localStorage.setItem('lastCheckedVersion', currentVersion);
+            });
+        }
+
+        function formatContent(data) {
+            let contentHTML = '<ol class="list-group list-group-numbered">';
+            for (const [key, value] of Object.entries(data)) {
+                contentHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">${key}</div>
+                            ${key}
+                        </div>
+                        <span class="badge text-bg-primary rounded-pill">${value}</span>
+                    </li>
+                `;
+            }
+            contentHTML += '</ol>';
+            return contentHTML;
+        }
 });
 
 
