@@ -8,7 +8,9 @@ $(document).ready(function () {
         var query = $(this).find('input[type="search"]').val();
         const bsOffcanvas = new bootstrap.Offcanvas('#offcanvasTopSearchResults')
         bsOffcanvas.toggle()
+        
         if (!initialized) {
+            generateSuggestionsSearch(query)
             // Initialize DataTable
             table = $('#torrentTable').DataTable({
                 ajax: {
@@ -145,6 +147,7 @@ $(document).ready(function () {
             $('#torrentTable').show();
         } else {
             table.ajax.url('/api/toloka?query=' + query).load();
+            refreshMultiSearchTable(query)
         }
     });
     

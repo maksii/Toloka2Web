@@ -10,7 +10,7 @@ def search_anime(query):
     api_key = get_api_key('mal_api')
     if not api_key:
         return {'error': 'API key not found'}
-    url = f"https://api.myanimelist.net/v2/anime?q={query}&limit=10&fields=id,title,main_picture,alternative_titles,media_type,status"
+    url = f"https://api.myanimelist.net/v2/anime?q={query}&limit=10&fields=id,title,main_picture,alternative_titles,media_type,status,start_date,end_date"
     headers = {'X-MAL-CLIENT-ID': f'{api_key}'}
     response = requests.get(url, headers=headers)
     return response.json()
