@@ -54,6 +54,10 @@ function processMultiSearchData(responses) {
     let slice = 4;
     let tmdbPromises = [];
     // Process MAL data
+    // Check if the first response contains an error
+    if (responses[0].error || responses[0].status_code) {
+        console.error("Error from MAL API:", responses[0].message || responses[0].status_message);
+    } else {
     responses[0].data.slice(0, slice).forEach(item => {
         let alternatives = item.node.alternative_titles.en + ' | ' + item.node.alternative_titles.ja;
         alternatives += ' | ' + item.node.alternative_titles.synonyms.join(' | ');
@@ -69,7 +73,11 @@ function processMultiSearchData(responses) {
             alternative: alternatives
         });
     });
-
+    }
+    
+    if (responses[1].error || responses[1].status_code) {
+        console.error("Error from TMDB API:", responses[1].message || responses[1].status_message);
+    } else {
     // Process TMDB data
     responses[1].results.slice(0, 4).forEach(item => {
         tmdbPromises.push(
@@ -77,10 +85,22 @@ function processMultiSearchData(responses) {
             .then(response => response.json())
             .then(details => {
                 const relevantCountries = ['JP', 'US', 'UA', 'UK'];
-                const alternativeTitles = details.alternative_titles.results
-                    .filter(title => relevantCountries.includes(title.iso_3166_1))
-                    .map(title => title.title)
-                    .join(' | ');
+                // First, determine the source array to use: either results or titles
+                const sourceArray = details && details.alternative_titles
+                    ? (Array.isArray(details.alternative_titles.results) ? details.alternative_titles.results
+                        : Array.isArray(details.alternative_titles.titles) ? details.alternative_titles.titles
+                        : null)
+                    : null;
+
+                // Now process the source array if it's not null
+                const alternativeTitles = sourceArray
+                    ? sourceArray
+                        .filter(title => relevantCountries.includes(title.iso_3166_1))
+                        .map(title => title.title)
+                        .join(' | ')
+                    : '';  // Default to an empty string if no valid array is found
+
+                console.log(alternativeTitles);
 
                 const alternative = item.original_name ? `${item.original_name} | ${alternativeTitles}` : alternativeTitles;
 
@@ -101,6 +121,7 @@ function processMultiSearchData(responses) {
             })
         );
     });
+}
 
     // Process custom API data
     responses[2].slice(0, slice).forEach(item => {

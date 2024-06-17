@@ -1,7 +1,7 @@
 $(document).ready(function () {
     var initialized = false;
     var table;
-
+    $.fn.dataTable.ext.errMode = 'none';
     // Handle form submission event
     $('.d-flex[role="search"]').on('submit', function (e) {
         e.preventDefault();

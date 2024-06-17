@@ -11,7 +11,13 @@ toloka_bp = Blueprint('toloka', __name__)
 def get_torrents():
     try:
         query = request.args.get('query')
-        return jsonify(get_torrents_logic(query))
+        response = get_torrents_logic(query)
+        
+        # Check if the response is a "No results found" message
+        if isinstance(response, str) and response.startswith("No results found"):
+            return jsonify({"error": response})
+        else:
+            return jsonify(response)
     except Exception as e:
         # Return a custom JSON error message with a 500 Internal Server Error status
         error_message = {

@@ -11,3 +11,4 @@ SQLAlchemy
 requests
 configparser
 setuptools
+jsonpickle
