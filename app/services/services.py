@@ -2,6 +2,9 @@
 
 from flask import Response, json
 import requests
+
+from types import SimpleNamespace
+
 from toloka2MediaServer.config_parser import load_configurations, get_toloka_client
 from toloka2MediaServer.clients.dynamic import dynamic_client_init
 from toloka2MediaServer.models.config import Config
@@ -11,6 +14,7 @@ from toloka2MediaServer.main_logic import (
     search_torrents, get_torrent as get_torrent_external,
     add_torrent as add_torrent_external
 )
+from stream2mediaserver.main_logic import search_releases as search_releases_stream
 
 from app.models.request_data import RequestData
 
@@ -185,8 +189,14 @@ def list_titles_by_studio(studio_id):
     pass
 
 def search_titles_from_streaming_site(query):
-    # Logic for searching titles from a streaming site
-    pass
+    if query:
+        config = initiate_config()
+        config.args = SimpleNamespace(query=query)
+        search_result = search_releases_stream(config)
+        
+        return search_result
+    else:
+        return {}
 
 def add_title_from_streaming_site(data):
     # Logic for adding a title from a streaming site
