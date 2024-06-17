@@ -1,12 +1,5 @@
 let searchDataTable;
 
-// Listen for Bootstrap tab change
-document.querySelectorAll('button[data-bs-toggle="tab"]').forEach((el) => {
-    el.addEventListener('shown.bs.tab', () => {
-        DataTable.tables({ visible: true, api: true }).columns.adjust();
-    });
-});
-
 function fetchData(url) {
     return $.ajax({
         url: url,
@@ -25,6 +18,7 @@ function loadMultiSearchData(query) {
 function initializeMultiSearchTable(data) {
     searchDataTable = $('#suggested-search').DataTable({
         data: data,
+        responsive: true,
         columns: [
             { data: 'source', title: 'source' },
             { data: 'title', title: 'title' },
@@ -56,7 +50,7 @@ function initializeMultiSearchTable(data) {
             { data: 'status', title: 'status' },
             { data: 'mediaType', title: 'mediaType' },
             { data: 'image', title: 'image', render: function(data, type, row) {
-                return data ? '<img src="'+ data +'" alt="Image" height="100">' : 'No image available';
+                return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : 'No image available';
             }},
             { data: 'description', title: 'description' },
             { data: 'releaseDate', title: 'releaseDate' },

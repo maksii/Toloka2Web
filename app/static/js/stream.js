@@ -44,7 +44,7 @@
                         return `<a href="https://toloka.to/${data}">${data}</a>`;
                     }, visible: true },
                     { data: 'image_url', title: 'image_url', render: function(data, type, row) {
-                        return data ? '<img src="'+ data +'" alt="Image" height="100">' : 'No image available';
+                        return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : 'No image available';
                     }},{ data: "provider", title: 'provider', visible: true },
                 ],
                 order: [[0, 'des']],

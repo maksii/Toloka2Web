@@ -2,10 +2,18 @@ $(document).ready(function () {
     var initialized = false;
     var table;
     $.fn.dataTable.ext.errMode = 'none';
+    // Listen for Bootstrap tab change
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach((el) => {
+        el.addEventListener('shown.bs.tab', () => {
+            DataTable.tables({ visible: true, api: true }).columns.adjust();
+        });
+    });
+
     // Handle form submission event
     $('.d-flex[role="search"]').on('submit', function (e) {
         e.preventDefault();
         var query = $(this).find('input[type="search"]').val();
+        document.querySelector("#searchResultsQuery").textContent = query
         const bsOffcanvas = new bootstrap.Offcanvas('#offcanvasTopSearchResults')
         bsOffcanvas.toggle()
         
