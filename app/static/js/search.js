@@ -51,9 +51,10 @@ function refreshMultiSearchTable(query) {
 
 function processMultiSearchData(responses) {
     let combinedData = [];
-
+    let slice = 4;
+    let tmdbPromises = [];
     // Process MAL data
-    responses[0].data.forEach(item => {
+    responses[0].data.slice(0, slice).forEach(item => {
         let alternatives = item.node.alternative_titles.en + ' | ' + item.node.alternative_titles.ja;
         alternatives += ' | ' + item.node.alternative_titles.synonyms.join(' | ');
         combinedData.push({
@@ -70,39 +71,59 @@ function processMultiSearchData(responses) {
     });
 
     // Process TMDB data
-    responses[1].results.forEach(item => {
-        combinedData.push({
-            source: 'TMDB',
-            title: item.name || item.title,
-            id: item.id,
-            status: item.media_type === 'tv' ? 'TV Show' : 'Movie',
-            mediaType: item.media_type,
-            image: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
-            description: item.overview,
-            releaseDate: item.first_air_date || item.release_date,
-            alternative: item.original_name || ''
-        });
+    responses[1].results.slice(0, 4).forEach(item => {
+        tmdbPromises.push(
+            fetch(`/api/tmdb/detail/${item.id}?type=${item.media_type}`)
+            .then(response => response.json())
+            .then(details => {
+                const relevantCountries = ['JP', 'US', 'UA', 'UK'];
+                const alternativeTitles = details.alternative_titles.results
+                    .filter(title => relevantCountries.includes(title.iso_3166_1))
+                    .map(title => title.title)
+                    .join(' | ');
+
+                const alternative = item.original_name ? `${item.original_name} | ${alternativeTitles}` : alternativeTitles;
+
+                combinedData.push({
+                    source: 'TMDB',
+                    title: item.name || item.title,
+                    id: item.id,
+                    status: details.status || (item.media_type === 'tv' ? 'TV Show' : 'Movie'),
+                    mediaType: item.media_type,
+                    image: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
+                    description: item.overview,
+                    releaseDate: item.first_air_date || item.release_date,
+                    alternative: alternative
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching or processing data for item:', item.id, error);
+            })
+        );
     });
 
     // Process custom API data
-    responses[2].forEach(item => {
+    responses[2].slice(0, slice).forEach(item => {
         combinedData.push({
             source: 'localdb',
-            title: item.titleEn,
+            title: item.titleUa,
             id: item.id,
             status: item.status_id === 2 ? 'Currently Airing' : 'Finished Airing',
             mediaType: 'Anime',
             image: '', 
             description: item.description,
             releaseDate: item.releaseDate,
-            alternative: item.titleUa
+            alternative: item.titleEn
         });
     });
 
-    if (combinedData.length > 0)
-        document.querySelector('#resultsInMulti').classList.toggle('d-none');
-    
-    return combinedData
+    // Wait for all TMDB fetches to complete before continuing
+    return Promise.all(tmdbPromises).then(() => {
+        if (combinedData.length > 0)
+            document.querySelector('#resultsInMulti').classList.toggle('d-none');
+        
+        return combinedData;
+    });
 }
 
 function generateSuggestionsSearch(query)
