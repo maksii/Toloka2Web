@@ -28,7 +28,31 @@ function initializeMultiSearchTable(data) {
         columns: [
             { data: 'source', title: 'source' },
             { data: 'title', title: 'title' },
-            { data: 'id', title: 'id' },
+            {
+                data: 'id',
+                title: 'ID',
+                render: function(data, type, row) {
+                    let url;
+                    switch (row.source) {
+                        case 'MAL':
+                            url = `https://myanimelist.net/anime/${data}`;
+                            break;
+                        case 'TMDB':
+                            if (row.mediaType === 'tv') {
+                                url = `https://www.themoviedb.org/tv/${data}`;
+                            } else if (row.mediaType === 'movie') {
+                                url = `https://www.themoviedb.org/movie/${data}`;
+                            }
+                            break;
+                        case 'localdb':
+                            url = `/anime/${data}`;
+                            break;
+                        default:
+                            return data; // Return the ID as plain text if no source matches
+                    }
+                    return `<a href="${url}" target="_blank">${data}</a>`;
+                }
+            },
             { data: 'status', title: 'status' },
             { data: 'mediaType', title: 'mediaType' },
             { data: 'image', title: 'image', render: function(data, type, row) {

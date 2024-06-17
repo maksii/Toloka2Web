@@ -11,6 +11,7 @@ $(document).ready(function () {
         
         if (!initialized) {
             generateSuggestionsSearch(query)
+            initStreamTable(query)
             // Initialize DataTable
             table = $('#torrentTable').DataTable({
                 ajax: {
@@ -148,6 +149,7 @@ $(document).ready(function () {
         } else {
             table.ajax.url('/api/toloka?query=' + query).load();
             refreshMultiSearchTable(query)
+            refreshStream(query)
         }
     });
     

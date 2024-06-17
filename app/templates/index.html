@@ -5,8 +5,10 @@
 <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 
 <script src="{{ url_for('static', filename='/js/titles.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/toloka.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/stream.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/toloka.js') }}"></script>
+
 
 {% endblock %}
 
@@ -125,7 +127,11 @@
               <div class="tab-content" id="nav-tabContent">
                 <div class="tab-pane fade show active" id="nav-toloka" role="tabpanel" aria-labelledby="nav-toloka-tab" tabindex="0"><table id="torrentTable" class="table table-striped" style="width:100%; display:none;"></table></div>
                 <div class="tab-pane fade" id="nav-suggestion" role="tabpanel" aria-labelledby="nav-suggestion-tab" tabindex="0"><table id="suggested-search" class="table table-striped" style="width:100%;"></table></div>
-                <div class="tab-pane fade" id="nav-stream" role="tabpanel" aria-labelledby="nav-stream-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="nav-stream" role="tabpanel" aria-labelledby="nav-stream-tab" tabindex="0">
+                    <table id="tableStream" class="table table-striped" style="width:100%;"></table>
+                    
+
+                </div>
               </div>
         </div>
       </div>
