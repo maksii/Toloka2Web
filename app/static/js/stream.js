@@ -81,5 +81,5 @@
 
     function refreshStream(query)
     {
-        table.ajax.url('/api/stream?query=' + query).load(); 
+        tableStream.ajax.url('/api/stream?query=' + query).load(); 
     }    
