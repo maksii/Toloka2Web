@@ -68,7 +68,7 @@ $(document).ready(function () {
                     { data: "status", title: 'status', visible: false },
                     { data: "torrent_url", title: 'torrent_url', visible: false },
                     { data: "url", title: 'url', render: function(data, type, row) {
-                        return `<a href="https://toloka.to/${data}">${data}</a>`;
+                        return `<a href="https://toloka.to/${data}" target="_blank">${data}</a>`;
                     }, visible: true },
                     { data: "verify", title: 'verify', visible: false },
                     { data: null, title: 'Actions', orderable: false, render: function(data, type, row) {

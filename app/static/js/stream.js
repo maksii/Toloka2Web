@@ -41,7 +41,7 @@
                     { data: "title", title: 'Title', visible: true },
                     { data: "title_eng", title: 'title_eng', visible: true },
                     { data: "link", title: 'link', render: function(data, type, row) {
-                        return `<a href="https://toloka.to/${data}">${data}</a>`;
+                        return `<a href="${data}" target="_blank">${data}</a>`;
                     }, visible: true },
                     { data: 'image_url', title: 'image_url', render: function(data, type, row) {
                         return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : 'No image available';
