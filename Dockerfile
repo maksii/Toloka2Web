@@ -2,20 +2,18 @@ FROM python:3.12.4-alpine3.20
 
 # Install system dependencies
 RUN apk add --no-cache \
-    sudo \
     bash \
     curl \
     git \
     dcron \
     ffmpeg \
-    tzdata
+    tzdata \
+ && addgroup -S appgroup \
+ && adduser -S appuser -G appgroup
 
-# Set the timezone to Kiev, Ukraine
+# Set the timezone
 ENV TZ=Europe/Kiev
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# Create a group and user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
@@ -31,9 +29,12 @@ VOLUME /app/downloads
 
 # Set file ownership
 RUN chown -R appuser:appgroup /app
-ENV PORT=5000
 
-# Copy and prepare the entrypoint
+# Setup environment
+ENV PORT=5000 \
+    CRON_SCHEDULE="0 8 * * *"
+
+# Prepare the entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
@@ -41,7 +42,4 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 USER appuser
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-
-# Set default cron schedule and command to start cron
-ENV CRON_SCHEDULE="0 8 * * *"
 CMD ["crond", "-f", "-d", "8"]
