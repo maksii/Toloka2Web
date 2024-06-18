@@ -1,15 +1,12 @@
 {% extends 'base.html' %}
 
+{% block body_id %}releases-page{% endblock %}
+
 {% block additional_head %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 
-<script src="{{ url_for('static', filename='/js/titles.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/stream.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/search.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/toloka.js') }}"></script>
-
-
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
 
 {% block content %}
