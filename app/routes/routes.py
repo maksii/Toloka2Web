@@ -11,6 +11,7 @@ from app.models.user import User
 from app.app import db 
 
 from ..services.services import (
+    multi_search,
     proxy_image_logic
 )
 
@@ -29,6 +30,12 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
     def proxy_image():
         url = request.args.get('url')
         return proxy_image_logic(url)
+    
+    @app.route('/api/search')
+    @login_required
+    def search_aggregated():
+        query = request.args.get('query')
+        return multi_search(query)
 
     @login_manager.user_loader
     def load_user(user_id):

@@ -1,6 +1,6 @@
 # services.py
 
-from flask import Response, json
+from flask import Response, json, jsonify
 import requests
 
 from types import SimpleNamespace
@@ -17,6 +17,9 @@ from toloka2MediaServer.main_logic import (
 from stream2mediaserver.main_logic import search_releases as search_releases_stream
 
 from app.models.request_data import RequestData
+from app.services.mal_service import search_anime
+from app.services.services_db import get_anime_by_name
+from app.services.tmdb_service import get_media_detail, search_media
 
 def initiate_config():
     app_config_path='data/app.ini'
@@ -201,3 +204,94 @@ def search_titles_from_streaming_site(query):
 def add_title_from_streaming_site(data):
     # Logic for adding a title from a streaming site
     pass
+
+def multi_search(query):
+    combined_data = []
+    
+    # Safe fetching function
+    def safe_fetch(data, keys, default=''):
+        try:
+            for key in keys:
+                data = data[key]
+            return data if data is not None else default
+        except (KeyError, TypeError, IndexError):
+            return default
+
+    # Fetch data from various sources
+    try:
+        mal_data = search_anime(query)
+    except Exception:
+        mal_data = {'data': []}
+    
+    try:
+        tmdb_data = search_media(query)
+    except Exception:
+        tmdb_data = {'results': []}
+    
+    try:
+        localdb_data = get_anime_by_name(query)
+    except Exception:
+        localdb_data = []
+
+    # Process MAL data
+    for item in mal_data.get('data', [])[:4]:
+        alternatives = ' | '.join([
+            safe_fetch(item, ['node', 'alternative_titles', 'en']),
+            safe_fetch(item, ['node', 'alternative_titles', 'ja']),
+            ' | '.join(safe_fetch(item, ['node', 'alternative_titles', 'synonyms'], []))
+        ])
+        combined_data.append({
+            'source': 'MAL',
+            'title': safe_fetch(item, ['node', 'title']),
+            'id': safe_fetch(item, ['node', 'id']),
+            'status': safe_fetch(item, ['node', 'status']),
+            'mediaType': safe_fetch(item, ['node', 'media_type']),
+            'image': safe_fetch(item, ['node', 'main_picture', 'medium']),
+            'description': safe_fetch(item, ['node', 'title']),
+            'releaseDate': safe_fetch(item, ['node', 'start_date']),
+            'alternative': alternatives
+        })
+
+    # Process TMDB data
+    for item in tmdb_data.get('results', [])[:4]:
+        try:
+            details = get_media_detail(item['id'], f"type={item['media_type']}")
+        except Exception:
+            details = {}
+
+        relevant_countries = ['JP', 'US', 'UA', 'UK']
+        source_array = safe_fetch(details, ['alternative_titles', 'results']) or safe_fetch(details, ['alternative_titles', 'titles'])
+
+        alternative_titles = ' | '.join(
+            title['title'] for title in source_array if title.get('iso_3166_1') in relevant_countries
+        )
+
+        alternative = f"{safe_fetch(item, ['original_name'])} | {alternative_titles}" if 'original_name' in item else alternative_titles
+        
+        combined_data.append({
+            'source': 'TMDB',
+            'title': safe_fetch(item, ['name']),
+            'id': item['id'],
+            'status': 'Unknown',
+            'mediaType': item.get('media_type', 'Unknown'),
+            'image': f"https://image.tmdb.org/t/p/w500{safe_fetch(item, ['poster_path'])}",
+            'description': safe_fetch(item, ['overview']),
+            'releaseDate': safe_fetch(item, ['first_air_date']),
+            'alternative': alternative
+        })
+
+    # Process localdb
+    for item in localdb_data[:4]:
+        combined_data.append({
+            'source': 'localdb',
+            'title': safe_fetch(item, ['titleUa']),
+            'id': item['id'],
+            'status': 'Currently Airing' if item.get('status_id') == 2 else 'Finished Airing',
+            'mediaType': 'Anime',
+            'image': '',
+            'description': safe_fetch(item, ['description']),
+            'releaseDate': safe_fetch(item, ['releaseDate']),
+            'alternative': safe_fetch(item, ['titleEn'])
+        })
+
+    return jsonify(combined_data)
