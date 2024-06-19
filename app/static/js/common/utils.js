@@ -67,4 +67,33 @@ export class Utils {
         // Insert the generated HTML into a predefined container in your HTML
         document.getElementById('offcanvasBody').innerHTML = cardHTML;
     }
+
+    static downloadFile(url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = true;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    static renderButtonSpinner()
+    {
+        return '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+    }
+
+    static renderActionButton(action, buttonClass, buttonState, buttonIcon, buttonText)
+    {
+        return `<button class="btn ${buttonClass} ${action}" ${buttonState}><span class="bi ${buttonIcon}" aria-hidden="true"></span><span class="visually-hidden" role="status">${buttonText}</span></button>`;
+    }
+
+    static hasParentWithClass(element, tillParent, classname) {
+        while (element && element !== tillParent) {
+            if (element.classList && element.classList.contains(classname)) {
+                return true;
+            }
+            element = element.parentNode;
+        }
+        return false;
+    }
 }

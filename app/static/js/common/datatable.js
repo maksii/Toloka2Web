@@ -11,4 +11,27 @@ export class DataTableManager {
     static refreshTable(table) {
         table.ajax.reload();
     }
+
+    static formatLoading() {
+        return '<div class="d-flex justify-content-center">' +
+               '<div class="spinner-border" role="status">' +
+               '<span class="visually-hidden">Loading...</span>' +
+               '</div>' +
+               '</div>';
+    }
+
+    static disableAlertErrors()
+    {
+        $.fn.dataTable.ext.errMode = 'none';
+    }
+
+    static handleBootstrapTabs()
+    {
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach((el) => {
+            el.addEventListener('shown.bs.tab', () => {
+                DataTable.tables({ visible: true, api: true }).columns.adjust();
+            });
+        });
+    }
+
 }

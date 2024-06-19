@@ -121,11 +121,12 @@ export default class Releases {
     }
 
     dataTableRenderActionButtons(data, type, row) {
-        return `
-            <button class="btn btn-outline-warning" disabled><span class="bi bi-pencil-square" aria-hidden="true"></span><span class="visually-hidden" role="status">Edit</span></button>
-            <button class="btn btn-outline-danger" disabled><span class="bi bi-trash" aria-hidden="true"></span><span class="visually-hidden" role="status">Delete</span></button>
-            <button class="btn btn-outline-primary action-update" ><span class="bi bi-arrow-clockwise" aria-hidden="true"></span><span class="visually-hidden" role="status">Update</span></button>
-        `;
+        let editButton = Utils.renderActionButton("","btn-outline-warning", "disabled", "bi-pencil-square", "Edit");
+        let deleteButton = Utils.renderActionButton("","btn-outline-danger", "disabled", "bi-trash", "Delete");
+        let updateButton = Utils.renderActionButton("action-update","btn-outline-primary", "", "bi-arrow-clockwise", "Update");
+        return `${editButton}
+        ${deleteButton}
+        ${updateButton}`;
     }
 
     dataTableAddAction()
@@ -140,7 +141,7 @@ export default class Releases {
     dataTableUpdateAllAction(e, dt, node, config)
     {
         node[0].disabled = true;
-        node[0].innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        node[0].innerHTML = Utils.renderButtonSpinner();
 
         fetch('/api/releases/', { method: 'POST' })
         .then(response => response.json())
@@ -179,7 +180,7 @@ export default class Releases {
         let row = this.table.row(tr).data();
 
         target.disabled = true;
-        target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        target.innerHTML = Utils.renderButtonSpinner();
 
         // Assuming `codename` is a property of the row data
         let formData = new FormData();
@@ -242,7 +243,7 @@ export default class Releases {
     async submitAddNewTitleForm(e)
     {
         e.preventDefault();
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        submitButton.innerHTML = Utils.renderButtonSpinner();
         submitButton.disabled = true;
         const formData = new FormData(releaseForm);
         const response = await fetch('/api/releases', {
