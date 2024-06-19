@@ -1,10 +1,8 @@
 {% extends 'base.html' %}
-
+{% block body_id %}settings-page{% endblock %}
 {% block additional_head %}
-
-<script src="{{ url_for('static', filename='/js/settings.js') }}"></script>s
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
-
 {% block content %}
 <!-- Begin page content -->
 <main class="flex-shrink-0">

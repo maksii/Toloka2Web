@@ -34,4 +34,15 @@ export class DataTableManager {
         });
     }
 
+    static onDataTableXhr(table)
+    {
+        table.on('xhr', function() {
+            var data = table.ajax.json();
+            originalData = {};
+            data.forEach(function(item) {
+                originalData[item.id] = item;
+            });
+        });
+    }
+
 }

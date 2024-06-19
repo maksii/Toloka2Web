@@ -1,7 +1,9 @@
 import Releases from './modules/releases.js';
 import Search from './modules/search.js';
 import Anime from './modules/anime.js';
+import AnimeDetails from './modules/anime-details.js';
 import Studios from './modules/studios.js';
+import StudiosDetails from './modules/studios-details.js';
 import Settings from './modules/settings.js';
 import { DataTableManager } from './common/datatable.js';
 
@@ -11,14 +13,19 @@ class AppController {
             'releases-page': Releases,
             'search-page': Search,
             'anime-page': Anime,
+            'anime-details-page': AnimeDetails,
             'studios-page': Studios,
+            'studios-details-page': StudiosDetails,
             'settings-page': Settings
         };
     }
 
     init() {
-        // Initialize common components
-        //DataTableManager.initialize();
+        DataTableManager.disableAlertErrors();
+        DataTableManager.handleBootstrapTabs();
+
+        const searchModule = new Search();
+        searchModule.init();
 
         // Get the page identifier from the body's ID
         const pageId = document.body.id;

@@ -3,9 +3,6 @@
 {% block body_id %}releases-page{% endblock %}
 
 {% block additional_head %}
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
-
 <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
 
@@ -100,52 +97,5 @@
     
     </div>
     
-    <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasTopSearchResults" aria-labelledby="offcanvasTopSearchResultsLabel" data-bs-backdrop="static" style="height: 90vh;"> 
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasTopSearchResultsLabel">Search Results: <span id="searchResultsQuery"></span></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <nav>
-                <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                  <button class="nav-link active" id="nav-toloka-tab" data-bs-toggle="tab" data-bs-target="#nav-toloka" type="button" role="tab" aria-controls="nav-toloka" aria-selected="true">Toloka</button>
-                  <button class="nav-link" id="nav-suggestion-tab" data-bs-toggle="tab" data-bs-target="#nav-suggestion" type="button" role="tab" aria-controls="nav-suggestion" aria-selected="false">Search Suggestions
-                    <span id="resultsInMulti" class="position-absolute translate-middle p-2 bg-primary border border-light rounded-circle d-none">
-                        <span class="visually-hidden">New alerts</span>
-                      </span>
-                  </button>
-                  <button class="nav-link" id="nav-stream-tab" data-bs-toggle="tab" data-bs-target="#nav-stream" type="button" role="tab" aria-controls="nav-stream" aria-selected="false">Stream
-                    <span id="resultsInStream" class="position-absolute translate-middle p-2 bg-primary border border-light rounded-circle d-none">
-                        <span class="visually-hidden">New alerts</span>
-                      </span>
-                  </button>
-                </div>
-              </nav>
-              <div class="tab-content" id="nav-tabContent">
-                <div class="tab-pane fade show active" id="nav-toloka" role="tabpanel" aria-labelledby="nav-toloka-tab" tabindex="0"><table id="torrentTable" class="table table-striped" style="width:100%;"></table></div>
-                <div class="tab-pane fade" id="nav-suggestion" role="tabpanel" aria-labelledby="nav-suggestion-tab" tabindex="0"><table id="suggested-search" class="table table-striped" style="width:100%;"></table></div>
-                <div class="tab-pane fade" id="nav-stream" role="tabpanel" aria-labelledby="nav-stream-tab" tabindex="0">
-                    <table id="tableStream" class="table table-striped" style="width:100%;"></table>
-                    
-
-                </div>
-              </div>
-        </div>
-      </div>
-      <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasOperationResults" aria-labelledby="offcanvasOperationResultsLabel" data-bs-backdrop="static" style="height: 90vh;"> 
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasOperationResultsLabel">Search Results</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div id="offcanvasBody"></div>
-        </div>
-      </div>
-    
-      <div aria-live="polite" aria-atomic="true" class="position-relative">
-        <div class="toast-container position-fixed bottom-0 end-0 p-3">
-            <!-- Toasts will appear here -->
-        </div>
-    </div>
     </main>
 {% endblock %}
