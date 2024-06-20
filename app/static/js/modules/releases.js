@@ -1,5 +1,5 @@
 // static/js/modules/releases.js
-import { DataTableManager } from '../common/datatable.js';
+import { DataTableManager, EventDelegator } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
 
 export default class Releases {
@@ -9,6 +9,7 @@ export default class Releases {
 
     init() {
         this.initializeDataTable();
+        new EventDelegator('#dataTableTitles tbody', this.handleAction.bind(this));
         this.addEventListeners();
     }
 
@@ -84,8 +85,8 @@ export default class Releases {
     }
 
     dataTableRenderActionButtons(data, type, row) {
-        let editButton = Utils.renderActionButton("","btn-outline-warning", "disabled", "bi-pencil-square", "Edit");
-        let deleteButton = Utils.renderActionButton("","btn-outline-danger", "disabled", "bi-trash", "Delete");
+        let editButton = Utils.renderActionButton("action-edit","btn-outline-warning", "disabled", "bi-pencil-square", "Edit");
+        let deleteButton = Utils.renderActionButton("action-delete","btn-outline-danger", "disabled", "bi-trash", "Delete");
         let updateButton = Utils.renderActionButton("action-update","btn-outline-primary", "", "bi-arrow-clockwise", "Update");
         return `${editButton}
         ${deleteButton}
@@ -111,19 +112,22 @@ export default class Releases {
     }
 
     addEventListeners() {
-        this.tableBody.addEventListener('click', event => this.handleTableClick(event));
     }
 
-    handleTableClick(event) {
-        let target = event.target;
-        while (target && !target.classList.contains('action-update')) {
-            if (target === event.currentTarget) return;
-            target = target.parentNode;
+    handleAction(actionName, element) {
+        const actionHandlers = {
+          edit: () => console.log(`Editing release associated with ${element}`),
+          delete: () => console.log(`Deleting release associated with ${element}`),
+          update: () => this.updateRelease(element),
+        };
+    
+        const actionFunction = actionHandlers[actionName];
+        if (actionFunction) {
+          actionFunction();
+        } else {
+          console.error(`No handler defined for action: ${actionName}`);
         }
-        if (target && target.classList.contains('action-update')) {
-            this.updateRelease(target);
-        }
-    }
+      }
 
     async updateRelease(target) {
         let tr = target.closest('tr');

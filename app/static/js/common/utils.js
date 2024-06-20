@@ -104,4 +104,5 @@ export class Utils {
           });
         addReleaseModal.show();
     }
+
 }

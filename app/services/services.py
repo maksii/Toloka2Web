@@ -85,6 +85,7 @@ def add_torrent_logic(request):
             url = torrent_url
         ) 
         output = add_torrent_external(config)
+        output = serialize_operation_result(output)
         return output
     else:
         return {}

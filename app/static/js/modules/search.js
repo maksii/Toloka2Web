@@ -1,5 +1,5 @@
 // static/js/modules/search.js
-import { DataTableManager } from '../common/datatable.js';
+import { DataTableManager, EventDelegator } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
 
 export default class Search {
@@ -138,23 +138,26 @@ export default class Search {
             }
     }
 
-    handleTolokaTableClick(event) {
-        let target = event.target;
-        const tr = target.closest('tr');
+    handleAction(actionName, element) {
+        const tr = element.closest('tr');
         const row = this.tolokaTable.row(tr);
         const data = row.data();
         const childData = tr.dataset.childData;
+
+        const actionHandlers = {
+          expand: () => this.performDetailsExpandAction(tr),
+          download: () => this.performDownloadAction(data, childData),
+          copy: () => this.performCopyAction(data, childData),
+          add: () => this.performAddAction(data, childData),
+        };
     
-        if (target.classList.contains('action-expand')) {
-            this.performDetailsExpandAction(tr);
-        } else if (target.classList.contains('action-download')) {
-            this.performDownloadAction(data, childData);
-        } else if (target.classList.contains('action-copy')) {
-            this.performCopyAction(data, childData);
-        } else if (target.classList.contains('action-add')) {
-            this.performAddAction(data, childData);
+        const actionFunction = actionHandlers[actionName];
+        if (actionFunction) {
+          actionFunction();
+        } else {
+          console.error(`No handler defined for action: ${actionName}`);
         }
-    }
+      }
 
     initializeMultiDataTable(query)
     {
@@ -311,7 +314,7 @@ export default class Search {
 
     addDataTablesEvents()
     {
-        this.tolokaTableBody.addEventListener('click', event => this.handleTolokaTableClick(event));
+        new EventDelegator('#torrentTable tbody', this.handleAction.bind(this));
     }
 
 
@@ -410,18 +413,18 @@ export default class Search {
         document.querySelector('#releaseTitle').value = rowData.name;
         document.querySelector('#tolokaUrl').value  = `https://toloka.to/${rowData.url}`;
         if(childData != null)
-            {
-                var filePath = `${childData.files[0].folder_name}/${childData.files[0].file_name}`
-                var input = document.querySelector('#filenameIndex');
-                document.querySelector('#filenameIndexGroup').classList.toggle("d-none");
-                input.value = filePath
-
-                const event = new Event('input', {
-                    bubbles: true,
-                    cancelable: true,
-                });
-                input.dispatchEvent(event);
-            }
+        {
+            childData = JSON.parse(childData);
+            var filePath = `${childData.files[0].folder_name}/${childData.files[0].file_name}`
+            var input = document.querySelector('#filenameIndex');
+            document.querySelector('#filenameIndexGroup').classList.toggle("d-none");
+            input.value = filePath
+            const event = new Event('input', {
+                bubbles: true,
+                cancelable: true,
+            });
+            input.dispatchEvent(event);
+        }
         this.searchOffcanvas.hide()
     }
     

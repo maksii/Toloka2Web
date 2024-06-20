@@ -158,3 +158,36 @@ export class DataTableManager {
         return language;
     }
 }
+
+export class EventDelegator {
+    constructor(selector, actionHandler) {
+      this.selector = selector;
+      this.actionHandler = actionHandler;
+      this.attachListener();
+    }
+  
+    attachListener() {
+      const element = document.querySelector(this.selector);
+      if (!element) {
+        console.error(`Element with selector "${this.selector}" not found.`);
+        return;
+      }
+  
+      element.addEventListener('click', (event) => this.handleButtonClick(event));
+    }
+  
+    handleButtonClick(event) {
+      let targetElement = event.target;
+      while (targetElement && !targetElement.classList.contains('button') && !targetElement.matches("[class*='action-']")) {
+        targetElement = targetElement.parentElement;
+      }
+  
+      if (targetElement && targetElement.matches("[class*='action-']")) {
+        const actionNameMatch = targetElement.className.match(/action-(\w+)/);
+        if (actionNameMatch) {
+          const actionName = actionNameMatch[1];
+          this.actionHandler(actionName, targetElement);
+        }
+      }
+    }
+  }
