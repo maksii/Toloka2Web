@@ -1,5 +1,6 @@
 // static/js/main.js
 import Releases from './modules/releases.js';
+import ReleasesAdd from './modules/releases-add.js';
 import Search from './modules/search.js';
 import Anime from './modules/anime.js';
 import AnimeDetails from './modules/anime-details.js';
@@ -30,6 +31,9 @@ class AppController {
 
         const updateCheckerModule = new UpdateChecker();
         updateCheckerModule.init();
+
+        const releaseAddModule = new ReleasesAdd();
+        releaseAddModule.init();
 
         // Get the page identifier from the body's ID
         const pageId = document.body.id;

@@ -140,24 +140,19 @@ export default class Search {
 
     handleTolokaTableClick(event) {
         let target = event.target;
-        var tr = $(target).closest('tr');
-        var row = this.tolokaTable.row(tr);
-        var data = row.data();
-        var childData = tr.data('childData');
-        
-        switch (true) {
-            case $(target).hasClass('action-expand'):
-                this.performDetailsExpandAction(tr);
-                break;
-            case $(target).hasClass('action-download'):
-                this.performDownloadAction(data, childData);
-                break;
-            case $(target).hasClass('action-copy'):
-                this.performCopyAction(data, childData);
-                break;
-            case $(target).hasClass('action-add'):
-                this.performAddAction(data, childData);
-                break;
+        const tr = target.closest('tr');
+        const row = this.tolokaTable.row(tr);
+        const data = row.data();
+        const childData = tr.dataset.childData;
+    
+        if (target.classList.contains('action-expand')) {
+            this.performDetailsExpandAction(tr);
+        } else if (target.classList.contains('action-download')) {
+            this.performDownloadAction(data, childData);
+        } else if (target.classList.contains('action-copy')) {
+            this.performCopyAction(data, childData);
+        } else if (target.classList.contains('action-add')) {
+            this.performAddAction(data, childData);
         }
     }
 
@@ -376,20 +371,18 @@ export default class Search {
 
         if (row.child.isShown()) {
             row.child.hide();
-            tr.removeClass('shown');
+            tr.classList.remove('shown');
         } else {
             var data = row.data();
             row.child(DataTableManager.formatLoading()).show();
-            tr.addClass('shown');
+            tr.classList.add('shown');
 
-            $.ajax({
-                url: '/api/toloka/' + data.url,
-                type: 'GET',
-                success: (detail) => {
-                    var childData = this.formatDetail(detail, data);
-                    row.child(childData).show();
-                    tr.data('childData', detail);
-                }
+            fetch(`/api/toloka/${data.url}`)
+            .then(response => response.json())
+            .then(detail => {
+                const childData = this.formatDetail(detail, data);
+                row.child(childData).show();
+                tr.dataset.childData = JSON.stringify(detail);
             });
         }
     }
@@ -413,15 +406,7 @@ export default class Search {
     }
     
     performCopyAction(rowData, childData) {
-        this.searchOffcanvas.hide()
-
-        const leftSideAdd = document.querySelector('#leftSideAdd');
-        leftSideAdd.classList.remove('d-none');
-
-        const rightSideTitles = document.querySelector('#rightSideTitles');
-        rightSideTitles.classList.add('col-md-8');
-        rightSideTitles.classList.remove('col-md-12');
-
+        Utils.addRelease();
         document.querySelector('#releaseTitle').value = rowData.name;
         document.querySelector('#tolokaUrl').value  = `https://toloka.to/${rowData.url}`;
         if(childData != null)
@@ -437,6 +422,7 @@ export default class Search {
                 });
                 input.dispatchEvent(event);
             }
+        this.searchOffcanvas.hide()
     }
     
     performDownloadAction(rowData, childData) {
@@ -445,5 +431,4 @@ export default class Search {
 
         Utils.downloadFile(url);
     }
-
 }

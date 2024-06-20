@@ -13,10 +13,12 @@ export default class StudiosDetails {
         const studioId = segments.pop();
     
         // Fetch and display studio details
-        $.getJSON(`../api/studio//${studioId}`, function(data) {
-            $('#studioName').text(data[0].name);
-            $('#studioTelegram').text(data[0].telegram);
-        });
+        fetch(`../api/studio/${studioId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#studioName').textContent = data[0].name;
+                document.querySelector('#studioTelegram').textContent = data[0].telegram;
+            });
         this.initializeDataTable(studioId);
     }
 

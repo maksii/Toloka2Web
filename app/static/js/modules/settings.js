@@ -80,7 +80,7 @@ export default class Settings {
                         
                                 // Focus on the first input of the new row
                                 var newRow = table.row(':last').node();
-                                $('input:first', newRow).focus();
+                                newRow.querySelector('input:first-child').focus();
                             }
                         },
                         {
@@ -123,23 +123,24 @@ export default class Settings {
         }
 
         //reset 
-        var row = table.row($(this).parents('tr'));
+        const row = table.row(this.closest('tr'));
         var rowData = row.data();
         var originalData = { id: rowData.id, name: rowData.name, age: rowData.age, country: rowData.country }; // Assuming original data can be reconstructed or fetched
 
-        $('input', row.node()).each(function(index) {
-            this.value = originalData[$(this).attr('name')];
+        const inputs = row.node().querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = originalData[input.getAttribute('name')];
         });
     }
 
     saveSettingAction(targe)
     {
-        var row = table.row($(this).parents('tr'));
+        const row = table.row(this.closest('tr'));
         var rowData = row.data();
 
         console.log('Original data', rowData);
 
-        var inputs = $('input', row.node());
+        const inputs = row.node().querySelectorAll('input');
         var updatedData = {};
         updatedData.section = inputs[0].value;
         updatedData.key = inputs[1].value;

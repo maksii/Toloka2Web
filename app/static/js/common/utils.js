@@ -96,4 +96,12 @@ export class Utils {
         }
         return false;
     }
+
+    static addRelease()
+    {
+        const addReleaseModal = new bootstrap.Modal(document.querySelector('#addReleaseModal'), {
+            keyboard: false
+          });
+        addReleaseModal.show();
+    }
 }

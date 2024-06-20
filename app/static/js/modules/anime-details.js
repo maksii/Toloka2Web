@@ -17,13 +17,15 @@ export default class AnimeDetails {
         this.initializeStudiosDataTable(animeId);
 
         // Fetch and display anime details
-        $.getJSON(`../api/anime/${animeId}`, function(data) {
-            $('#animeTitle').text(data.titleEn);
-            $('#animeDescription').text(data.description);
-            $('#linkMal').attr('href', `https://myanimelist.net/anime/${data.malId}`);
-            $('#linkImdb').attr('href', `https://www.imdb.com/title/${data.ashdiId}`);
-            // Additional links can be updated here
-        });
+        fetch(`../api/anime/${animeId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#animeTitle').textContent = data.titleEn;
+                document.querySelector('#animeDescription').textContent = data.description;
+                document.querySelector('#linkMal').href = `https://myanimelist.net/anime/${data.malId}`;
+                document.querySelector('#linkImdb').href = `https://www.imdb.com/title/${data.ashdiId}`;
+                // Additional links can be updated here
+            });
     }
 
     initializerelatedAnimeTableDataTable(animeId) {
