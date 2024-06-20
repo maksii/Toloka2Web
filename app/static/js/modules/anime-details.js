@@ -1,4 +1,4 @@
-// static/js/modules/releases.js
+// static/js/modules/anime-details.js
 import { DataTableManager } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
 
@@ -54,39 +54,9 @@ export default class AnimeDetails {
             ],
             order: [[6, 'des']],
             layout: {
-                topStart: {
-                    buttons: [
-                        {
-                            extend: 'colvis',
-                            postfixButtons: ['colvisRestore'],
-                            text: '<i class="bi bi-table"></i>',
-                            titleAttr: 'Column Visibility'
-                            
-                        },
-                        {
-                            extend: 'searchPanes',
-                            className: 'btn btn-secondary',
-                            config: {
-                                cascadePanes: true
-                            }
-                            
-                        },
-                        { 
-                            action: function ( e, dt, node, config ) {dt.ajax.reload();},                        
-                            text: '<i class="bi bi-arrow-clockwise"></i>',
-                            titleAttr: 'Refresh'
-                        },
-                        {
-                            extend: 'pageLength',
-                            className: 'btn btn-secondary'
-                        }
-                    ]
-                }
+                topStart: DataTableManager.returnDefaultLayout()
             },
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search records"
-            }
+            language: DataTableManager.returnDefaultLanguage()
         };
 
         this.relatedAnimeTable = DataTableManager.initializeDataTable('#relatedAnimeTable', config);
@@ -118,39 +88,9 @@ export default class AnimeDetails {
             ],
             order: [[3, 'des']],
             layout: {
-                topStart: {
-                    buttons: [
-                        {
-                            extend: 'colvis',
-                            postfixButtons: ['colvisRestore'],
-                            text: '<i class="bi bi-table"></i>',
-                            titleAttr: 'Column Visibility'
-                            
-                        },
-                        {
-                            extend: 'searchPanes',
-                            className: 'btn btn-secondary',
-                            config: {
-                                cascadePanes: true
-                            }
-                            
-                        },
-                        { 
-                            action: function ( e, dt, node, config ) {dt.ajax.reload();},                        
-                            text: '<i class="bi bi-arrow-clockwise"></i>',
-                            titleAttr: 'Refresh'
-                        },
-                        {
-                            extend: 'pageLength',
-                            className: 'btn btn-secondary'
-                        }
-                    ]
-                }
+                topStart: DataTableManager.returnDefaultLayout()
             },
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search records"
-            }
+            language: DataTableManager.returnDefaultLanguage()
         };
     
         this.studiosTable = DataTableManager.initializeDataTable('#studiosTable', config);

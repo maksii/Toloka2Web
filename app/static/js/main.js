@@ -1,3 +1,4 @@
+// static/js/main.js
 import Releases from './modules/releases.js';
 import Search from './modules/search.js';
 import Anime from './modules/anime.js';
@@ -5,8 +6,8 @@ import AnimeDetails from './modules/anime-details.js';
 import Studios from './modules/studios.js';
 import StudiosDetails from './modules/studios-details.js';
 import Settings from './modules/settings.js';
+import UpdateChecker from './common/update-checker.js';
 import { DataTableManager } from './common/datatable.js';
-
 class AppController {
     constructor() {
         this.modules = {
@@ -26,6 +27,9 @@ class AppController {
 
         const searchModule = new Search();
         searchModule.init();
+
+        const updateCheckerModule = new UpdateChecker();
+        updateCheckerModule.init();
 
         // Get the page identifier from the body's ID
         const pageId = document.body.id;

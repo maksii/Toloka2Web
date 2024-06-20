@@ -44,57 +44,30 @@ export default class Releases {
             responsive: true,
             columns: [
                 { data: 'codename', title: 'Codename', visible: true },
-                { data: 'torrent_name', title: 'Torrent Name', visible: true },
-                { data: 'adjusted_episode_number', title: 'Adjusted Episode Number', visible: false },
-                { data: 'download_dir', title: 'Download Dir', visible: false },
+                { data: 'torrent_name', title: 'Torrent Name', render: function(data, type, row) { return data.replace(/^"|"$/g, '');}, visible: true },
+                { data: 'season_number', title: 'Season Number' , visible: false},
                 { data: 'episode_index', title: 'Episode Index', visible: false },
+                { data: 'adjusted_episode_number', title: 'Adjusted Episode Number', visible: false },
+                { data: 'publish_date', title: 'Publish Date', render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true  },
+                { data: 'release_group', title: 'Release Group', visible: false },
+                { data: 'download_dir', title: 'Download Dir', visible: false },
                 { data: 'ext_name', title: 'Ext Name', visible: false },
                 { data: 'guid', title: 'GUID', render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to", data, data)}, visible: true },
                 { data: 'hash', title: 'Hash', visible: false },
                 { data: 'meta', title: 'Meta', visible: false },
-                { data: 'publish_date', title: 'Publish Date', visible: true  },
-                { data: 'release_group', title: 'Release Group', visible: false },
-                { data: 'season_number', title: 'Season Number' , visible: false},
                 { data: null, title: 'Actions', orderable: false, render: (data, type, row) => { return this.dataTableRenderActionButtons(data, type, row) }, visible: true }
             ],
-            order: [[9, 'des']],
+            order: [[5, 'des']],
             columnDefs: [
                 {
                     searchPanes: {
                         show: true
                     },
-                    targets: [1, 8, 10]
+                    targets: [1, 6, 8]
                 }
             ],
             layout: {
-                topStart: {
-                    buttons: [
-                        {
-                            extend: 'colvis',
-                            postfixButtons: ['colvisRestore'],
-                            text: '<i class="bi bi-table"></i>',
-                            titleAttr: 'Column Visibility'
-                            
-                        },
-                        {
-                            extend: 'searchPanes',
-                            className: 'btn btn-secondary',
-                            config: {
-                                cascadePanes: true
-                            }
-                            
-                        },
-                        { 
-                            action: function ( e, dt, node, config ) {dt.ajax.reload();},                        
-                            text: '<i class="bi bi-arrow-clockwise"></i>',
-                            titleAttr: 'Refresh'
-                        },
-                        {
-                            extend: 'pageLength',
-                            className: 'btn btn-secondary'
-                        }
-                    ]
-                },
+                topStart: DataTableManager.returnDefaultLayout(),
                 top1End:
                 {
                     buttons:[
@@ -111,10 +84,7 @@ export default class Releases {
                     ]
                 }
             },
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search records"
-            }
+            language: DataTableManager.returnDefaultLanguage()
         }
         this.table = DataTableManager.initializeDataTable('#dataTableTitles', config);
         this.tableBody = document.querySelector('#dataTableTitles tbody');

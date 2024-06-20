@@ -1,4 +1,4 @@
-// static/js/modules/releases.js
+// static/js/modules/setttings.js
 import { DataTableManager } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
 
@@ -10,6 +10,7 @@ export default class Settings {
     init() {
         this.initializeDataTable();
         this.addEventListeners();
+        this.checkVersions();
         //DataTableManager.onDataTableXhr(this.table);
     }
     settingsTableBody = document.querySelector('#settingsTable tbody');
@@ -57,23 +58,7 @@ export default class Settings {
             paging: false,
             order: [[1, 'des']],
             layout: {
-                topStart: {
-                    buttons: [
-                        {
-                            extend: 'searchPanes',
-                            className: 'btn btn-secondary',
-                            config: {
-                                cascadePanes: true
-                            }
-                            
-                        },
-                        { 
-                            action: function ( e, dt, node, config ) {dt.ajax.reload();},                        
-                            text: '<i class="bi bi-arrow-clockwise"></i>',
-                            titleAttr: 'Refresh'
-                        }
-                    ]
-                },
+                topStart: DataTableManager.returnDefaultLayout(),
                 top1End:
                 {
                     buttons:[
@@ -115,10 +100,7 @@ export default class Settings {
                     ]
                 }
             },
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search records"
-            }
+            language: DataTableManager.returnDefaultLanguage()
         };
         this.table = DataTableManager.initializeDataTable('#settingsTable', config);
         this.settingsTableBody = document.querySelector('#settingsTable tbody');
@@ -221,10 +203,6 @@ export default class Settings {
                 toastContainer.insertAdjacentHTML('beforeend', toastHTML);
                 const toastElement = new bootstrap.Toast(toastContainer.lastElementChild);
                 toastElement.show();
-    
-                toastContainer.lastElementChild.addEventListener('hidden.bs.toast', function () {
-                    localStorage.setItem('lastCheckedVersion', currentVersion);
-                });
             }
     
             function formatContent(data) {
