@@ -33,3 +33,13 @@ def get_by_external_id(id, source):
     url = f"https://api.themoviedb.org/3/find/{id}?api_key={api_key}&external_source={source}"
     response = requests.get(url)
     return response.json()
+
+def get_trending_by_type(type = 'tv', language = 'uk-UK'):
+    api_key = get_api_key('tmdb_api')
+    if not api_key:
+        return {'error': 'API key not found'}
+    
+    url = f"https://api.themoviedb.org/3/trending/{type}/day?api_key={api_key}&language={language}"
+    
+    response = requests.get(url)
+    return response.json()

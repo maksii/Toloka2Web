@@ -214,7 +214,7 @@ export default class Search {
                 { data: 'description', title: 'description', visible: false  },
                 { data: 'releaseDate', type: 'date', title: 'Release Date' },
             ],
-            order: [[0, 'des'],[7, 'des']],
+            order: [[8, 'des']],
             columnDefs: [
                 {
                     searchPanes: {

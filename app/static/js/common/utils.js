@@ -106,3 +106,47 @@ export class Utils {
     }
 
 }
+
+export class Backdrop {
+    constructor() {
+        this.apiUrl = '/api/tmdb/trending?type=tv';
+        this.storageKey = 'tmdbTrendingTV';
+        this.expiryTime = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+    }
+
+    fetchData() {
+        // Check if data exists and hasn't expired
+        const storedData = localStorage.getItem(this.storageKey);
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            const now = new Date().getTime();
+            if (now - parsedData.timestamp < this.expiryTime) {
+                return Promise.resolve(parsedData.data);
+            }
+        }
+
+        // Fetch new data if not stored or expired
+        return fetch(this.apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const dataToStore = {
+                    timestamp: new Date().getTime(),
+                    data: data
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(dataToStore));
+                return data;
+            });
+    }
+
+    setRandomBackdrop() {
+        this.fetchData().then(data => {
+            const results = data.results;
+            const randomIndex = Math.floor(Math.random() * results.length);
+            const backdropPath = results[randomIndex].backdrop_path;
+            const imageUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
+            //const fullUrl = `/image/?url=${encodeURIComponent(imageUrl)}`;
+
+            document.body.style.backgroundImage = `url('${imageUrl}')`;
+        }).catch(error => console.error('Error setting the background image:', error));
+    }
+}

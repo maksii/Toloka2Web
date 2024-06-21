@@ -9,6 +9,7 @@ import StudiosDetails from './modules/studios-details.js';
 import Settings from './modules/settings.js';
 import UpdateChecker from './common/update-checker.js';
 import { DataTableManager } from './common/datatable.js';
+import { Backdrop } from './common/utils.js';
 class AppController {
     constructor() {
         this.modules = {
@@ -25,6 +26,12 @@ class AppController {
     init() {
         DataTableManager.disableAlertErrors();
         DataTableManager.handleBootstrapTabs();
+
+        // Usage
+        const backdrop = new Backdrop();
+        // To fetch and store data or update the background image
+        backdrop.fetchData();
+        backdrop.setRandomBackdrop();
 
         const searchModule = new Search();
         searchModule.init();

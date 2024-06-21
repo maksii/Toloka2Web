@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
-from app.services.tmdb_service import get_media_detail, search_media
+from app.services.tmdb_service import get_media_detail, get_trending_by_type, search_media
 
 tmdb_bp = Blueprint('tmdb_bp', __name__)
 
@@ -15,3 +15,8 @@ def search():
 def get_detail(id):
     query = request.args.get('type')
     return jsonify(get_media_detail(id, query))
+
+@tmdb_bp.route('/api/tmdb/trending', methods=['GET'])
+def get_trending():
+    query = request.args.get('type')
+    return jsonify(get_trending_by_type(query))

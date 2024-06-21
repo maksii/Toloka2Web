@@ -108,3 +108,19 @@ main > .container-fluid {
 }
 
 tr[data-name] td {color: var(--bs-warning);padding-left: 5%;}
+
+body {
+  background: url('') no-repeat center center fixed; 
+  background-size: cover;
+  position: relative;
+}
+
+.backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8); /* Adjust the alpha value for required transparency */
+  z-index: -1;
+}

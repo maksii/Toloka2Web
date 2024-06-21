@@ -34,6 +34,7 @@
     {% block additional_head %}{% endblock %}
 </head>
 <body class="d-flex flex-column h-100" id="{% block body_id %}{% endblock %}">
+    <div class="backdrop"></div>
     <!-- Theme switcher, SVG definitions, and navbar go here -->
     {% include 'partials/theme_switcher.html' %}
     {% include 'partials/navbar.html' %}

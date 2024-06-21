@@ -276,11 +276,11 @@ def multi_search(query):
             'source': 'TMDB',
             'title': safe_fetch(item, ['name']) if safe_fetch(item, ['name']) != '' else safe_fetch(item, ['title']),
             'id': item_id,
-            'status': 'Unknown',
+            'status': safe_fetch(details, ['status']) if safe_fetch(details, ['status']) != '' else 'Unknown',
             'mediaType': media_type,
             'image': f"https://image.tmdb.org/t/p/w500{safe_fetch(item, ['poster_path'])}",
             'description': safe_fetch(item, ['overview']),
-            'releaseDate': safe_fetch(item, ['first_air_date']),
+            'releaseDate': safe_fetch(item, ['first_air_date']) if safe_fetch(item, ['first_air_date']) !='' else safe_fetch(item, ['release_date']),
             'alternative': alternative
         })
 
