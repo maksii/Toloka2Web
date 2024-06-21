@@ -25,13 +25,13 @@ Here is the roadmap for the project, outlining both completed and planned develo
 - [x] **Docker** - Simplify deployment and updates.
 - [x] **Search, Add, Download Results from Toloka** - Implemented functionality to search, add, and download content directly from Toloka.
 - [x] **Add Assistant to Adjust Naming** - Developed an assistant to help with file naming conventions, ensuring consistency across downloads.
-- [x] **Studios and Anime Local DB Preview** - Created a local database for studios and anime to allow quick previews and access.
-- [ ] **Jobs Schedule** - Plan to implement a scheduling system for automated tasks and jobs within the application.
+- [x] **Studios and Anime Local DB Preview** - DB based on streaming sites auto-downloaded on first application start
+- [x] **Jobs Schedule** - Cron job inside docker config.
 - [ ] **Integration with Stream2MediaServer to Replicate Logic for Online Cinemas** - Future plans to integrate with Stream2MediaServer to handle content from online cinemas similarly.
 - [ ] **Improved Parsing and Result Linking** - Aiming to enhance the parsing algorithms and result linking for better accuracy and user experience.
 - [ ] **Migration to Single DB** - Plans to consolidate multiple databases into a single, more efficient database system.
-- [ ] **MAL, TVDB, TheMovieDB Integration to Fetch Info** - Intend to integrate with external APIs like MAL (MyAnimeTable), TVDB (The TV Database), and TheMovieDB to fetch and display additional information.
-- [ ] **UI Improvements** - Scheduled improvements on the user interface to enhance usability and aesthetics.
+- [x] **MAL, TheMovieDB Integration to Fetch Info** - MAL and TheMovieDB results in multi-search
+- [ ] **UI Improvements** - improvements on the user interface to enhance usability and aesthetics.
 
 
 ## Розгортання за допомогою Docker
@@ -46,55 +46,30 @@ tags:
 
 copy configs and db into /path/to/config/
 
-### Використання Docker
+### Використання Docker(Portainer)
 
-1. **Завантаження образу Docker**
-   Завантажте готовий образ з Docker Hub за допомогою наступної команди:
-
-   ```bash
-   docker pull maksii/toloka2web:latest
-   ```
-
-
-2. **Запуск контейнера**
-   Використовуйте наступну команду для запуску контейнера:
-
-   ```bash
-   docker run -d -p 5000:5000 -v /path/to/your/config:/app/data --name toloka maksii/toloka2web:latest
-   ```
-
-   Замініть `/path/to/your/config` на шлях до вашої папки конфігурації.
-
-### Використання Portainer
-
-Якщо ви використовуєте Portainer для управління контейнерами Docker, ви можете легко розгорнути `Toloka2Web` як стек:
-
-1. **Логін в Portainer**
-   Увійдіть у вашу панель керування Portainer .
-
-2. **Створення стека**
-   Перейдіть до розділу "Stacks" і натисніть "Add Stack".
-
-3. **Конфігурація стека**
-   Дайте ім'я вашому стеку і вставте наступний YAML конфіг у поле "Web editor":
+**Конфігурація стека**
 
    ```yaml
-   version: '3.8'
-   services:
-     Toloka2Web:
-       image: maksii/toloka2web:latest
-       ports:
-         - "5000:5000"
-       volumes:
-         - /path/to/your/config:/app/data
-       restart: unless-stopped
+version: '3.8'
+services:
+  toloka2web:
+    image: maksii/toloka2web:latest
+    container_name: toloka2web
+    volumes:
+      - /path/to/your/config:/app/data
+       - /path/to/your/downloads:/path/to/your/downloads
+    environment:
+      - PORT=80 
+      - PUID=1024
+      - PGID=100
+      - CRON_SCHEDULE=0 */2 * * *
+      - TZ=Europe/Kiev
+    restart: unless-stopped
+    user: "${PUID}:${PGID}"
    ```
 
    Замініть `/path/to/your/config` на шлях до вашої папки конфігурації.
-
-4. **Розгортання стека**
-   Натисніть "Deploy the stack" для запуску вашого додатку.
-
 
 ## Disclaimer
 
