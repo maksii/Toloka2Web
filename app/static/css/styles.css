@@ -106,3 +106,5 @@ main > .container-fluid {
   max-height: 300px; 
   overflow-y: auto; 
 }
+
+tr[data-name] td {color: var(--bs-warning);padding-left: 5%;}

@@ -255,8 +255,11 @@ def multi_search(query):
 
     # Process TMDB data
     for item in tmdb_data.get('results', [])[:4]:
+        item_id = item['id']
+        media_type = item.get('media_type', 'Unknown')
         try:
-            details = get_media_detail(item['id'], f"type={item['media_type']}")
+            
+            details = get_media_detail(item_id, media_type)
         except Exception:
             details = {}
 
@@ -271,10 +274,10 @@ def multi_search(query):
         
         combined_data.append({
             'source': 'TMDB',
-            'title': safe_fetch(item, ['name']),
-            'id': item['id'],
+            'title': safe_fetch(item, ['name']) if safe_fetch(item, ['name']) != '' else safe_fetch(item, ['title']),
+            'id': item_id,
             'status': 'Unknown',
-            'mediaType': item.get('media_type', 'Unknown'),
+            'mediaType': media_type,
             'image': f"https://image.tmdb.org/t/p/w500{safe_fetch(item, ['poster_path'])}",
             'description': safe_fetch(item, ['overview']),
             'releaseDate': safe_fetch(item, ['first_air_date']),
