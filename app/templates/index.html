@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
+{% block body_id %}releases-page{% endblock %}
+
 {% block additional_head %}
-<script src="{{ url_for('static', filename='/js/titles.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/toloka.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -17,61 +18,6 @@
                 <div class="row">
                     <!-- Section 1 -->
                     <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Add by toloka URL</h5>
-                                <form id="releaseForm">
-                                    <div class="input-group mb-3">
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="url" name="url" class="form-control" id="tolokaUrl" placeholder="https://toloka.to/t678205" required>
-                                            <label for="tolokaUrl">URL</label>
-                                        </div>
-                                        <button class="btn btn-outline-secondary" id="urlButton" type="button">
-                                            <i class="bi bi bi-file-binary"></i>
-                                        </button>
-                                    </div>
-                                    <div class="input-group mb-3 d-none" id="filenameIndexGroup">
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="text" class="form-control" id="filenameIndex" placeholder="[Inari Dub] Arknights Touin Kiro S01 E09 (1080) (UA).mkv" pattern=".*\..+">
-                                            <label for="filenameIndex">Index Extractor</label>
-                                            <div id="numberList" class="list-group"></div>
-                                        </div>
-                                    </div>
-                                    <div class="input-group mb-3">
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="text" name="title" class="form-control" id="releaseTitle" placeholder="Arknights (2022)" required>
-                                            <label for="releaseTitle">Title</label>
-                                        </div>
-                                        <button class="btn btn-outline-secondary" id="cutButton" type="button">
-                                            <i class="bi bi-scissors"></i>
-                                        </button>
-                                    </div>
-                                    <div class="row g-2">
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="number" name="season" class="form-control" id="season" placeholder="2" min="0" required>
-                                                <label for="season">Season</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="number" name="index" class="form-control" id="index" placeholder="2" min="1" required>
-                                                <label for="index">Index</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md">
-                                            <div class="form-floating">
-                                                <input type="number" name="correction" class="form-control" id="correction" placeholder="-8">
-                                                <label for="correction">Correction</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <button type="submit" class="btn btn-primary full-width-button" id="submitButton">Submit</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
                     </div>
                     </div>
             </div>
@@ -96,29 +42,5 @@
     
     </div>
     
-    <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasTopSearchResults" aria-labelledby="offcanvasTopSearchResultsLabel" data-bs-backdrop="static" style="height: 90vh;"> 
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasTopSearchResultsLabel">Search Results</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <table id="torrentTable" class="table table-striped" style="width:100%; display:none;"></table>
-        </div>
-      </div>
-      <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasOperationResults" aria-labelledby="offcanvasOperationResultsLabel" data-bs-backdrop="static" style="height: 90vh;"> 
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasOperationResultsLabel">Search Results</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div id="offcanvasBody"></div>
-        </div>
-      </div>
-    
-      <div aria-live="polite" aria-atomic="true" class="position-relative">
-        <div class="toast-container position-fixed bottom-0 end-0 p-3">
-            <!-- Toasts will appear here -->
-        </div>
-    </div>
     </main>
 {% endblock %}

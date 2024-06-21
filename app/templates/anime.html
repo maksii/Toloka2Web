@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
-
+{% block body_id %}anime-page{% endblock %}
 {% block additional_head %}
-
-<script src="{{ url_for('static', filename='/js/anime.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% endblock %}
 
 {% block content %}

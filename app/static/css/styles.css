@@ -101,3 +101,39 @@ main > .container-fluid {
 .card-body {
   min-height: 190px;
 }
+
+.toast-body {
+  max-height: 300px; 
+  overflow-y: auto; 
+}
+
+tr[data-name] td {color: var(--bs-warning);padding-left: 5%;}
+
+body {
+  background: url('') no-repeat center center fixed; 
+  background-size: cover;
+  position: relative;
+}
+
+.backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8); /* Adjust the alpha value for required transparency */
+  z-index: -1;
+}
+
+.bg-dark {    --bs-bg-opacity: 0.6;}
+
+.bg-body-tertiary {--bs-bg-opacity: 0.6;}
+
+:root, [data-bs-theme=light] {
+--bs-body-bg: #fff9;
+--bs-secondary-color: rgb(98 126 155 / 75%);
+}
+
+[data-bs-theme=dark] {
+  --bs-body-bg: #212529bd;
+}

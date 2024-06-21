@@ -11,6 +11,7 @@ from app.models.user import User
 from app.app import db 
 
 from ..services.services import (
+    multi_search,
     proxy_image_logic
 )
 
@@ -29,6 +30,12 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
     def proxy_image():
         url = request.args.get('url')
         return proxy_image_logic(url)
+    
+    @app.route('/api/search')
+    @login_required
+    def search_aggregated():
+        query = request.args.get('query')
+        return multi_search(query)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -94,3 +101,10 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         # Assuming the User model has a list of roles, update the identity with the roles that the user provides
         if hasattr(current_user, 'roles'):
             identity.provides.add(RoleNeed(current_user.roles))
+    
+    #As user can use remember me, just a hacki fix to be sure, that hi identity updated before each request
+    #require some testing overtime to see if it will change behavior
+    @app.before_request
+    def before_request():
+        if current_user.is_authenticated:
+            identity_changed.send(current_app._get_current_object(), identity=Identity(current_user.id))

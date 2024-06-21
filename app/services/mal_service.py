@@ -10,8 +10,8 @@ def search_anime(query):
     api_key = get_api_key('mal_api')
     if not api_key:
         return {'error': 'API key not found'}
-    url = f"https://api.myanimelist.net/v2/anime?q={query}"
-    headers = {'Authorization': f'Bearer {api_key}'}
+    url = f"https://api.myanimelist.net/v2/anime?q={query}&limit=10&fields=id,title,main_picture,alternative_titles,media_type,status,start_date,end_date"
+    headers = {'X-MAL-CLIENT-ID': f'{api_key}'}
     response = requests.get(url, headers=headers)
     return response.json()
 
@@ -19,7 +19,7 @@ def get_anime_detail(anime_id):
     api_key = get_api_key('mal_api')
     if not api_key:
         return {'error': 'API key not found'}
-    url = f"https://api.myanimelist.net/v2/anime/{anime_id}"
-    headers = {'Authorization': f'Bearer {api_key}'}
+    url = f"https://api.myanimelist.net/v2/anime/{anime_id}?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,rank,popularity,status,num_episodes,rating,pictures,background,related_anime"
+    headers = {'X-MAL-CLIENT-ID': f'{api_key}'}
     response = requests.get(url, headers=headers)
     return response.json()
