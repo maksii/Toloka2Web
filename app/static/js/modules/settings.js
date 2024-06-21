@@ -1,5 +1,5 @@
 // static/js/modules/setttings.js
-import { DataTableManager } from '../common/datatable.js';
+import { DataTableManager, EventDelegator } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
 
 export default class Settings {
@@ -14,6 +14,7 @@ export default class Settings {
         //DataTableManager.onDataTableXhr(this.table);
     }
     settingsTableBody = document.querySelector('#settingsTable tbody');
+    collapsedGroups = {};
 
     initializeDataTable() {
         const config = {
@@ -28,23 +29,23 @@ export default class Settings {
                 { data: "id", title: 'ID', visible: true },
                 { data: 'section', title: 'Section', visible: true, render: function(data, type, row) {
                     if (type === 'display') {
-                        return `<input type="text" class="form-control" value="${data}">`;
+                        return DataTableManager.dataTableRenderAsInput(data);
                     }
                     return data;
                 } },
                 { data: 'key', title: 'Key', visible: true, render: function(data, type, row) {
                     if (type === 'display') {
-                        return `<input type="text" class="form-control" value="${data}">`;
+                        return DataTableManager.dataTableRenderAsInput(data);
                     }
                     return data;
                 } },
                 { data: 'value', title: 'Value', visible: true, render: function(data, type, row) {
                     if (type === 'display') {
-                        return `<input type="text" class="form-control" value="${data}">`;
+                        return DataTableManager.dataTableRenderAsInput(data);
                     }
                     return data;
                 } },
-                { data: null, defaultContent: `<button class="save btn btn-success">Save</button>` }
+                { data: null, defaultContent: Utils.renderActionButton("action-save","btn-outline-warning", "", "bi-pencil-square", "Save") }
             
             ],
             columnDefs: [
@@ -53,7 +54,22 @@ export default class Settings {
                 { targets: [4], searchable: false, orderable: false, className: "align-middle text-center" }
             ],
             rowGroup: {
-                dataSrc: 'section'
+                dataSrc: 'section',
+                startRender: (rows, group, level) => {
+                    var collapsed = !!this.collapsedGroups[group];
+            
+                    rows.nodes().each(function (r) {
+                      r.style.display = 'none';
+                      if (collapsed) {
+                        r.style.display = '';
+                      }});
+            
+                    // Add category name to the <tr>. NOTE: Hardcoded colspan
+                    return $('<tr/>')
+                      .append('<td class="action-collapse" colspan="8">' + group + ' (' + rows.count() + ')</td>')
+                      .attr('data-name', group)
+                      .toggleClass('collapsed', collapsed);
+                  }
             },
             paging: false,
             order: [[1, 'des']],
@@ -65,13 +81,13 @@ export default class Settings {
                         {
                             text: 'Add',
                             className: 'btn btn-primary',
-                            action: function () {
+                            action: () => {
                                 var newRowId = 1;
-                                var data = table.data().toArray();
+                                var data = this.table.data().toArray();
                                 if (data.length > 0) {
                                     newRowId = Math.max.apply(Math, data.map(function(o) { return o.id; })) + 1;
                                 }
-                                table.row.add({
+                                this.table.row.add({
                                     id: newRowId,
                                     section: '',
                                     key: '',
@@ -79,7 +95,7 @@ export default class Settings {
                                 }).draw(false);
                         
                                 // Focus on the first input of the new row
-                                var newRow = table.row(':last').node();
+                                var newRow = this.table.row(':last').node();
                                 newRow.querySelector('input:first-child').focus();
                             }
                         },
@@ -107,35 +123,33 @@ export default class Settings {
     }
 
     addEventListeners() {
-        this.settingsTableBody.addEventListener('click', event => this.handleTableClick(event));
-        // Additional event listeners...
+        new EventDelegator('#settingsTable tbody', this.handleAction.bind(this));
     }
 
-    handleTableClick(event) {
-        //'button.save'
-        let target = event.target;
-        while (target && !target.classList.contains('button.save')) {
-            if (target === event.currentTarget) return;
-            target = target.parentNode;
+    handleAction(actionName, element) {
+        const actionHandlers = {
+          save: () => this.saveSettingAction(element),
+          collapse: () => this.groupToggle(element),
+        };
+    
+        const actionFunction = actionHandlers[actionName];
+        if (actionFunction) {
+          actionFunction();
+        } else {
+          console.error(`No handler defined for action: ${actionName}`);
         }
-        if (target && target.classList.contains('button.save')) {
-            this.updateRelease(target);
-        }
+      }
 
-        //reset 
-        const row = table.row(this.closest('tr'));
-        var rowData = row.data();
-        var originalData = { id: rowData.id, name: rowData.name, age: rowData.age, country: rowData.country }; // Assuming original data can be reconstructed or fetched
-
-        const inputs = row.node().querySelectorAll('input');
-        inputs.forEach(input => {
-            input.value = originalData[input.getAttribute('name')];
-        });
-    }
-
-    saveSettingAction(targe)
+    groupToggle(element)
     {
-        const row = table.row(this.closest('tr'));
+        var name = element.parentElement.getAttribute('data-name');
+        this.collapsedGroups[name] = !this.collapsedGroups[name];
+        this.table.draw(false);
+    }
+
+    saveSettingAction(target)
+    {
+        const row = this.table.row(target.closest('tr'));
         var rowData = row.data();
 
         console.log('Original data', rowData);
@@ -146,31 +160,30 @@ export default class Settings {
         updatedData.key = inputs[1].value;
         updatedData.value = inputs[2].value;
 
-        let target = event.target;
-            target.disabled = true;
-            target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        target.disabled = true;
+        target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
 
-            let formData = new FormData();
-            formData.append('id', rowData.id);
-            formData.append('section', updatedData.section);
-            formData.append('key', updatedData.key);
-            formData.append('value', updatedData.value);
+        let formData = new FormData();
+        formData.append('id', rowData.id);
+        formData.append('section', updatedData.section);
+        formData.append('key', updatedData.key);
+        formData.append('value', updatedData.value);
     
-            fetch(`/api/settings/${rowData.id}`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(detail => {
-                target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
-                target.disabled = false;
-                table.ajax.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
-                target.disabled = false;
-            });
+        fetch(`/api/settings/${rowData.id}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(detail => {
+            target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+            target.disabled = false;
+            this.table.ajax.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+            target.disabled = false;
+        });
         
     }
 

@@ -8,6 +8,10 @@ export class DataTableManager {
         return `<a href="${host}/${url}" target="_blank">${text}</a>`;
     }
 
+    static dataTableRenderAsInput(value) {
+        return `<input type="text" class="form-control" value="${value}">`;
+    }
+
     static refreshTable(table) {
         table.ajax.reload();
     }
