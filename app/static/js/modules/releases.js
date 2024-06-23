@@ -1,6 +1,7 @@
 // static/js/modules/releases.js
 import { DataTableManager, EventDelegator } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
+import translations from '../l18n/en.js';
 
 export default class Releases {
     constructor() {
@@ -37,19 +38,19 @@ export default class Releases {
             },
             responsive: true,
             columns: [
-                { data: 'codename', title: 'Codename', visible: true },
-                { data: 'torrent_name', title: 'Torrent Name', render: function(data, type, row) { return data.replace(/^"|"$/g, '');}, visible: true },
-                { data: 'season_number', title: 'Season Number' , visible: false},
-                { data: 'episode_index', title: 'Episode Index', visible: false },
-                { data: 'adjusted_episode_number', title: 'Adjusted Episode Number', visible: false },
-                { data: 'publish_date', title: 'Publish Date', render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true  },
-                { data: 'release_group', title: 'Release Group', visible: false },
-                { data: 'download_dir', title: 'Download Dir', visible: false },
-                { data: 'ext_name', title: 'Ext Name', visible: false },
-                { data: 'guid', title: 'GUID', render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to", data, data)}, visible: true },
-                { data: 'hash', title: 'Hash', visible: false },
-                { data: 'meta', title: 'Meta', visible: false },
-                { data: null, title: 'Actions', orderable: false, render: (data, type, row) => { return this.dataTableRenderActionButtons(data, type, row) }, visible: true }
+                { data: 'codename', title: translations.tableHeaders.releases.codename, visible: true },
+                { data: 'torrent_name', title: translations.tableHeaders.releases.torrent_name, render: function(data, type, row) { return data.replace(/^"|"$/g, '');}, visible: true },
+                { data: 'season_number', title: translations.tableHeaders.releases.season_number , visible: false},
+                { data: 'episode_index', title: translations.tableHeaders.releases.episode_index, visible: false },
+                { data: 'adjusted_episode_number', title: translations.tableHeaders.releases.adjusted_episode_number, visible: false },
+                { data: 'publish_date', title: translations.tableHeaders.releases.publish_date, render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true  },
+                { data: 'release_group', title: translations.tableHeaders.releases.release_group, visible: false },
+                { data: 'download_dir', title: translations.tableHeaders.releases.download_dir, visible: false },
+                { data: 'ext_name', title: translations.tableHeaders.releases.ext_name, visible: false },
+                { data: 'guid', title: translations.tableHeaders.releases.guid, render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to", data, data)}, visible: true },
+                { data: 'hash', title: translations.tableHeaders.releases.hash, visible: false },
+                { data: 'meta', title: translations.tableHeaders.releases.meta, visible: false },
+                { data: null, title: translations.tableHeaders.releases.actions, orderable: false, render: (data, type, row) => { return this.dataTableRenderActionButtons(data, type, row) }, visible: true }
             ],
             order: [[5, 'des']],
             columnDefs: [
@@ -66,12 +67,12 @@ export default class Releases {
                 {
                     buttons:[
                         {
-                            text: 'Add',
+                            text: translations.buttons.releaseAddButton,
                             className: 'btn btn-primary',
                             action: () => { Utils.addRelease(); }
                         },
                         {
-                            text: 'Update All',
+                            text: translations.buttons.releaseUpdateAllButton,
                             className: 'btn btn-primary',
                             action: ( e, dt, node, config) => { this.dataTableUpdateAllAction(e, dt, node, config)}
                         }
@@ -85,9 +86,9 @@ export default class Releases {
     }
 
     dataTableRenderActionButtons(data, type, row) {
-        let editButton = Utils.renderActionButton("action-edit","btn-outline-warning", "disabled", "bi-pencil-square", "Edit");
-        let deleteButton = Utils.renderActionButton("action-delete","btn-outline-danger", "disabled", "bi-trash", "Delete");
-        let updateButton = Utils.renderActionButton("action-update","btn-outline-primary", "", "bi-arrow-clockwise", "Update");
+        let editButton = Utils.renderActionButton("action-edit","btn-outline-warning", "disabled", "bi-pencil-square", translations.buttons.releaseEditButton);
+        let deleteButton = Utils.renderActionButton("action-delete","btn-outline-danger", "disabled", "bi-trash", translations.buttons.releaseDeleteButton);
+        let updateButton = Utils.renderActionButton("action-update","btn-outline-primary", "", "bi-arrow-clockwise", translations.buttons.releaseUpdateButton);
         return `${editButton}
         ${deleteButton}
         ${updateButton}`;
@@ -101,7 +102,7 @@ export default class Releases {
         fetch('/api/releases/', { method: 'POST' })
         .then(response => response.json())
         .then(result => {
-            node[0].innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update All';
+            node[0].innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${translations.buttons.releaseUpdateAllButton}`;
             node[0].disabled = false;
 
             const bsOperationOffcanvas = new bootstrap.Offcanvas('#offcanvasOperationResults');
@@ -146,7 +147,7 @@ export default class Releases {
         })
         .then(response => response.json())
         .then(detail => {
-            target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+            target.innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${translations.buttons.releaseUpdateButton}`;
             target.disabled = false;
 
             const bsOperationOffcanvas = new bootstrap.Offcanvas('#offcanvasOperationResults');
@@ -156,7 +157,7 @@ export default class Releases {
         })
         .catch(error => {
             console.error('Error:', error);
-            target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+            target.innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${translations.buttons.releaseUpdateButton}`;
             target.disabled = false;
         });
     }

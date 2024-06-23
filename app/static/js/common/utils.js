@@ -1,4 +1,5 @@
 // static/js/common/utils.js
+import translations from '../l18n/en.js';
 export class Utils {
     static async fetchData(url, options = {}) {
         try {
@@ -59,7 +60,7 @@ export class Utils {
                     ${response.torrent_references ? generateAccordion('torrentAccordion', 'Torrent References', response.torrent_references) : ''}
                     ${response.operation_logs ? generateAccordion('logsAccordion', 'Operation Logs', response.operation_logs) : ''}
                     <hr>
-                    <p class="mb-0">Create an issue on github if something wrong.</p>
+                    <p class="mb-0">${translations.labels.operationStatusGithub}</p>
                 </div>
             </div>
         `;
@@ -79,7 +80,7 @@ export class Utils {
 
     static renderButtonSpinner()
     {
-        return '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        return `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${translations.labels.buttonsLoadingText}`;
     }
 
     static renderActionButton(action, buttonClass, buttonState, buttonIcon, buttonText)

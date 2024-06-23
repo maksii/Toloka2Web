@@ -1,6 +1,7 @@
 // static/js/modules/search.js
 import { DataTableManager, EventDelegator } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
+import translations from '../l18n/en.js';
 
 export default class Search {
     constructor() {
@@ -84,7 +85,7 @@ export default class Search {
                 },
                 {
                     className: 'details-control',
-                    title: 'Expand',
+                    title: translations.buttons.expandButton,
                     orderable: false,
                     data: null,
                     defaultContent: '',
@@ -94,20 +95,20 @@ export default class Search {
                     width: "15px",
                     responsivePriority: 2
                 },
-                { data: "forum", title: 'Forum', visible: true },
-                { data: "name", type: 'html', title: 'Title', render: (data, type, row) => { return this.renderTorrentTitle(data, type, row)}, visible: true },
-                { data: "author", title: 'Author', visible: true },
-                { data: "date", type: 'date',  title: 'Last Updated', render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true },
-                { data: "answers", title: 'answers', visible: false },
-                { data: "forum_url", title: 'forum_url', visible: false },
-                { data: "leechers", title: 'Leechers', visible: false },
-                { data: "seeders", title: 'Seeders', visible: false },
-                { data: "size", title: 'size', visible: false },
-                { data: "status", title: 'status', visible: false },
-                { data: "torrent_url", title: 'torrent_url', visible: false },
-                { data: "url", title: 'url', render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to/", data, data);}, visible: false },
-                { data: "verify", title: 'verify', visible: false },
-                { data: null, title: 'Actions', orderable: false, render: (data, type, row) =>  { return this.tolokaDataTableRenderActionButtons();}, visible: true }
+                { data: "forum", title: translations.tableHeaders.toloka.forum, visible: true },
+                { data: "name", type: 'html', title: translations.tableHeaders.toloka.name, render: (data, type, row) => { return this.renderTorrentTitle(data, type, row)}, visible: true },
+                { data: "author", title: translations.tableHeaders.toloka.author, visible: true },
+                { data: "date", type: 'date',  title: translations.tableHeaders.toloka.date, render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true },
+                { data: "answers", title: translations.tableHeaders.toloka.answers, visible: false },
+                { data: "forum_url", title: translations.tableHeaders.toloka.forum_url, visible: false },
+                { data: "leechers", title: translations.tableHeaders.toloka.leechers, visible: false },
+                { data: "seeders", title: translations.tableHeaders.toloka.seeders, visible: false },
+                { data: "size", title: translations.tableHeaders.toloka.size, visible: false },
+                { data: "status", title: translations.tableHeaders.toloka.status, visible: false },
+                { data: "torrent_url", title: translations.tableHeaders.toloka.torrent_url, visible: false },
+                { data: "url", title: translations.tableHeaders.toloka.url, render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to/", data, data);}, visible: false },
+                { data: "verify", title: translations.tableHeaders.toloka.verify, visible: false },
+                { data: null, title: translations.tableHeaders.toloka.actions, orderable: false, render: (data, type, row) =>  { return this.tolokaDataTableRenderActionButtons();}, visible: true }
             ],
             order: [[5, 'des']],
             columnDefs: [
@@ -177,15 +178,15 @@ export default class Search {
             },
             responsive: true,
             columns: [
-                { data: 'source', title: 'Source' },
-                { data: 'image', title: 'Image', render: function(data, type, row) {
-                    return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : 'No image available';
+                { data: 'source', title: translations.tableHeaders.multi.source },
+                { data: 'image', title: translations.tableHeaders.multi.image, render: function(data, type, row) {
+                    return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : `${translations.labels.noImageAvailable}`;
                 }},
-                { data: 'title', title: 'Title' },
-                { data: 'alternative', title: 'alternative' },
+                { data: 'title', title: translations.tableHeaders.multi.title },
+                { data: 'alternative', title: translations.tableHeaders.multi.alternative },
                 {
                     data: 'id',
-                    title: 'ID',
+                    title: translations.tableHeaders.multi.id,
                     type: 'html',
                     render: function(data, type, row) {
                         let url;
@@ -209,10 +210,10 @@ export default class Search {
                         return DataTableManager.dataTableRenderAsUrl(url,"",data);
                     }
                 },
-                { data: 'status', title: 'Status' },
-                { data: 'mediaType', title: 'Media Type' },
-                { data: 'description', title: 'description', visible: false  },
-                { data: 'releaseDate', type: 'date', title: 'Release Date' },
+                { data: 'status', title: translations.tableHeaders.multi.status },
+                { data: 'mediaType', title: translations.tableHeaders.multi.mediaType},
+                { data: 'description', title: translations.tableHeaders.multi.description, visible: false  },
+                { data: 'releaseDate', type: 'date', title: translations.tableHeaders.multi.releaseDate },
             ],
             order: [[8, 'des']],
             columnDefs: [
@@ -232,9 +233,9 @@ export default class Search {
     }
 
     tolokaDataTableRenderActionButtons(data, type, row) {
-        let downloadButton = Utils.renderActionButton("action-download","btn-outline-warning", "", "bi-download", "Direct Download");
-        let addButton = Utils.renderActionButton("action-add","btn-outline-warning", "", "bi-cloud-download", "Add to client");
-        let copyButton = Utils.renderActionButton("action-copy","btn-outline-primary", "", "bi-chevron-double-left", "Copy Values");
+        let downloadButton = Utils.renderActionButton("action-download","btn-outline-warning", "", "bi-download", translations.buttons.tolokaDownloadButton);
+        let addButton = Utils.renderActionButton("action-add","btn-outline-warning", "", "bi-cloud-download", translations.buttons.tolokaAddButton);
+        let copyButton = Utils.renderActionButton("action-copy","btn-outline-primary", "", "bi-chevron-double-left", translations.buttons.tolokaCopyButton);
         return `${downloadButton}
         ${addButton}
         ${copyButton}`;
@@ -267,7 +268,7 @@ export default class Search {
                 },
                 {
                     className: 'details-control',
-                    title: 'Expand',
+                    title: translations.buttons.expandButton,
                     orderable: false,
                     data: null,
                     defaultContent: '',
@@ -277,13 +278,13 @@ export default class Search {
                     width: "15px",
                     responsivePriority: 2
                 },
-                { data: "provider", title: 'Provider', visible: true },
-                { data: 'image_url', title: 'Image', render: function(data, type, row) {
+                { data: "provider", title: translations.tableHeaders.stream.provider, visible: true },
+                { data: 'image_url', title:  translations.tableHeaders.stream.image_url, render: function(data, type, row) {
                     return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : 'No image available';
                 }},
-                { data: "title", title: 'Title', visible: true },
-                { data: "title_eng", title: 'Title ENG', visible: true },
-                { data: "link", title: 'Link', render: function(data, type, row) {
+                { data: "title", title:  translations.tableHeaders.stream.title, visible: true },
+                { data: "title_eng", title:  translations.tableHeaders.stream.title_eng, visible: true },
+                { data: "link", title:  translations.tableHeaders.stream.link, render: function(data, type, row) {
                     return DataTableManager.dataTableRenderAsUrl(data,"",data);
                 }, visible: true },
             ],

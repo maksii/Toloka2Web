@@ -1,6 +1,7 @@
 // static/js/modules/setttings.js
 import { DataTableManager, EventDelegator } from '../common/datatable.js';
 import { Utils } from '../common/utils.js';
+import translations from '../l18n/en.js';
 
 export default class Settings {
     constructor() {
@@ -26,26 +27,26 @@ export default class Settings {
             },
             responsive: true,
             columns: [
-                { data: "id", title: 'ID', visible: true },
-                { data: 'section', title: 'Section', visible: true, render: function(data, type, row) {
+                { data: "id", title: translations.tableHeaders.settings.id, visible: true },
+                { data: 'section', title: translations.tableHeaders.settings.section, visible: true, render: function(data, type, row) {
                     if (type === 'display') {
                         return DataTableManager.dataTableRenderAsInput(data);
                     }
                     return data;
                 } },
-                { data: 'key', title: 'Key', visible: true, render: function(data, type, row) {
+                { data: 'key', title: translations.tableHeaders.settings.key, visible: true, render: function(data, type, row) {
                     if (type === 'display') {
                         return DataTableManager.dataTableRenderAsInput(data);
                     }
                     return data;
                 } },
-                { data: 'value', title: 'Value', visible: true, render: function(data, type, row) {
+                { data: 'value', title: translations.tableHeaders.settings.value, visible: true, render: function(data, type, row) {
                     if (type === 'display') {
                         return DataTableManager.dataTableRenderAsInput(data);
                     }
                     return data;
                 } },
-                { data: null, defaultContent: Utils.renderActionButton("action-save","btn-outline-warning", "", "bi-pencil-square", "Save") }
+                { data: null, defaultContent: Utils.renderActionButton("action-save","btn-outline-warning", "", "bi-pencil-square", translations.buttons.settingSaveButton) }
             
             ],
             columnDefs: [
@@ -79,7 +80,7 @@ export default class Settings {
                 {
                     buttons:[
                         {
-                            text: 'Add',
+                            text: translations.buttons.settingsAdd,
                             className: 'btn btn-primary',
                             action: () => {
                                 var newRowId = 1;
@@ -100,14 +101,14 @@ export default class Settings {
                             }
                         },
                         {
-                            text: 'Sync to app.ini',
+                            text: translations.buttons.settingsSyncTo,
                             className: 'btn btn-primary',
                             action: function () {
                                 console.log('TBD');
                             }
                         },
                         {
-                            text: 'Sync from app.ini',
+                            text: translations.buttons.settingsSyncFrom,
                             className: 'btn btn-primary',
                             action: function () {
                                 console.log('TBD');
@@ -161,7 +162,7 @@ export default class Settings {
         updatedData.value = inputs[2].value;
 
         target.disabled = true;
-        target.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        target.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${translations.buttons.buttonsLoadingText}`;
 
         let formData = new FormData();
         formData.append('id', rowData.id);
@@ -175,13 +176,13 @@ export default class Settings {
         })
         .then(response => response.json())
         .then(detail => {
-            target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+            target.innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${translations.buttons.settingsUpdateButton}`;
             target.disabled = false;
             this.table.ajax.reload();
         })
         .catch(error => {
             console.error('Error:', error);
-            target.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Update';
+            target.innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${translations.buttons.settingsUpdateButton}`;
             target.disabled = false;
         });
         
@@ -196,7 +197,7 @@ export default class Settings {
             .then(response => response.json())
             .then(data => {
                 const formattedContent = formatContent(data);
-                showVersionToast("Installed Packages", formattedContent);
+                showVersionToast(translations.labels.checkVersions, formattedContent);
             })
             .catch(error => console.error('Error fetching version data:', error));
             });

@@ -1,4 +1,6 @@
 // static/js/common/datatable.js
+import translations from '../l18n/en.js';
+
 export class DataTableManager {
     static initializeDataTable(selector, config) {
         return $(selector).DataTable(config);
@@ -19,7 +21,7 @@ export class DataTableManager {
     static formatLoading() {
         return '<div class="d-flex justify-content-center">' +
                '<div class="spinner-border" role="status">' +
-               '<span class="visually-hidden">Loading...</span>' +
+               `<span class="visually-hidden">${translations.labels.dataTablesLoadingText}</span>` +
                '</div>' +
                '</div>';
     }
@@ -84,9 +86,9 @@ export class DataTableManager {
             const days = daysTotal % 365;
         
             if (years > 0) {
-                return `${years} years ${days} days ${hours} hrs ago`;
+                return `${years} ${translations.labels.dataTablesYearText} ${days} ${translations.labels.dataTablesDaysText} ${hours} ${translations.labels.dataTablesHrsText}`;
             } else {
-                return `${days} days ${hours} hrs ago`;
+                return `${days} ${translations.labels.dataTablesDaysText} ${hours} ${translations.labels.dataTablesHrsText}`;
             }
         }
     
@@ -126,7 +128,7 @@ export class DataTableManager {
                         extend: 'colvis',
                         postfixButtons: ['colvisRestore'],
                         text: '<i class="bi bi-table"></i>',
-                        titleAttr: 'Column Visibility'
+                        titleAttr: translations.buttons.dataTableColumnVisibilityhButton
                         
                     },
                     {
@@ -140,7 +142,7 @@ export class DataTableManager {
                     { 
                         action: function ( e, dt, node, config ) {dt.ajax.reload();},                        
                         text: '<i class="bi bi-arrow-clockwise"></i>',
-                        titleAttr: 'Refresh'
+                        titleAttr: translations.buttons.dataTableRefreshButton
                     },
                     {
                         extend: 'pageLength',
@@ -156,7 +158,7 @@ export class DataTableManager {
     {
         let language = {
             search: "_INPUT_",
-            searchPlaceholder: "Filter records"
+            searchPlaceholder: translations.labels.dataTableSearchInput
         }
 
         return language;
