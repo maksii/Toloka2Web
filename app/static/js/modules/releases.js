@@ -12,6 +12,11 @@ export default class Releases {
         this.initializeDataTable();
         new EventDelegator('#dataTableTitles tbody', this.handleAction.bind(this));
         this.addEventListeners();
+
+        this.table.on( 'draw', function () {
+            Utils.activeTooltips();
+        } );
+        
     }
 
     tableBody = document.querySelector('#dataTableTitles tbody');
@@ -39,7 +44,7 @@ export default class Releases {
             responsive: true,
             columns: [
                 { data: 'codename', title: translations.tableHeaders.releases.codename, visible: true },
-                { data: 'torrent_name', title: translations.tableHeaders.releases.torrent_name, render: function(data, type, row) { return data.replace(/^"|"$/g, '');}, visible: true },
+                { data: 'torrent_name', type:'html', title: translations.tableHeaders.releases.torrent_name, render: (data, type, row) => { return this.dataTableRenderTorrentInfo(data, type, row) }, visible: true },
                 { data: 'season_number', title: translations.tableHeaders.releases.season_number , visible: false},
                 { data: 'episode_index', title: translations.tableHeaders.releases.episode_index, visible: false },
                 { data: 'adjusted_episode_number', title: translations.tableHeaders.releases.adjusted_episode_number, visible: false },
@@ -83,6 +88,33 @@ export default class Releases {
         }
         this.table = DataTableManager.initializeDataTable('#dataTableTitles', config);
         this.tableBody = document.querySelector('#dataTableTitles tbody');
+    }
+
+    dataTableRenderTorrentInfo(data, type, row)
+    {
+        let cleanedValue = data.replace(/^"|"$/g, '');
+        if (type === 'display') {
+            if(row.torrent_info == null) 
+                {
+                    row.torrent_info = {};
+                    row.torrent_info.progress = 0;
+                    row.torrent_info.name = "Not Found";
+                    row.torrent_info.state = "Not Found";
+                }
+                let progress = row.torrent_info.progress;
+                progress = Utils.progressPercentage(progress);
+                let progressColor = Utils.getColorForProgress(progress);
+
+                let name = row.torrent_info.name;
+                let state = row.torrent_info.state;
+
+                let tooltip = `<span style="color: ${progressColor};"
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="${state} | ${progress} | ${name}">${cleanedValue}</span>`
+                return tooltip;
+        }
+        return cleanedValue;
     }
 
     dataTableRenderActionButtons(data, type, row) {

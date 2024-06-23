@@ -299,3 +299,12 @@ def multi_search(query):
         })
 
     return jsonify(combined_data)
+
+
+def get_releases_torrent_status():
+    config = initiate_config()
+    category = config.app_config[config.application_config.client]["category"]
+    tags = config.app_config[config.application_config.client]["tag"]
+    torrent_info = config.client.get_torrent_info(status_filter = 'all', category = category, tags=tags, sort="added_on", reverse=True)
+    
+    return torrent_info

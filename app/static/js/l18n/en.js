@@ -28,7 +28,8 @@ const translations = {
             publish_date: 'Publish Date',
             release_group: 'Release Group', 
             download_dir: 'Download Dir', 
-            ext_name: 'Ext Name', 
+            ext_name: 'Ext Name',
+            guid: 'guid', 
             hash: 'Hash', 
             meta: 'Meta', 
             actions: 'Actions'
