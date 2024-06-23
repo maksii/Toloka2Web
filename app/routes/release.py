@@ -58,3 +58,8 @@ def update_all_releases():
 def torrent_info_all_releases():
     return jsonpickle.encode(get_releases_torrent_status(), unpicklable=False)
 
+@release_bp.route('/api/releases/state/<string:hash>', methods=['GET'])
+@login_or_api_key_required 
+def recieve_request_from_client(hash):
+    print(hash)
+    return make_response("", 200)
