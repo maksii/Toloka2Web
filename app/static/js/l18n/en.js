@@ -110,7 +110,8 @@ const translations = {
         releaseAddIndex: 'Index',
         releaseAddNumber:'Number',
         noImageAvailable:'No image available',
-        checkVersions: 'Installed Packages'
+        checkVersions: 'Installed Packages',
+        settingsNotification: 'Page shows last saved settings in DB. Please use Sync to and Sync from to keep them up to date state.'
     },
 };
 

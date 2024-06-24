@@ -29,7 +29,23 @@ def update_setting(id, section, key, value):
     setting.value = value
     db.session.add(setting)
     db.session.commit()
+    
+def sync_settings(setting_type, direction):
+    paths = {
+        "app": 'data/app.ini',
+        "release": 'data/titles.ini'
+    }
+    actions = {
+        ("app", "to"): load_settings_from_db_and_write_to_ini,
+        ("app", "from"): read_settings_ini_and_sync_to_db,
+        ("release", "to"): load_releases_from_db_and_write_to_ini,
+        ("release", "from"): read_releases_ini_and_sync_to_db,
+    }
 
+    action = actions.get((setting_type, direction))
+    if action:
+        action(paths[setting_type])
+            
 def load_settings_from_db_and_write_to_ini(file_path):
     """
     Loads all settings from the database and writes them to an INI file.

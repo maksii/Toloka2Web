@@ -13,6 +13,8 @@ export default class Settings {
         this.addEventListeners();
         this.checkVersions();
         //DataTableManager.onDataTableXhr(this.table);
+
+        document.querySelector("#configuration-tab-pane > div:nth-child(1) > div > div").innerText = translations.labels.settingsNotification;
     }
     settingsTableBody = document.querySelector('#settingsTable tbody');
     collapsedGroups = {};
@@ -103,15 +105,15 @@ export default class Settings {
                         {
                             text: translations.buttons.settingsSyncTo,
                             className: 'btn btn-primary',
-                            action: function () {
-                                console.log('TBD');
+                            action: () => {
+                                this.syncSettings("to", "app");
                             }
                         },
                         {
                             text: translations.buttons.settingsSyncFrom,
                             className: 'btn btn-primary',
-                            action: function () {
-                                console.log('TBD');
+                            action: () => {
+                                this.syncSettings("from", "app");
                             }
                         }
                     ]
@@ -140,6 +142,38 @@ export default class Settings {
           console.error(`No handler defined for action: ${actionName}`);
         }
       }
+
+    syncSettings(direction, type) {
+        const url = '/api/settings/sync';
+    
+        const formData = new FormData();
+        formData.append('direction', direction);
+        formData.append('type', type);
+    
+        const fetchOptions = {
+            method: 'POST',
+            body: formData,
+            credentials: 'include', 
+            headers: {
+                'Accept': 'application/json'
+            }
+        };
+    
+        fetch(url, fetchOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                DataTableManager.refreshTable(this.table);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 
     groupToggle(element)
     {
