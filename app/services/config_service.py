@@ -21,6 +21,9 @@ def add_new_setting(section, key, value):
     db.session.add(new_setting)
     db.session.commit()
     
+    sync_settings("app","to")
+    
+    
 def update_setting(id, section, key, value):
     setting = ApplicationSettings.query.filter_by(id=id).first()
     setting.id = id
@@ -29,6 +32,56 @@ def update_setting(id, section, key, value):
     setting.value = value
     db.session.add(setting)
     db.session.commit()
+    
+    sync_settings("app", "to")
+
+def delete_setting(id):
+    setting = ApplicationSettings.query.filter_by(id=id).first()
+    
+    if setting:
+        db.session.delete(setting)
+        db.session.commit()
+        
+        sync_settings("app", "to")
+        return True, "Setting deleted successfully."
+    else:
+        return False, "Setting not found."
+
+def delete_release(form):
+    section = form['codename']
+    release = Releases.query.filter_by(section=section).first()
+    
+    if release:
+        db.session.delete(release)
+        db.session.commit()
+        
+        sync_settings("release", "to")
+        return True, "Release deleted successfully."
+    else:
+        return False, "Release not found."
+
+def edit_release(form):
+    section = form['codename']
+    release = Releases.query.filter_by(section=section).first()
+    if not release:
+        release = Releases(section=section)
+        db.session.add(release)
+    
+    release.episode_index = int(form['episode_index'])
+    release.season_number = form['season_number']
+    release.ext_name = form['ext_name']
+    release.torrent_name = form['torrent_name']
+    release.download_dir = form['download_dir']
+    release.publish_date = datetime.datetime.strptime(form['publish_date'], '%y-%m-%d %H:%M')
+    release.release_group = form['release_group']
+    release.meta = form['meta']
+    release.hash = form['hash']
+    release.adjusted_episode_number = int(form['adjusted_episode_number'])
+    release.guid = form['guid']
+        
+    db.session.commit()
+    
+    sync_settings("release", "to")
     
 def sync_settings(setting_type, direction):
     paths = {

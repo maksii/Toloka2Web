@@ -10,6 +10,9 @@ import Settings from './modules/settings.js';
 import UpdateChecker from './common/update-checker.js';
 import { DataTableManager } from './common/datatable.js';
 import { Backdrop, Utils } from './common/utils.js';
+
+import user from './common/user.js';
+
 class AppController {
     constructor() {
         this.modules = {

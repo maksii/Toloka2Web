@@ -29,7 +29,7 @@ const translations = {
             release_group: 'Release Group', 
             download_dir: 'Download Dir', 
             ext_name: 'Ext Name',
-            guid: 'guid', 
+            guid: 'Toloka ID', 
             hash: 'Hash', 
             meta: 'Meta', 
             actions: 'Actions'
