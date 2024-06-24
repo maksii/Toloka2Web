@@ -7,7 +7,8 @@ export class DataTableManager {
     }
 
     static dataTableRenderAsUrl(host, url, text) {
-        return `<a href="${host}/${url}" target="_blank">${text}</a>`;
+        const fullPath = url ? `${host}/${url}` : host;
+        return `<a href="${fullPath}" target="_blank">${text}</a>`;
     }
 
     static dataTableRenderAsInput(value) {
