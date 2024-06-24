@@ -43,8 +43,25 @@ def initiate_config():
     
     return config
 
+def initiate_min_config():
+    app_config_path='data/app.ini'
+    title_config_path='data/titles.ini'
+    logger_path = 'data/app_web.log'
+
+    app_config, titles_config, application_config = load_configurations(app_config_path,title_config_path)
+    logger=setup_logging(logger_path)
+
+    config = Config(
+        logger=logger,
+        app_config=app_config,
+        titles_config=titles_config,
+        application_config=application_config
+    )
+    
+    return config
+
 def get_titles_logic():
-    config = initiate_config()
+    config = initiate_min_config()
     sections = {}
     for section in config.titles_config.sections():
         options = {}

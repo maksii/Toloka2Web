@@ -80,19 +80,19 @@ export class Utils {
         if (progress >= 100) {
             r = 25; g = 135; b = 84; // Greenish color for progress >= 100
         } else if (progress >= 40) {
-            // Interpolate between (255, 193, 7) and (220, 53, 69)
-            const factor = progress / 40;
-            r = 255 + (220 - 255) * factor;
-            g = 193 + (53 - 193) * factor;
-            b = 7 + (69 - 7) * factor;          
+            // Interpolate between yellowish (255, 193, 7) and greenish (25, 135, 84)
+            const factor = (progress - 40) / 60; // Adjusting factor to correctly interpolate from 40 to 100
+            r = 255 + (25 - 255) * factor;
+            g = 193 + (135 - 193) * factor;
+            b = 7 + (84 - 7) * factor;
         } else if (progress >= 0) {
-            // Interpolate between (220, 53, 69) and (25, 135, 84)
-            const factor = (progress - 40) / 60;
-            r = 220 + (25 - 220) * factor;
-            g = 53 + (135 - 53) * factor;
-            b = 69 + (84 - 69) * factor;
+            // Interpolate between more intense reddish (255, 0, 0) and less intense reddish (220, 53, 69)
+            const factor = progress / 40; // Adjusting factor for interpolation from 0 to 40
+            r = 255 + (220 - 255) * factor;
+            g = 0 + (53 - 0) * factor;
+            b = 0 + (69 - 0) * factor;
         } else {
-            r = 255; g = 193; b = 7; // Yellowish color for negative progress
+            r = 255; g = 193; b = 7; // Yellowish color for negative progress (fallback)
         }
     
         return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
