@@ -109,15 +109,22 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         if current_user.is_authenticated:
             identity_changed.send(current_app._get_current_object(), identity=Identity(current_user.id))
             
-
     @app.route('/static/js/common/user.js')
     def user_script():
+        if current_user.is_authenticated:
+            user_id = current_user.id if current_user.id else "undefined"
+            # Ensure roles is a string and default to an empty string if none
+            user_roles = current_user.roles if current_user.roles else ""
+        else:
+            user_id = "undefined"
+            user_roles = ""
+    
         js_content = f"""
         const user = {{
-            id: "{current_user.id}",
-            roles: "{current_user.roles}"
+            id: "{user_id}",
+            roles: "{user_roles}"
         }};
         export default user;
         """
-
+    
         return Response(js_content, mimetype='application/javascript')
