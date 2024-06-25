@@ -127,6 +127,9 @@ export default class Settings {
 
     addEventListeners() {
         new EventDelegator('#settingsTable tbody', this.handleAction.bind(this));
+
+        document.querySelector('#syncTorrentReleaseTo').addEventListener('click', ()=> {this.syncSettings('to', 'release')}); 
+        document.querySelector('#syncTorrentReleaseFrom').addEventListener('click', ()=> {this.syncSettings('from', 'release')}); 
     }
 
     handleAction(actionName, element) {
