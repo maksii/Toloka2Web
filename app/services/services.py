@@ -14,7 +14,8 @@ from toloka2MediaServer.main_logic import (
     search_torrents, get_torrent as get_torrent_external,
     add_torrent as add_torrent_external
 )
-from stream2mediaserver.main_logic import search_releases as search_releases_stream
+from stream2mediaserver.main_logic import search_releases as search_releases_stream, get_release_details as get_release_details_stream
+import urllib3
 
 from app.models.request_data import RequestData
 from app.services.mal_service import search_anime
@@ -218,6 +219,11 @@ def search_titles_from_streaming_site(query):
         return search_result
     else:
         return {}
+
+def get_streaming_site_release_details(provider_name, release_url):
+    search_result = get_release_details_stream(f'{provider_name}_provider', release_url)
+    
+    return search_result
 
 def add_title_from_streaming_site(data):
     # Logic for adding a title from a streaming site

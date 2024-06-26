@@ -159,6 +159,27 @@ export default class Search {
           console.error(`No handler defined for action: ${actionName}`);
         }
       }
+      //TBD need to refactor and combine mb?
+      handleActionStream(actionName, element) {
+        const tr = element.closest('tr');
+        const row = this.streamTable.row(tr);
+        const data = row.data();
+        const childData = tr.dataset.childData;
+
+        const actionHandlers = {
+          expand: () => this.performStreamDetailsExpandAction(tr),
+          download: () => this.performDownloadAction(data, childData),
+          copy: () => this.performCopyAction(data, childData),
+          add: () => this.performAddAction(data, childData),
+        };
+    
+        const actionFunction = actionHandlers[actionName];
+        if (actionFunction) {
+          actionFunction();
+        } else {
+          console.error(`No handler defined for action: ${actionName}`);
+        }
+      }
 
     initializeMultiDataTable(query)
     {
@@ -273,7 +294,7 @@ export default class Search {
                     data: null,
                     defaultContent: '',
                     render: function () {
-                        return ' <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>';
+                        return ' <i class="bi bi-arrows-angle-expand action-expand-stream" aria-hidden="true"></i>';
                     },
                     width: "15px",
                     responsivePriority: 2
@@ -316,6 +337,7 @@ export default class Search {
     addDataTablesEvents()
     {
         new EventDelegator('#torrentTable tbody', this.handleAction.bind(this));
+        new EventDelegator('#tableStream tbody', this.handleActionStream.bind(this));
     }
 
 
@@ -369,6 +391,96 @@ export default class Search {
         `;
     }
 
+    formatStreamDetail(detail, parentData) {
+        let seriesHtml = this.generateSeriesExpandHTML(detail);
+
+        return `
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="row g-0">
+                            <div class="col-md-2">
+                                <img src="image/?url=${parentData.image_url}" class="card-img-top" alt="...">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">${parentData.title}</h5>
+                                    <p class="card-text">${parentData.title_eng}</p>
+                                    <p class="card-text">${parentData.description}</p>
+                                    <p class="card-text"><small class="text-body-secondary">${parentData.provider}</small></p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                ${seriesHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    groupByStudio(data) {
+        return data.reduce((acc, item) => {
+            if (!acc[item.studio_id]) {
+                acc[item.studio_id] = {
+                    studio_name: item.studio_name,
+                    series: {}
+                };
+            }
+            if (!acc[item.studio_id].series[item.series]) {
+                acc[item.studio_id].series[item.series] = [];
+            }
+            acc[item.studio_id].series[item.series].push(item);
+            return acc;
+        }, {});
+    }
+
+    generateSeriesExpandHTML(data) {
+        const groupedData = this.groupByStudio(data);
+        let html = '';
+
+        Object.keys(groupedData).forEach((studioId, idx) => {
+            const studio = groupedData[studioId];
+            html += `<div class="accordion" id="accordionStudio${idx}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading${idx}">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${idx}" aria-expanded="true" aria-controls="collapse${idx}">
+                                    ${studio.studio_name}
+                                </button>
+                            </h2>
+                            <div id="collapse${idx}" class="accordion-collapse collapse show" aria-labelledby="heading${idx}" data-bs-parent="#accordionStudio${idx}">
+                                <div class="accordion-body">
+                                    ${this.generateSeriesHTML(studio.series, idx)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+        });
+
+        return html;
+    }
+
+    generateSeriesHTML(series, studioIdx) {
+        let seriesHTML = '<div class="accordion" id="accordionSeries' + studioIdx + '">';
+        Object.keys(series).forEach((seriesName, idx) => {
+            seriesHTML += `<div class="accordion-item">
+                                <h2 class="accordion-header" id="seriesHeading${studioIdx}_${idx}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#seriesCollapse${studioIdx}_${idx}" aria-expanded="false" aria-controls="seriesCollapse${studioIdx}_${idx}">
+                                        ${seriesName}
+                                    </button>
+                                </h2>
+                                <div id="seriesCollapse${studioIdx}_${idx}" class="accordion-collapse collapse" aria-labelledby="seriesHeading${studioIdx}_${idx}" data-bs-parent="#accordionSeries${studioIdx}">
+                                    <div class="accordion-body">
+                                        ${series[seriesName].map(item => `<a href="${item.url}" target="_blank">${item.url}</a><br>`).join('')}
+                                    </div>
+                                </div>
+                            </div>`;
+        });
+        seriesHTML += '</div>';
+        return seriesHTML;
+    }
+
     performDetailsExpandAction(tr)
     {
         var row = this.tolokaTable.row(tr);
@@ -385,6 +497,34 @@ export default class Search {
             .then(response => response.json())
             .then(detail => {
                 const childData = this.formatDetail(detail, data);
+                row.child(childData).show();
+                tr.dataset.childData = JSON.stringify(detail);
+            });
+        }
+    }
+
+    performStreamDetailsExpandAction(tr)
+    {
+        var row = this.streamTable.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.classList.remove('shown');
+        } else {
+            var data = row.data();
+            row.child(DataTableManager.formatLoading()).show();
+            tr.classList.add('shown');
+            data.link
+            fetch(`/api/stream/details`, {
+                method: 'POST', // Specifying the method
+                headers: {
+                    'Content-Type': 'application/json' // Specifying the content type
+                },
+                body: JSON.stringify(data) // Sending the data object as a JSON string
+            })
+            .then(response => response.json())
+            .then(detail => {
+                const childData = this.formatStreamDetail(detail, data);
                 row.child(childData).show();
                 tr.dataset.childData = JSON.stringify(detail);
             });
@@ -434,5 +574,23 @@ export default class Search {
         var url = `https://toloka.to/${rowData.torrent_url}`
 
         Utils.downloadFile(url);
+    }
+
+    performAddAction(rowData, childData) {
+        fetch("/api/toloka/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(rowData) 
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
     }
 }
