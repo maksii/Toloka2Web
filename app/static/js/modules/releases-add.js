@@ -58,10 +58,30 @@ export default class ReleasesAdd {
 
     cutTextTillSeparator()
     {
-        const delimiterIndex = this.releaseTitle.value.search(/[\/|]/);
+        let text = this.releaseTitle.value;
+        
+        // Get text after the first "/" or "|" separator
+        const delimiterIndex = text.search(/[\/|]/);
         if (delimiterIndex !== -1) {
-            this.releaseTitle.value = this.releaseTitle.value.substring(delimiterIndex + 1);
+            text = text.substring(delimiterIndex + 1).trim();
         }
+
+        // Remove text after year pattern (e.g., "(2022)" or "2022")
+        text = text.replace(/\s*[\(\[]?\d{4}[\)\]]?.*$/, '');
+
+        // Remove unsafe characters and clean up the text
+        text = text
+            // Remove any remaining parentheses and their contents
+            .replace(/\(.*?\)/g, '')
+            .replace(/\[.*?\]/g, '')
+            // Remove unsafe characters for file systems
+            .replace(/[\/\\:*?"<>|]/g, '')
+            // Remove multiple spaces
+            .replace(/\s+/g, ' ')
+            // Trim spaces from start and end
+            .trim();
+
+        this.releaseTitle.value = text;
     }
 
     async submitAddNewTitleForm(e) {
