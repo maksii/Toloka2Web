@@ -550,23 +550,56 @@ export default class Search {
     }
     
     performCopyAction(rowData, childData) {
-        Utils.addRelease();
-        document.querySelector('#releaseTitle').value = rowData.name;
-        document.querySelector('#tolokaUrl').value  = `https://toloka.to/${rowData.url}`;
-        if(childData != null)
-        {
-            childData = JSON.parse(childData);
-            var filePath = `${childData.files[0].folder_name}/${childData.files[0].file_name}`
-            var input = document.querySelector('#filenameIndex');
-            document.querySelector('#filenameIndexGroup').classList.toggle("d-none");
-            input.value = filePath
-            const event = new Event('input', {
-                bubbles: true,
-                cancelable: true,
-            });
-            input.dispatchEvent(event);
+        const handleCopy = () => {
+            Utils.addRelease();
+            document.querySelector('#releaseTitle').value = rowData.name;
+            document.querySelector('#tolokaUrl').value = `https://toloka.to/${rowData.url}`;
+            
+            if (childData) {
+                childData = JSON.parse(childData);
+                var filePath = `${childData.files[0].folder_name}/${childData.files[0].file_name}`
+                var input = document.querySelector('#filenameIndex');
+                document.querySelector('#filenameIndexGroup').classList.toggle("d-none");
+                input.value = filePath;
+                const event = new Event('input', {
+                    bubbles: true,
+                    cancelable: true,
+                });
+                input.dispatchEvent(event);
+            }
+            this.searchOffcanvas.hide();
+        };
+
+        // If we don't have child data, expand first
+        if (!childData) {
+            // Find the row's expand button and temporarily disable it
+            const tr = this.tolokaTable.row(rowData).node();
+            const expandButton = tr.querySelector('.action-expand');
+            const copyButton = tr.querySelector('.action-copy');
+            
+            // Add spinner to copy button
+            copyButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            copyButton.disabled = true;
+
+            // Trigger expand
+            this.performDetailsExpandAction(tr);
+
+            // Wait for child data to be loaded
+            const checkChildData = setInterval(() => {
+                if (tr.dataset.childData) {
+                    clearInterval(checkChildData);
+                    childData = tr.dataset.childData;
+                    
+                    // Restore copy button
+                    copyButton.innerHTML = '<i class="bi bi-chevron-double-left"></i>';
+                    copyButton.disabled = false;
+                    
+                    handleCopy();
+                }
+            }, 100);
+        } else {
+            handleCopy();
         }
-        this.searchOffcanvas.hide()
     }
     
     performDownloadAction(rowData, childData) {
