@@ -31,18 +31,24 @@ export default class Search {
         this.searchOffcanvas = new bootstrap.Offcanvas('#offcanvasTopSearchResults');
         this.searchOffcanvasClose = document.querySelector('#offcanvasTopSearchResults > div.offcanvas-header > button');
         
-        if(this.tolokaTable == null)
-            {
-                this.initializeDataTable(query);
-                this.addDataTablesEvents();
-            }
-        else
-        {
+        // Clear tables if they exist
+        if(this.tolokaTable) {
+            this.tolokaTable.clear().draw();
+            this.multiTable.clear().draw();
+            this.streamTable.clear().draw();
+        }
+        
+        if(this.tolokaTable == null) {
+            this.initializeDataTable(query);
+            this.addDataTablesEvents();
+        } else {
             this.refreshDataTable(query);
         }
 
-        this.searchOffcanvas.toggle()
-
+        // Clear search input
+        this.searchForm.reset();
+        
+        this.searchOffcanvas.toggle();
     }
 
     initializeDataTable(query) {
@@ -559,7 +565,13 @@ export default class Search {
                 childData = JSON.parse(childData);
                 var filePath = `${childData.files[0].folder_name}/${childData.files[0].file_name}`
                 var input = document.querySelector('#filenameIndex');
-                document.querySelector('#filenameIndexGroup').classList.toggle("d-none");
+                var indexGroup = document.querySelector('#filenameIndexGroup');
+                
+                // Make sure the index group is visible
+                if (indexGroup.classList.contains('d-none')) {
+                    indexGroup.classList.remove('d-none');
+                }
+                
                 input.value = filePath;
                 const event = new Event('input', {
                     bubbles: true,
