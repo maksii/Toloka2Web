@@ -567,7 +567,6 @@ export default class Search {
                 var input = document.querySelector('#filenameIndex');
                 var indexGroup = document.querySelector('#filenameIndexGroup');
                 
-                // Make sure the index group is visible
                 if (indexGroup.classList.contains('d-none')) {
                     indexGroup.classList.remove('d-none');
                 }
@@ -582,27 +581,26 @@ export default class Search {
             this.searchOffcanvas.hide();
         };
 
-        // If we don't have child data, expand first
         if (!childData) {
-            // Find the row's expand button and temporarily disable it
-            const tr = this.tolokaTable.row(rowData).node();
+            const row = this.tolokaTable.row(function(idx, data, node) {
+                return data === rowData;
+            });
+            const tr = row.node();
             const expandButton = tr.querySelector('.action-expand');
             const copyButton = tr.querySelector('.action-copy');
             
-            // Add spinner to copy button
+            // Add spinner to the specific copy button that was clicked
             copyButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
             copyButton.disabled = true;
 
-            // Trigger expand
             this.performDetailsExpandAction(tr);
 
-            // Wait for child data to be loaded
             const checkChildData = setInterval(() => {
                 if (tr.dataset.childData) {
                     clearInterval(checkChildData);
                     childData = tr.dataset.childData;
                     
-                    // Restore copy button
+                    // Restore the specific copy button
                     copyButton.innerHTML = '<i class="bi bi-chevron-double-left"></i>';
                     copyButton.disabled = false;
                     

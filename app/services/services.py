@@ -118,6 +118,7 @@ def add_release_logic(request):
             index = int(request['index']),
             correction = int(request['correction']),
             title = request['title'],
+            path = config.application_config.default_download_dir
         )
 
 

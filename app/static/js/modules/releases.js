@@ -183,7 +183,6 @@ export default class Releases {
         .then(detail => {
             target.innerHTML = `<span class="bi bi-trash" aria-hidden="true"></span><span class="visually-hidden" role="status">${translations.buttons.releaseDeleteButton}</span>`;
             target.disabled = false;
-            debugger
             DataTableManager.refreshTable(this.table);
         })
         .catch(error => {
