@@ -52,7 +52,6 @@ export default class Releases {
                 { data: 'publish_date', title: translations.tableHeaders.releases.publish_date, render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true  },
                 { data: 'release_group', title: translations.tableHeaders.releases.release_group, visible: false },
                 { data: 'download_dir', title: translations.tableHeaders.releases.download_dir, visible: false },
-                { data: 'ext_name', title: translations.tableHeaders.releases.ext_name, visible: false },
                 { data: 'guid', title: translations.tableHeaders.releases.guid, render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to", data, data)}, visible: true },
                 { data: 'hash', title: translations.tableHeaders.releases.hash, visible: false },
                 { data: 'meta', title: translations.tableHeaders.releases.meta, visible: false },

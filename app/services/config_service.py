@@ -68,7 +68,6 @@ def edit_release(form):
     
     release.episode_index = int(form['episode_index'])
     release.season_number = form['season_number']
-    release.ext_name = form['ext_name']
     release.torrent_name = form['torrent_name']
     release.download_dir = form['download_dir']
     release.publish_date = datetime.datetime.strptime(form['publish_date'], '%y-%m-%d %H:%M')
@@ -143,7 +142,6 @@ def load_releases_from_db_and_write_to_ini(file_path):
             config.add_section(section)
         config.set(section, 'episode_index', str(release.episode_index))
         config.set(section, 'season_number', release.season_number)
-        config.set(section, 'ext_name', release.ext_name)
         config.set(section, 'torrent_name', release.torrent_name)
         config.set(section, 'download_dir', release.download_dir)
         config.set(section, 'publish_date', release.publish_date.strftime('%y-%m-%d %H:%M'))
@@ -172,7 +170,6 @@ def read_releases_ini_and_sync_to_db(file_path):
         # Get values with defaults for optional fields
         release.episode_index = int(config.get(section, 'episode_index', fallback='1'))
         release.season_number = config.get(section, 'season_number', fallback='1')
-        release.ext_name = config.get(section, 'ext_name', fallback='.mkv')
         release.torrent_name = config.get(section, 'torrent_name', fallback='')
         release.download_dir = config.get(section, 'download_dir', fallback='')
         try:

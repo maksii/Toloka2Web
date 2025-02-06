@@ -27,8 +27,7 @@ const translations = {
             adjusted_episode_number:'Скоригований номер епізоду', 
             publish_date: 'Дата публікації',
             release_group: 'Група випуску', 
-            download_dir: 'Директорія завантаження', 
-            ext_name: 'Назва розширення', 
+            download_dir: 'Директорія завантаження',
             hash: 'Хеш', 
             meta: 'Мета', 
             actions: 'Дії'
