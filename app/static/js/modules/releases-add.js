@@ -1,6 +1,7 @@
 // static/js/modules/releases-add.js
 import { Utils } from '../common/utils.js';
 import translations from '../l18n/en.js';
+import { DataTableManager } from '../common/datatable.js';
 
 export default class ReleasesAdd {
     init() {
@@ -63,23 +64,53 @@ export default class ReleasesAdd {
         }
     }
 
-    async submitAddNewTitleForm(e)
-    {
+    async submitAddNewTitleForm(e) {
         e.preventDefault();
-        submitButton.innerHTML = Utils.renderButtonSpinner();
-        submitButton.disabled = true;
-        const formData = new FormData(releaseForm);
-        const response = await fetch('/api/releases', {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        submitButton.innerHTML = translations.buttons.releaseAddSubmit;
-        submitButton.disabled = false;
+        
+        // Disable submit button and show spinner
+        this.submitButton.disabled = true;
+        this.submitButton.innerHTML = Utils.renderButtonSpinner();
+        
+        try {
+            const formData = new FormData(this.releaseForm);
+            const response = await fetch('/api/releases', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
 
-        const bsOperationOffcanvas = new bootstrap.Offcanvas('#offcanvasOperationResults')
-        Utils.generateOperationResponseOffCanvas(result);  // Display operation status
-        bsOperationOffcanvas.toggle()
+            // Get references to modal and offcanvas
+            const addReleaseModal = bootstrap.Modal.getInstance(document.querySelector('#addReleaseModal'));
+            const offcanvasElement = document.getElementById('offcanvasOperationResults');
+            
+            // First prepare the offcanvas content
+            Utils.generateOperationResponseOffCanvas(result);
+            const bsOperationOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+
+            // Create a promise that resolves when the offcanvas is shown
+            const offcanvasShown = new Promise(resolve => {
+                offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+                    // Only after offcanvas is shown, hide the modal
+                    addReleaseModal.hide();
+                    // Then refresh the table
+                    if (window.releasesTable) {
+                        DataTableManager.refreshTable(window.releasesTable);
+                    }
+                    resolve();
+                }, { once: true });
+            });
+
+            // Show the offcanvas and wait for it to complete showing
+            bsOperationOffcanvas.show();
+            await offcanvasShown;
+
+        } catch (error) {
+            console.error('Error submitting form:', error);
+        } finally {
+            // Reset button state
+            this.submitButton.innerHTML = translations.buttons.releaseAddSubmit;
+            this.submitButton.disabled = false;
+        }
     }
 
 }

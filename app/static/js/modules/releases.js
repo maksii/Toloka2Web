@@ -88,6 +88,7 @@ export default class Releases {
             language: DataTableManager.returnDefaultLanguage()
         }
         this.table = DataTableManager.initializeDataTable('#dataTableTitles', config);
+        window.releasesTable = this.table;
         this.tableBody = document.querySelector('#dataTableTitles tbody');
     }
 

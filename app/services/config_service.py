@@ -1,4 +1,3 @@
-
 import configparser
 import datetime
 
@@ -170,17 +169,25 @@ def read_releases_ini_and_sync_to_db(file_path):
             release = Releases(section=section)
             db.session.add(release)
         
-        release.episode_index = int(config.get(section, 'episode_index'))
-        release.season_number = config.get(section, 'season_number')
-        release.ext_name = config.get(section, 'ext_name')
-        release.torrent_name = config.get(section, 'torrent_name')
-        release.download_dir = config.get(section, 'download_dir')
-        release.publish_date = datetime.datetime.strptime(config.get(section, 'publish_date'), '%y-%m-%d %H:%M')
-        release.release_group = config.get(section, 'release_group')
-        release.meta = config.get(section, 'meta')
-        release.hash = config.get(section, 'hash')
-        release.adjusted_episode_number = int(config.get(section, 'adjusted_episode_number'))
-        release.guid = config.get(section, 'guid')
+        # Get values with defaults for optional fields
+        release.episode_index = int(config.get(section, 'episode_index', fallback='1'))
+        release.season_number = config.get(section, 'season_number', fallback='1')
+        release.ext_name = config.get(section, 'ext_name', fallback='.mkv')
+        release.torrent_name = config.get(section, 'torrent_name', fallback='')
+        release.download_dir = config.get(section, 'download_dir', fallback='')
+        try:
+            release.publish_date = datetime.datetime.strptime(
+                config.get(section, 'publish_date'), 
+                '%y-%m-%d %H:%M'
+            )
+        except (configparser.NoOptionError, ValueError):
+            release.publish_date = datetime.datetime.now()
+        
+        release.release_group = config.get(section, 'release_group', fallback='')
+        release.meta = config.get(section, 'meta', fallback='')
+        release.hash = config.get(section, 'hash', fallback='')
+        release.adjusted_episode_number = int(config.get(section, 'adjusted_episode_number', fallback='1'))
+        release.guid = config.get(section, 'guid', fallback='')
         
     db.session.commit()
     
