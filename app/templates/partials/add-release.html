@@ -1,65 +1,86 @@
+<!-- Add Release Modal -->
 <div class="modal fade" id="addReleaseModal" tabindex="-1" aria-labelledby="addReleaseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="addReleaseModalLabel">Add Release</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="releaseForm">
-            <div class="input-group mb-3">
-                <div class="form-floating flex-grow-1">
-                    <input type="url" name="url" class="form-control" id="tolokaUrl" placeholder="https://toloka.to/t678205" required>
-                    <label for="tolokaUrl">URL</label>
-                </div>
-                <button class="btn btn-outline-secondary" id="urlButton" type="button">
-                    <i class="bi bi bi-file-binary"></i>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReleaseModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Add Release
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="releaseForm" class="needs-validation" novalidate>
+                    <!-- URL Input Group -->
+                    <div class="input-group mb-3">
+                        <div class="form-floating flex-grow-1">
+                            <input type="url" name="url" class="form-control" id="tolokaUrl" placeholder="https://toloka.to/t678205" required>
+                            <label for="tolokaUrl">Toloka URL</label>
+                            <div class="invalid-feedback">Please provide a valid URL.</div>
+                        </div>
+                        <button class="btn btn-outline-secondary" id="urlButton" type="button" title="Parse Binary">
+                            <i class="bi bi-file-binary"></i>
+                        </button>
+                    </div>
+
+                    <!-- Filename Index Group -->
+                    <div class="input-group mb-3 d-none" id="filenameIndexGroup">
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" class="form-control" id="filenameIndex" placeholder="[Inari Dub] Arknights Touin Kiro S01 E09 (1080) (UA).mkv" pattern=".*\..+">
+                            <label for="filenameIndex">Index Extractor</label>
+                            <div class="invalid-feedback">Please provide a valid filename.</div>
+                            <div id="numberList" class="list-group mt-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Title Input Group -->
+                    <div class="input-group mb-3">
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" name="title" class="form-control" id="releaseTitle" placeholder="Arknights (2022)" required>
+                            <label for="releaseTitle">Title</label>
+                            <div class="invalid-feedback">Please provide a title.</div>
+                        </div>
+                        <button class="btn btn-outline-secondary" id="cutButton" type="button" title="Cut Title">
+                            <i class="bi bi-scissors"></i>
+                        </button>
+                    </div>
+
+                    <!-- Season, Index, and Correction -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" name="season" class="form-control" id="season" placeholder="2" min="0" required>
+                                <label for="season">Season</label>
+                                <div class="invalid-feedback">Please provide a valid season number (min: 0).</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" name="index" class="form-control" id="index" placeholder="2" min="1" required>
+                                <label for="index">Episode Index</label>
+                                <div class="invalid-feedback">Please provide a valid episode index (min: 1).</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" name="correction" class="form-control" id="correction" placeholder="-8">
+                                <label for="correction">Index Correction</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" id="submitButton" data-bs-dismiss="modal">
+                            <i class="bi bi-check-circle me-2"></i>Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Close
                 </button>
             </div>
-            <div class="input-group mb-3 d-none" id="filenameIndexGroup">
-                <div class="form-floating flex-grow-1">
-                    <input type="text" class="form-control" id="filenameIndex" placeholder="[Inari Dub] Arknights Touin Kiro S01 E09 (1080) (UA).mkv" pattern=".*\..+">
-                    <label for="filenameIndex">Index Extractor</label>
-                    <div id="numberList" class="list-group"></div>
-                </div>
-            </div>
-            <div class="input-group mb-3">
-                <div class="form-floating flex-grow-1">
-                    <input type="text" name="title" class="form-control" id="releaseTitle" placeholder="Arknights (2022)" required>
-                    <label for="releaseTitle">Title</label>
-                </div>
-                <button class="btn btn-outline-secondary" id="cutButton" type="button">
-                    <i class="bi bi-scissors"></i>
-                </button>
-            </div>
-            <div class="row g-2">
-                <div class="col-md">
-                    <div class="form-floating">
-                        <input type="number" name="season" class="form-control" id="season" placeholder="2" min="0" required>
-                        <label for="season">Season</label>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="form-floating">
-                        <input type="number" name="index" class="form-control" id="index" placeholder="2" min="1" required>
-                        <label for="index">Index</label>
-                    </div>
-                </div>
-                <div class="col-md">
-                    <div class="form-floating">
-                        <input type="number" name="correction" class="form-control" id="correction" placeholder="-8">
-                        <label for="correction">Correction</label>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button type="submit" class="btn btn-primary full-width-button" id="submitButton" data-bs-dismiss="modal">Submit</button>
-            </div>
-        </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>

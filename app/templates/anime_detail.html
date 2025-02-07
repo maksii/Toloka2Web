@@ -7,41 +7,36 @@
 {% block content %}
 <!-- Begin page content -->
 <main class="flex-shrink-0">
-        <div class="container-fluid">
-            <!-- Anime Details Section -->
-            <div class="row">
-                <div class="col">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title" id="animeTitle">Anime Title</h5>
-                            <p class="card-text" id="animeDescription">Description</p>
-                            <div class="external-links">
-                                <a href="#" id="linkMal" target="_blank">MAL</a>
-                                <a href="#" id="linkImdb" target="_blank">IMDb</a>
-                                <!-- Additional links can be added here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    
-            <!-- Related Animes Table -->
-            <div class="row mt-4">
-                <div class="col">
-                    <h4>Related Animes</h4>
-                    <table id="relatedAnimeTable" class="table table-striped" style="width:100%">
-                    </table>
-                </div>
-            </div>
-    
-            <!-- Voiceover Studios Table -->
-            <div class="row mt-4">
-                <div class="col">
-                    <h4>Voiceover Studios</h4>
-                    <table id="studiosTable" class="table table-striped" style="width:100%">
-                    </table>
-                </div>
-            </div>
+    <div class="container-fluid">
+        <!-- Anime Details Section -->
+        {{ cards.detail_card(
+            title='Anime Title',
+            content='Description',
+            links='<div class="external-links">
+                <a href="#" id="linkMal" class="btn btn-outline-primary btn-sm me-2" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>MAL
+                </a>
+                <a href="#" id="linkImdb" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>IMDb
+                </a>
+            </div>'
+        ) }}
+
+        <!-- Related Animes Table -->
+        <div class="mt-4">
+            {{ tables.data_table_with_header(
+                table_id='relatedAnimeTable',
+                title='Related Animes'
+            ) }}
         </div>
-    </main>
+
+        <!-- Voiceover Studios Table -->
+        <div class="mt-4">
+            {{ tables.data_table_with_header(
+                table_id='studiosTable',
+                title='Voiceover Studios'
+            ) }}
+        </div>
+    </div>
+</main>
 {% endblock %}

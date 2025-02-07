@@ -1,42 +1,56 @@
+<!-- Navigation -->
 <header>
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Toloka2Web</a>
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/favicon/favicon-32x32.png') }}" alt="Logo" class="me-2">
+                Toloka2Web
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
                 aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">Home</a>
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'studio.studios' %}active{% endif %}" href="{{ url_for('studio.studios') }}">Studios</a>
+                        <a class="nav-link {% if request.endpoint == 'studio.studios' %}active{% endif %}" href="{{ url_for('studio.studios') }}">
+                            <i class="bi bi-camera-reels"></i> Studios
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'anime.anime' %}active{% endif %}" href="{{ url_for('anime.anime') }}">Anime</a>
+                        <a class="nav-link {% if request.endpoint == 'anime.anime' %}active{% endif %}" href="{{ url_for('anime.anime') }}">
+                            <i class="bi bi-collection-play"></i> Anime
+                        </a>
                     </li>
                     {% if 'admin' in current_user.roles %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">Settings</a>
+                        <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
                 {% if current_user.is_authenticated %}
-                    <form id="searchForm" class="d-flex" role="search">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query" id="searchInput" required>
-                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    <form id="searchForm" class="d-flex me-3" role="search">
+                        <div class="input-group">
+                            <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="query" id="searchInput" required>
+                            <button class="btn btn-outline-success" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
                     </form>
-                {% endif %}
-                {% if current_user.is_authenticated %}
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('logout') }}">Logout <i class="bi bi-box-arrow-right"></i></a>
-                    </li>
-                </ul>
+                    <div class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>

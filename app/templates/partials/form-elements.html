@@ -1,0 +1,51 @@
+{% macro floating_input(field, type="text", placeholder="", required=false) %}
+<div class="form-floating mb-3">
+    {{ field(class_="form-control", id="floating" + field.name|capitalize, type=type, placeholder=placeholder, required=required) }}
+    {{ field.label(class_="form-label", for="floating" + field.name|capitalize) }}
+    {% for error in field.errors %}
+    <div class="invalid-feedback">
+        {{ error }}
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro form_messages() %}
+{% for message in get_flashed_messages(category_filter=["error"]) %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% for message in get_flashed_messages(category_filter=["info"]) %}
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% for message in get_flashed_messages(category_filter=["success"]) %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endmacro %}
+
+{% macro form_check(field, label_text=None) %}
+<div class="form-check text-start my-3">
+    {{ field(class_="form-check-input", id="check" + field.name|capitalize) }}
+    {{ field.label(class_="form-check-label", for="check" + field.name|capitalize) }}
+    {% if label_text %}
+        {{ label_text }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro submit_button(text="Submit", icon_class=None, additional_classes="") %}
+<button type="submit" class="btn btn-primary w-100 py-2 {{ additional_classes }}">
+    {% if icon_class %}
+    <i class="{{ icon_class }} me-2"></i>
+    {% endif %}
+    {{ text }}
+</button>
+{% endmacro %} 

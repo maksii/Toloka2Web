@@ -9,37 +9,28 @@
 {% block content %}
 <!-- Begin page content -->
 <main class="flex-shrink-0">
-
-
     <div class="container-fluid">
         <div class="row">
             <!-- Left Side content -->
             <div class="col-md-4 d-none" id="leftSideAdd">
                 <div class="row">
-                    <!-- Section 1 -->
                     <div class="col-md-12">
-                    </div>
-                    </div>
-            </div>
-            <!-- End of Left Side content -->
-    
-            <!-- Right Side content -->
-            <div class="col-md-12" id="rightSideTitles">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Added Titles</h5>
-                                <table id="dataTableTitles" class="table table-striped" style="width:100%"></table>
-                            </div>
-                        </div>
-    
+                        <!-- Placeholder for future content -->
                     </div>
                 </div>
             </div>
-            <!-- End of Right Side content -->
+            
+            <!-- Right Side content -->
+            <div class="col-md-12" id="rightSideTitles">
+                {{ tables.data_table_with_header(
+                    table_id='dataTableTitles',
+                    title='Added Titles',
+                    buttons='<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReleaseModal">
+                        <i class="bi bi-plus-circle me-2"></i>Add Release
+                    </button>'
+                ) }}
+            </div>
         </div>
-    
     </div>
          <!-- Edit Release Modal -->
          <div class="modal fade" id="editRelease" tabindex="-1" aria-labelledby="editReleaseLabel" aria-hidden="true">

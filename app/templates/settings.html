@@ -7,56 +7,74 @@
 <!-- Begin page content -->
 <main class="flex-shrink-0">
     <div class="container-fluid">
+        <!-- Settings Navigation Tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-tab-pane" type="button" role="tab" aria-controls="system-tab-pane" aria-selected="true">System</button>
+                <button class="nav-link active d-flex align-items-center" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-tab-pane" type="button" role="tab" aria-controls="system-tab-pane" aria-selected="true">
+                    <i class="bi bi-gear me-2"></i>System
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false" disabled>Profile</button>
+                <button class="nav-link d-flex align-items-center" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false" disabled>
+                    <i class="bi bi-person me-2"></i>Profile
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="configuration-tab" data-bs-toggle="tab" data-bs-target="#configuration-tab-pane" type="button" role="tab" aria-controls="configuration-tab-pane" aria-selected="false">Configuration</button>
+                <button class="nav-link d-flex align-items-center" id="configuration-tab" data-bs-toggle="tab" data-bs-target="#configuration-tab-pane" type="button" role="tab" aria-controls="configuration-tab-pane" aria-selected="false">
+                    <i class="bi bi-sliders me-2"></i>Configuration
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-tab-pane" type="button" role="tab" aria-controls="users-tab-pane" aria-selected="false" disabled>Users</button>
+                <button class="nav-link d-flex align-items-center" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-tab-pane" type="button" role="tab" aria-controls="users-tab-pane" aria-selected="false" disabled>
+                    <i class="bi bi-people me-2"></i>Users
+                </button>
             </li>
-          </ul>
-          <div class="tab-content" id="myTabContent">
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content mt-4" id="myTabContent">
+            <!-- System Tab -->
             <div class="tab-pane fade show active" id="system-tab-pane" role="tabpanel" aria-labelledby="system-tab" tabindex="0">
-                <div class="row">
-                    <div class="mt-5">
-                        <button type="button" class="btn btn-primary" id="showToast">Show Versions</button>
-                        <button type="button" class="btn btn-primary" id="syncTorrentReleaseTo">Sync titles.ini from DB</button>
-                        <button type="button" class="btn btn-primary" id="syncTorrentReleaseFrom">Sync titles.ini to DB</button>
-                    </div>
-                
-                    <!-- Positioning Toast at bottom-right -->
-                    <div class="position-fixed bottom-0 end-0 p-3 toast-container" style="z-index: 11">
-                        <!-- Toasts will be dynamically inserted here -->
-                    </div>
-                </div>
-
+                {{ cards.action_card(
+                    title='System Actions',
+                    content='<div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary" id="showToast">
+                            <i class="bi bi-info-circle me-2"></i>Show Versions
+                        </button>
+                        <button type="button" class="btn btn-primary" id="syncTorrentReleaseTo">
+                            <i class="bi bi-arrow-down-circle me-2"></i>Sync titles.ini from DB
+                        </button>
+                        <button type="button" class="btn btn-primary" id="syncTorrentReleaseFrom">
+                            <i class="bi bi-arrow-up-circle me-2"></i>Sync titles.ini to DB
+                        </button>
+                    </div>'
+                ) }}
             </div>
-            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">...</div>
+
+            <!-- Profile Tab -->
+            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                {{ cards.info_card(
+                    title='Profile',
+                    content='Profile settings coming soon...',
+                    icon_class='bi bi-person-lock'
+                ) }}
+            </div>
+
+            <!-- Configuration Tab -->
             <div class="tab-pane fade" id="configuration-tab-pane" role="tabpanel" aria-labelledby="configuration-tab" tabindex="0">
-                <div class="row">
-                    <div class="col">
-                        <div class="alert alert-info" role="alert">
-                            The page in development and in the current state is only able to display the data already saved in the database. You can change open_registration. Other properties will not make any affect, as there no sync in\to app.ini
-                        </div>
-        
-                    </div>
-                </div>
-            <div class="row">
-                <div class="col">
-                    <table id="settingsTable" class="table table-striped" style="width:100%">
-                    </table>
-                </div>
+                {{ alerts.info_alert('The page in development and in the current state is only able to display the data already saved in the database. You can change open_registration. Other properties will not make any affect, as there no sync in\to app.ini') }}
+                {{ tables.data_table('settingsTable') }}
             </div>
 
+            <!-- Users Tab -->
+            <div class="tab-pane fade" id="users-tab-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
+                {{ cards.info_card(
+                    title='Users',
+                    content='User management coming soon...',
+                    icon_class='bi bi-people-lock'
+                ) }}
             </div>
-            <div class="tab-pane fade" id="users-tab-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">...</div>
-          </div>
-</div>
+        </div>
+    </div>
 </main>
 {% endblock %}
