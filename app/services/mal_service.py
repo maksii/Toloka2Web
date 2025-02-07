@@ -1,25 +1,50 @@
+from typing import Dict
 import requests
+
+from app.services.base_service import BaseService
 from app.models.application_settings import ApplicationSettings
 from app.models.base import db
+
+class MALService(BaseService):
+    """Service for interacting with MyAnimeList API."""
+    
+    API_BASE_URL = "https://api.myanimelist.net/v2"
+    
+    @classmethod
+    def search_anime(cls, query: str) -> Dict:
+        """Search for anime using MAL API."""
+        api_key = cls.get_api_key('mal_api')
+        if not api_key:
+            return {'error': 'MAL API key not found'}
+            
+        url = f"{cls.API_BASE_URL}/anime"
+        params = {
+            'q': query,
+            'limit': 10,
+            'fields': 'id,title,main_picture,alternative_titles,media_type,status,start_date,end_date'
+        }
+        headers = {'X-MAL-CLIENT-ID': api_key}
+        
+        response = requests.get(url, params=params, headers=headers)
+        return cls.handle_api_response(response, "MAL API Error")
+
+    @classmethod
+    def get_anime_detail(cls, anime_id: int) -> Dict:
+        """Get detailed information about a specific anime."""
+        api_key = cls.get_api_key('mal_api')
+        if not api_key:
+            return {'error': 'MAL API key not found'}
+            
+        url = f"{cls.API_BASE_URL}/anime/{anime_id}"
+        params = {
+            'fields': 'id,title,main_picture,alternative_titles,start_date,end_date,synopsis,rank,'
+                     'popularity,status,num_episodes,rating,pictures,background,related_anime'
+        }
+        headers = {'X-MAL-CLIENT-ID': api_key}
+        
+        response = requests.get(url, params=params, headers=headers)
+        return cls.handle_api_response(response, "MAL API Error")
 
 def get_api_key(key_name):
     setting = ApplicationSettings.query.filter_by(key=key_name).first()
     return setting.value if setting else None
-
-def search_anime(query):
-    api_key = get_api_key('mal_api')
-    if not api_key:
-        return {'error': 'API key not found'}
-    url = f"https://api.myanimelist.net/v2/anime?q={query}&limit=10&fields=id,title,main_picture,alternative_titles,media_type,status,start_date,end_date"
-    headers = {'X-MAL-CLIENT-ID': f'{api_key}'}
-    response = requests.get(url, headers=headers)
-    return response.json()
-
-def get_anime_detail(anime_id):
-    api_key = get_api_key('mal_api')
-    if not api_key:
-        return {'error': 'API key not found'}
-    url = f"https://api.myanimelist.net/v2/anime/{anime_id}?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,rank,popularity,status,num_episodes,rating,pictures,background,related_anime"
-    headers = {'X-MAL-CLIENT-ID': f'{api_key}'}
-    response = requests.get(url, headers=headers)
-    return response.json()

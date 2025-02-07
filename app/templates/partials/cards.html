@@ -1,0 +1,59 @@
+{% macro basic_card(title, content) %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{ title }}</h5>
+        <div class="card-text">{{ content | safe }}</div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro detail_card(title, subtitle=None, content=None, links=None) %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title" id="{{ title|lower|replace(' ', '_') }}">{{ title }}</h5>
+        {% if subtitle %}
+        <h6 class="card-subtitle mb-2 text-muted" id="{{ subtitle|lower|replace(' ', '_') }}">{{ subtitle }}</h6>
+        {% endif %}
+        {% if content %}
+        <p class="card-text">{{ content | safe }}</p>
+        {% endif %}
+        {% if links %}
+        <div class="external-links">
+            {{ links | safe }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro action_card(title, content=None, buttons=None) %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">{{ title }}</h5>
+        {% if buttons %}
+        <div class="btn-group">
+            {{ buttons | safe }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if content %}
+        {{ content | safe }}
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro info_card(title, content, icon_class=None) %}
+<div class="card bg-light">
+    <div class="card-body">
+        <h5 class="card-title">
+            {% if icon_class %}
+            <i class="{{ icon_class }} me-2"></i>
+            {% endif %}
+            {{ title }}
+        </h5>
+        <p class="card-text">{{ content | safe }}</p>
+    </div>
+</div>
+{% endmacro %} 

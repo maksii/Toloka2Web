@@ -1,57 +1,53 @@
-// static/js/modules/studio-details.js
-import { DataTableManager } from '../common/datatable.js';
-import { Utils } from '../common/utils.js';
+// static/js/modules/studios-details.js
+import { DataTableFactory } from '../common/data-table-factory.js';
+import { ApiService } from '../common/api-service.js';
 import translations from '../l18n/en.js';
 
 export default class StudiosDetails {
     constructor() {
         this.table = null;
+        this.studioId = null;
     }
 
-    init() {
+    async init() {
+        this.studioId = this.getStudioIdFromUrl();
+        await this.loadStudioDetails();
+        this.initializeDataTable();
+    }
+
+    getStudioIdFromUrl() {
         const url = new URL(window.location.href);
         const segments = url.pathname.split('/');
-        const studioId = segments.pop();
-    
-        // Fetch and display studio details
-        fetch(`../api/studio/${studioId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector('#studioName').textContent = data[0].name;
-                document.querySelector('#studioTelegram').textContent = data[0].telegram;
-            });
-        this.initializeDataTable(studioId);
+        return segments.pop();
     }
 
-    initializeDataTable(studioId) {
+    async loadStudioDetails() {
+        try {
+            const data = await ApiService.get(`../api/studio/${this.studioId}`);
+            if (data && data[0]) {
+                document.querySelector('#studioName').textContent = data[0].name;
+                document.querySelector('#studioTelegram').textContent = data[0].telegram;
+            }
+        } catch (error) {
+            console.error('Error loading studio details:', error);
+        }
+    }
+
+    initializeDataTable() {
         const config = {
-            ajax: {
-                url:  `../api/studio/${studioId}/anime`,
-                dataSrc: function(json) {
-                    var result = [];
-                    Object.keys(json).forEach(function(key) {
-                        var item = json[key];
-                        item.codename = key;
-                        result.push(item);
-                    });
-                    return result;
-                }
-            },
-            responsive: true,
+            ajax: `../api/studio/${this.studioId}/anime`,
             columns: [
-                { data: "id", title: translations.tableHeaders.anime.id, render: function(data, type, row) {
-                    return `<a href="/anime/${data}">${data}</a>`;
-                }, visible: true },
+                DataTableFactory.createLinkColumn('id', translations.tableHeaders.anime.id, '/anime/'),
                 { data: 'titleUa', title: translations.tableHeaders.anime.titleUa, visible: true },
                 { data: 'titleEn', title: translations.tableHeaders.anime.titleEn, visible: true },
-                { data: 'releaseDate', title: translations.tableHeaders.anime.releaseDate, visible: true },
+                DataTableFactory.createDateColumn('releaseDate', translations.tableHeaders.anime.releaseDate)
             ],
-            order: [[3, 'des']],
+            order: [[3, 'desc']],
             layout: {
-                topStart: DataTableManager.returnDefaultLayout()
-            },
-            language: DataTableManager.returnDefaultLanguage()
+                topStart: DataTableFactory.returnDefaultLayout()
+            }
         };
-        this.table = DataTableManager.initializeDataTable('#titlesTable', config);
+        
+        this.table = DataTableFactory.initializeTable('#titlesTable', config);
     }
 }

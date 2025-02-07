@@ -1,6 +1,6 @@
 # routes.py
 
-from flask import Response, current_app, flash, redirect, request, render_template, url_for, get_flashed_messages
+from flask import Response, current_app, flash, redirect, request, render_template, url_for, get_flashed_messages, make_response, jsonify
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
 
@@ -8,12 +8,9 @@ from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
 from app.models.registration_form import RegistrationForm
 from app.models.user import User
-from app.app import db 
+from app.models.base import db 
 
-from ..services.services import (
-    multi_search,
-    proxy_image_logic
-)
+from app.services.services import SearchService, TolokaService
 
 def configure_routes(app, login_manager, admin_permission, user_permission):
     @app.route('/')
@@ -28,14 +25,34 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
 
     @app.route('/image/')
     def proxy_image():
-        url = request.args.get('url')
-        return proxy_image_logic(url)
+        try:
+            url = request.args.get('url')
+            if not url:
+                return make_response(jsonify({"error": "URL parameter is required"}), 400)
+            result = TolokaService.proxy_image_logic(url)
+            return make_response(result, 200)
+        except Exception as e:
+            error_message = {
+                "error": "Failed to proxy image",
+                "details": str(e)
+            }
+            return make_response(jsonify(error_message), 500)
     
     @app.route('/api/search')
     @login_required
     def search_aggregated():
-        query = request.args.get('query')
-        return multi_search(query)
+        try:
+            query = request.args.get('query')
+            if not query:
+                return make_response(jsonify({"error": "Query parameter is required"}), 400)
+            result = SearchService.multi_search(query)
+            return make_response(jsonify(result), 200)
+        except Exception as e:
+            error_message = {
+                "error": "Failed to perform search",
+                "details": str(e)
+            }
+            return make_response(jsonify(error_message), 500)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -43,51 +60,62 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        form = LoginForm()
-        if form.validate_on_submit():
-            try:
+        try:
+            form = LoginForm()
+            if form.validate_on_submit():
                 username = form.username.data
                 password = form.password.data
                 remember = form.remember_me.data
                 user = User.query.filter_by(username=username).first()
+                
                 if user and user.check_password(password):
                     login_user(user, remember=remember)
                     identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
                     return redirect(url_for('index'))
                 else:
                     flash('Invalid username or password', 'error')
-            except Exception as e:
-                flash('Login failed due to an unexpected error', 'error')
-        return render_template('login.html', form=form)
+            return render_template('login.html', form=form)
+        except Exception as e:
+            flash('Login failed due to an unexpected error', 'error')
+            return render_template('login.html', form=form)
     
     @app.route('/register', methods=['GET', 'POST'])
     def register():
-        form = RegistrationForm()
-        open_registration = ApplicationSettings.query.filter_by(key='open_registration').first()
-        if getattr(open_registration, 'value', None) and open_registration.value.lower() == 'true':
+        try:
+            form = RegistrationForm()
+            open_registration = ApplicationSettings.query.filter_by(key='open_registration').first()
+            
+            if not getattr(open_registration, 'value', None) or open_registration.value.lower() != 'true':
+                flash('Registration is closed or not set.', 'error')
+                return render_template('register.html', form=form)
+
             if form.validate_on_submit():
                 user = User(username=form.username.data)
                 user.set_password(form.password.data)
                 # Check if this is the first user
-                if User.query.count() == 0:
-                    user.roles = 'admin'
-                else:
-                    user.roles = 'user'
+                user.roles = 'admin' if User.query.count() == 0 else 'user'
+                
                 db.session.add(user)
                 db.session.commit()
                 flash('Account registered', 'info')
                 return redirect(url_for('login'))
-        else:
-            flash('Registration is closed or not set.', 'error')
-        return render_template('register.html', form=form)
+                
+            return render_template('register.html', form=form)
+        except Exception as e:
+            flash('Registration failed due to an unexpected error', 'error')
+            return render_template('register.html', form=form)
 
     @app.route('/logout')
     @login_required 
     def logout():
-        logout_user()
-        identity_changed.send(app, identity=AnonymousIdentity()) 
-        flash('You have been logged out.', 'info')
-        return redirect(url_for('login')) 
+        try:
+            logout_user()
+            identity_changed.send(app, identity=AnonymousIdentity()) 
+            flash('You have been logged out.', 'info')
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash('Logout failed due to an unexpected error', 'error')
+            return redirect(url_for('index'))
 
     @identity_loaded.connect_via(app)
     def on_identity_loaded(sender, identity):
@@ -102,8 +130,6 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         if hasattr(current_user, 'roles'):
             identity.provides.add(RoleNeed(current_user.roles))
     
-    #As user can use remember me, just a hacki fix to be sure, that hi identity updated before each request
-    #require some testing overtime to see if it will change behavior
     @app.before_request
     def before_request():
         if current_user.is_authenticated:
@@ -111,20 +137,23 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
             
     @app.route('/static/js/common/user.js')
     def user_script():
-        if current_user.is_authenticated:
-            user_id = current_user.id if current_user.id else "undefined"
-            # Ensure roles is a string and default to an empty string if none
-            user_roles = current_user.roles if current_user.roles else ""
-        else:
-            user_id = "undefined"
-            user_roles = ""
-    
-        js_content = f"""
-        const user = {{
-            id: "{user_id}",
-            roles: "{user_roles}"
-        }};
-        export default user;
-        """
-    
-        return Response(js_content, mimetype='application/javascript')
+        try:
+            if current_user.is_authenticated:
+                user_id = current_user.id if current_user.id else "undefined"
+                user_roles = current_user.roles if current_user.roles else ""
+            else:
+                user_id = "undefined"
+                user_roles = ""
+        
+            js_content = f"""
+            const user = {{
+                id: "{user_id}",
+                roles: "{user_roles}"
+            }};
+            export default user;
+            """
+        
+            return Response(js_content, mimetype='application/javascript')
+        except Exception as e:
+            error_message = "Failed to generate user script"
+            return Response(f"console.error('{error_message}')", mimetype='application/javascript', status=500)

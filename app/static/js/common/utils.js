@@ -137,7 +137,12 @@ export class Utils {
     {
         const addReleaseModal = new bootstrap.Modal(document.querySelector('#addReleaseModal'), {
             keyboard: false
-          });
+        });
+        
+        // Set default values for season and correction
+        document.querySelector('#season').value = '1';
+        document.querySelector('#correction').value = '0';
+        
         addReleaseModal.show();
     }
 

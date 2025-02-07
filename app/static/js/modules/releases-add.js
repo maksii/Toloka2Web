@@ -1,49 +1,56 @@
 // static/js/modules/releases-add.js
+import { ApiService } from '../common/api-service.js';
+import { UiManager } from '../common/ui-manager.js';
 import { Utils } from '../common/utils.js';
 import translations from '../l18n/en.js';
 
 export default class ReleasesAdd {
+    constructor() {
+        this.urlButton = document.querySelector('#urlButton');
+        this.filenameIndex = document.querySelector('#filenameIndex');
+        this.filenameIndexGroup = document.querySelector('#filenameIndexGroup');
+        this.cutButton = document.querySelector('#cutButton');
+        this.releaseTitle = document.querySelector('#releaseTitle');
+        this.submitButton = document.querySelector('#submitButton');
+        this.releaseForm = document.querySelector('#releaseForm');
+    }
+
     init() {
         this.addEventListeners();
     }
 
-    urlButton = document.querySelector('#urlButton');
-    filenameIndex = document.querySelector('#filenameIndex');
-    filenameIndexGroup = document.querySelector('#filenameIndexGroup');
-    cutButton = document.querySelector('#cutButton');
-    releaseTitle = document.querySelector('#releaseTitle');
-    submitButton = document.querySelector('#submitButton');
-    releaseForm = document.querySelector('#releaseForm');  
-
     addEventListeners() {
-        this.urlButton.addEventListener('click', () => { this.filenameIndexGroup.classList.toggle("d-none"); });
+        this.urlButton.addEventListener('click', () => this.toggleFilenameIndex());
         this.filenameIndex.addEventListener('input', () => this.extractNumbers());
         this.cutButton.addEventListener('click', () => this.cutTextTillSeparator());
-        this.releaseForm.addEventListener('submit', async (e) => { await this.submitAddNewTitleForm(e) });
+        this.releaseForm.addEventListener('submit', async (e) => this.handleFormSubmit(e));
     }
 
-    handleTableClick(event) {
-        let target = event.target;
-        while (target && !target.classList.contains('action-update')) {
-            if (target === event.currentTarget) return;
-            target = target.parentNode;
-        }
-        if (target && target.classList.contains('action-update')) {
-            this.updateRelease(target);
-        }
+    toggleFilenameIndex() {
+        this.filenameIndexGroup.classList.toggle("d-none");
     }
 
     extractNumbers() {
         const input = this.filenameIndex.value;
-        const numbers = input.split('').map((ch) => (ch >= '0' && ch <= '9') ? ch : ' ').join('').trim().split(/\s+/);
+        const numbers = input.split('')
+            .map(ch => (ch >= '0' && ch <= '9') ? ch : ' ')
+            .join('')
+            .trim()
+            .split(/\s+/);
+
         const resultList = document.querySelector('#numberList');
         resultList.innerHTML = '';
-    
+
+        if (numbers.join('').length === 0) {
+            resultList.style.display = 'none';
+            return;
+        }
+
         numbers.forEach((number, index) => {
             if (number !== '') {
                 const item = document.createElement('div');
                 item.className = 'list-group-item';
-                item.textContent = `${translations.labels.releaseAddIndex}: ${index+1}, ${translations.labels.releaseAddNumber}: ${number}`;
+                item.textContent = `${translations.labels.releaseAddIndex}: ${index + 1}, ${translations.labels.releaseAddNumber}: ${number}`;
                 item.addEventListener('click', () => {
                     document.querySelector('#index').value = index + 1;
                     resultList.style.display = 'none';
@@ -51,35 +58,53 @@ export default class ReleasesAdd {
                 resultList.appendChild(item);
             }
         });
-    
-        resultList.style.display = numbers.join('').length === 0 ? 'none' : 'block';
+
+        resultList.style.display = 'block';
     }
 
-    cutTextTillSeparator()
-    {
-        const delimiterIndex = this.releaseTitle.value.search(/[\/|]/);
+    cutTextTillSeparator() {
+        let text = this.releaseTitle.value;
+        
+        // Get text after the first "/" or "|" separator
+        const delimiterIndex = text.search(/[\/|]/);
         if (delimiterIndex !== -1) {
-            this.releaseTitle.value = this.releaseTitle.value.substring(delimiterIndex + 1);
+            text = text.substring(delimiterIndex + 1).trim();
+        }
+
+        // Remove text after year pattern and clean up
+        text = text
+            .replace(/\s*[\(\[]?\d{4}[\)\]]?.*$/, '')
+            .replace(/\(.*?\)/g, '')
+            .replace(/\[.*?\]/g, '')
+            .replace(/[\/\\:*?"<>|]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        this.releaseTitle.value = text;
+    }
+
+    async handleFormSubmit(e) {
+        e.preventDefault();
+        
+        try {
+            UiManager.setButtonLoading(this.submitButton);
+            
+            const formData = new FormData(this.releaseForm);
+            const result = await ApiService.post('/api/releases', formData);
+
+            // Show operation results
+            UiManager.showOperationResults(result);
+            
+            // Close modal and refresh table
+            UiManager.hideModal('addReleaseModal');
+            if (window.releasesTable) {
+                window.releasesTable.ajax.reload();
+            }
+
+        } catch (error) {
+            console.error('Error submitting form:', error);
+        } finally {
+            UiManager.resetButton(this.submitButton, translations.buttons.releaseAddSubmit);
         }
     }
-
-    async submitAddNewTitleForm(e)
-    {
-        e.preventDefault();
-        submitButton.innerHTML = Utils.renderButtonSpinner();
-        submitButton.disabled = true;
-        const formData = new FormData(releaseForm);
-        const response = await fetch('/api/releases', {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        submitButton.innerHTML = translations.buttons.releaseAddSubmit;
-        submitButton.disabled = false;
-
-        const bsOperationOffcanvas = new bootstrap.Offcanvas('#offcanvasOperationResults')
-        Utils.generateOperationResponseOffCanvas(result);  // Display operation status
-        bsOperationOffcanvas.toggle()
-    }
-
 }

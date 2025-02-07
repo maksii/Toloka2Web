@@ -1,5 +1,8 @@
 // static/js/modules/search.js
-import { DataTableManager, EventDelegator } from '../common/datatable.js';
+import { DataTableFactory } from '../common/data-table-factory.js';
+import { EventDelegator } from '../common/datatable.js';
+import { ApiService } from '../common/api-service.js';
+import { UiManager } from '../common/ui-manager.js';
 import { Utils } from '../common/utils.js';
 import translations from '../l18n/en.js';
 
@@ -8,73 +11,65 @@ export default class Search {
         this.tolokaTable = null;
         this.multiTable = null;
         this.streamTable = null;
+        this.searchForm = document.querySelector('#searchForm');
+        this.searchOffcanvas = null;
     }
-
-    searchForm = document.querySelector('#searchForm');
-    searchOffcanvas = new bootstrap.Offcanvas('#offcanvasTopSearchResults');  
-    searchOffcanvasClose = document.querySelector('#offcanvasTopSearchResults > div.offcanvas-header > button');
-    tolokaTableBody = document.querySelector('#torrentTable tbody');
-    multiTableBody = document.querySelector('#suggested-search tbody');
-    streamTableBody = document.querySelector('#tableStream tbody');
-
 
     init() {
         this.addEventListeners();
+        // Add offcanvas close event listener
+        const searchOffcanvasElement = document.querySelector('#offcanvasTopSearchResults');
+        if (searchOffcanvasElement) {
+            searchOffcanvasElement.addEventListener('hidden.bs.offcanvas', () => this.clearTables());
+        }
     }
 
-    initiateOffCanvas(e)
-    {
+    addEventListeners() {
+        if (this.searchForm) {
+            this.searchForm.addEventListener('submit', (e) => this.handleSearch(e));
+        }
+    }
+
+    async handleSearch(e) {
         e.preventDefault();
         const formData = new FormData(this.searchForm);
-        var query = formData.get('query');
-        document.querySelector("#searchResultsQuery").textContent = query;
-        this.searchOffcanvas = new bootstrap.Offcanvas('#offcanvasTopSearchResults');
-        this.searchOffcanvasClose = document.querySelector('#offcanvasTopSearchResults > div.offcanvas-header > button');
+        const query = formData.get('query');
         
-        if(this.tolokaTable == null)
-            {
-                this.initializeDataTable(query);
-                this.addDataTablesEvents();
-            }
-        else
-        {
-            this.refreshDataTable(query);
+        document.querySelector("#searchResultsQuery").textContent = query;
+        
+        // Initialize or clear tables
+        if (this.tolokaTable) {
+            this.refreshTables(query);
+        } else {
+            this.initializeTables(query);
+            this.addDataTablesEvents();
         }
 
-        this.searchOffcanvas.toggle()
-
+        // Clear search input and show results
+        this.searchForm.reset();
+        this.showSearchResults();
     }
 
-    initializeDataTable(query) {
-        this.initializeTolokaDataTable(query);
-        this.initializeMultiDataTable(query);
-        this.initializeStreamDataTable(query);
+    showSearchResults() {
+        this.searchOffcanvas = new bootstrap.Offcanvas('#offcanvasTopSearchResults');
+        this.searchOffcanvas.show();
     }
 
-    refreshDataTable(query)
-    {
-        this.tolokaTable.ajax.url('/api/toloka?query=' + query).load()
-        this.multiTable.ajax.url('/api/search?query=' + query).load()
-        this.streamTable.ajax.url('/api/stream?query=' + query).load()
+    refreshTables(query) {
+        this.tolokaTable.ajax.url('/api/toloka?query=' + query).load();
+        this.multiTable.ajax.url('/api/search?query=' + query).load();
+        this.streamTable.ajax.url('/api/stream?query=' + query).load();
     }
 
-    initializeTolokaDataTable(query)
-    {
+    initializeTables(query) {
+        this.initializeTolokaTable(query);
+        this.initializeMultiTable(query);
+        this.initializeStreamTable(query);
+    }
+
+    initializeTolokaTable(query) {
         const config = {
-            ajax: {
-                url: "/api/toloka?query=" + query,        
-                dataSrc: function(json) {
-                    if (json.error) {
-                        return [];  // Return an empty array to DataTables
-                    }
-                    var result = json;
-                    return result;
-                },
-                error: function(xhr, error, thrown) {
-                    console.log(xhr.responseJSON.error)
-                }
-            },
-            responsive: true,
+            ajax: `/api/toloka?query=${query}`,
             columns: [
                 {   // Responsive control column
                     className: 'control',
@@ -89,16 +84,20 @@ export default class Search {
                     orderable: false,
                     data: null,
                     defaultContent: '',
-                    render: function () {
-                        return ' <i class="bi bi-arrows-angle-expand action-expand" aria-hidden="true"></i>';
-                    },
+                    render: () => '<i class="bi bi-arrows-angle-expand action-expand" aria-hidden="true"></i>',
                     width: "15px",
                     responsivePriority: 2
                 },
                 { data: "forum", title: translations.tableHeaders.toloka.forum, visible: true },
-                { data: "name", type: 'html', title: translations.tableHeaders.toloka.name, render: (data, type, row) => { return this.renderTorrentTitle(data, type, row)}, visible: true },
+                { 
+                    data: "name", 
+                    type: 'html', 
+                    title: translations.tableHeaders.toloka.name, 
+                    render: (data, type, row) => this.renderTorrentTitle(data, type, row), 
+                    visible: true 
+                },
                 { data: "author", title: translations.tableHeaders.toloka.author, visible: true },
-                { data: "date", type: 'date',  title: translations.tableHeaders.toloka.date, render: function(data, type, row) { return DataTableManager.customDateRenderer(data, type, row)}, visible: true },
+                DataTableFactory.createDateColumn('date', translations.tableHeaders.toloka.date),
                 { data: "answers", title: translations.tableHeaders.toloka.answers, visible: false },
                 { data: "forum_url", title: translations.tableHeaders.toloka.forum_url, visible: false },
                 { data: "leechers", title: translations.tableHeaders.toloka.leechers, visible: false },
@@ -106,179 +105,68 @@ export default class Search {
                 { data: "size", title: translations.tableHeaders.toloka.size, visible: false },
                 { data: "status", title: translations.tableHeaders.toloka.status, visible: false },
                 { data: "torrent_url", title: translations.tableHeaders.toloka.torrent_url, visible: false },
-                { data: "url", title: translations.tableHeaders.toloka.url, render: function(data, type, row) { return DataTableManager.dataTableRenderAsUrl("https://toloka.to/", data, data);}, visible: false },
+                { data: "url", title: translations.tableHeaders.toloka.url, visible: false },
                 { data: "verify", title: translations.tableHeaders.toloka.verify, visible: false },
-                { data: null, title: translations.tableHeaders.toloka.actions, orderable: false, render: (data, type, row) =>  { return this.tolokaDataTableRenderActionButtons();}, visible: true }
+                DataTableFactory.createActionColumn(() => this.renderTolokaActionButtons())
             ],
-            order: [[5, 'des']],
+            order: [[5, 'desc']],
             columnDefs: [
                 {
-                    searchPanes: {
-                        show: true
-                    },
+                    searchPanes: { show: true },
                     targets: [2, 4]
                 }
             ],
             layout: {
-                topStart: DataTableManager.returnDefaultLayout()
-            },
-            language: DataTableManager.returnDefaultLanguage()
-        };
-        this.tolokaTable = DataTableManager.initializeDataTable('#torrentTable', config);
-        
-        this.tolokaTableBody = document.querySelector('#torrentTable tbody');
-    }
-
-    renderTorrentTitle(data, type, row)
-    {
-        if (type === 'sort') {
-            return data;
-        } else if (type === 'display') 
-            {
-                return DataTableManager.dataTableRenderAsUrl("https://toloka.to/", row.url, data)
+                topStart: DataTableFactory.returnDefaultLayout()
             }
+        };
+
+        this.tolokaTable = DataTableFactory.initializeTable('#torrentTable', config);
     }
 
-    handleAction(actionName, element) {
-        const tr = element.closest('tr');
-        const row = this.tolokaTable.row(tr);
-        const data = row.data();
-        const childData = tr.dataset.childData;
-
-        const actionHandlers = {
-          expand: () => this.performDetailsExpandAction(tr),
-          download: () => this.performDownloadAction(data, childData),
-          copy: () => this.performCopyAction(data, childData),
-          add: () => this.performAddAction(data, childData),
-        };
-    
-        const actionFunction = actionHandlers[actionName];
-        if (actionFunction) {
-          actionFunction();
-        } else {
-          console.error(`No handler defined for action: ${actionName}`);
-        }
-      }
-      //TBD need to refactor and combine mb?
-      handleActionStream(actionName, element) {
-        const tr = element.closest('tr');
-        const row = this.streamTable.row(tr);
-        const data = row.data();
-        const childData = tr.dataset.childData;
-
-        const actionHandlers = {
-          expand: () => this.performStreamDetailsExpandAction(tr),
-          download: () => this.performDownloadAction(data, childData),
-          copy: () => this.performCopyAction(data, childData),
-          add: () => this.performAddAction(data, childData),
-        };
-    
-        const actionFunction = actionHandlers[actionName];
-        if (actionFunction) {
-          actionFunction();
-        } else {
-          console.error(`No handler defined for action: ${actionName}`);
-        }
-      }
-
-    initializeMultiDataTable(query)
-    {
+    initializeMultiTable(query) {
         const config = {
-            ajax: {
-                url: "/api/search?query=" + query,        
-                dataSrc: function(json) {
-                    if (json.error) {
-                        return [];  // Return an empty array to DataTables
-                    }
-                    var result = json;
-                    return result;
-                },
-                error: function(xhr, error, thrown) {
-                    console.log(xhr.responseJSON.error)
-                }
-            },
-            responsive: true,
+            ajax: `/api/search?query=${query}`,
             columns: [
                 { data: 'source', title: translations.tableHeaders.multi.source },
-                { data: 'image', title: translations.tableHeaders.multi.image, render: function(data, type, row) {
-                    return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : `${translations.labels.noImageAvailable}`;
-                }},
+                { 
+                    data: 'image', 
+                    title: translations.tableHeaders.multi.image,
+                    render: (data) => data ? 
+                        `<img src="image/?url=${data}" alt="Image" height="100">` : 
+                        translations.labels.noImageAvailable
+                },
                 { data: 'title', title: translations.tableHeaders.multi.title },
                 { data: 'alternative', title: translations.tableHeaders.multi.alternative },
-                {
+                { 
                     data: 'id',
                     title: translations.tableHeaders.multi.id,
                     type: 'html',
-                    render: function(data, type, row) {
-                        let url;
-                        switch (row.source) {
-                            case 'MAL':
-                                url = `https://myanimelist.net/anime/${data}`;
-                                break;
-                            case 'TMDB':
-                                if (row.mediaType === 'tv') {
-                                    url = `https://www.themoviedb.org/tv/${data}`;
-                                } else if (row.mediaType === 'movie') {
-                                    url = `https://www.themoviedb.org/movie/${data}`;
-                                }
-                                break;
-                            case 'localdb':
-                                url = `/anime/${data}`;
-                                break;
-                            default:
-                                return data; // Return the ID as plain text if no source matches
-                        }
-                        return DataTableManager.dataTableRenderAsUrl(url,"",data);
-                    }
+                    render: (data, type, row) => this.renderMultiSourceLink(data, row)
                 },
                 { data: 'status', title: translations.tableHeaders.multi.status },
-                { data: 'mediaType', title: translations.tableHeaders.multi.mediaType},
-                { data: 'description', title: translations.tableHeaders.multi.description, visible: false  },
-                { data: 'releaseDate', type: 'date', title: translations.tableHeaders.multi.releaseDate },
+                { data: 'mediaType', title: translations.tableHeaders.multi.mediaType },
+                { data: 'description', title: translations.tableHeaders.multi.description, visible: false },
+                DataTableFactory.createDateColumn('releaseDate', translations.tableHeaders.multi.releaseDate)
             ],
-            order: [[8, 'des']],
+            order: [[8, 'desc']],
             columnDefs: [
                 {
-                    searchPanes: {
-                        show: true
-                    },
+                    searchPanes: { show: true },
                     targets: [0, 2, 5]
                 }
             ],
             layout: {
-                topStart: DataTableManager.returnDefaultLayout()
-            },
-            language: DataTableManager.returnDefaultLanguage()
+                topStart: DataTableFactory.returnDefaultLayout()
+            }
         };
-        this.multiTable = DataTableManager.initializeDataTable('#suggested-search', config);
+
+        this.multiTable = DataTableFactory.initializeTable('#suggested-search', config);
     }
 
-    tolokaDataTableRenderActionButtons(data, type, row) {
-        let downloadButton = Utils.renderActionButton("action-download","btn-outline-warning", "", "bi-download", translations.buttons.tolokaDownloadButton);
-        let addButton = Utils.renderActionButton("action-add","btn-outline-warning", "", "bi-cloud-download", translations.buttons.tolokaAddButton);
-        let copyButton = Utils.renderActionButton("action-copy","btn-outline-primary", "", "bi-chevron-double-left", translations.buttons.tolokaCopyButton);
-        return `${downloadButton}
-        ${addButton}
-        ${copyButton}`;
-    }
-
-    initializeStreamDataTable(query)
-    {
+    initializeStreamTable(query) {
         const config = {
-            ajax: {
-                url: "/api/stream?query=" + query,        
-                dataSrc: function(json) {
-                    if (json.error) {
-                        return [];  // Return an empty array to DataTables
-                    }
-                    var result = json;
-                    return result;
-                },
-                error: function(xhr, error, thrown) {
-                    console.log(xhr.responseJSON.error)
-                }
-            },
-            responsive: true,
+            ajax: `/api/stream?query=${query}`,
             columns: [
                 {   // Responsive control column
                     className: 'control',
@@ -293,56 +181,229 @@ export default class Search {
                     orderable: false,
                     data: null,
                     defaultContent: '',
-                    render: function () {
-                        return ' <i class="bi bi-arrows-angle-expand action-expand-stream" aria-hidden="true"></i>';
-                    },
+                    render: () => '<i class="bi bi-arrows-angle-expand action-expand-stream" aria-hidden="true"></i>',
                     width: "15px",
                     responsivePriority: 2
                 },
                 { data: "provider", title: translations.tableHeaders.stream.provider, visible: true },
-                { data: 'image_url', title:  translations.tableHeaders.stream.image_url, render: function(data, type, row) {
-                    return data ? `<img src="image/?url=${data}" alt="Image" height="100">` : 'No image available';
-                }},
-                { data: "title", title:  translations.tableHeaders.stream.title, visible: true },
-                { data: "title_eng", title:  translations.tableHeaders.stream.title_eng, visible: true },
-                { data: "link", title:  translations.tableHeaders.stream.link, render: function(data, type, row) {
-                    return DataTableManager.dataTableRenderAsUrl(data,"",data);
-                }, visible: true },
+                { 
+                    data: 'image_url',
+                    title: translations.tableHeaders.stream.image_url,
+                    render: (data) => data ? 
+                        `<img src="image/?url=${data}" alt="Image" height="100">` : 
+                        translations.labels.noImageAvailable
+                },
+                { data: "title", title: translations.tableHeaders.stream.title, visible: true },
+                { data: "title_eng", title: translations.tableHeaders.stream.title_eng, visible: true },
+                DataTableFactory.createLinkColumn('link', translations.tableHeaders.stream.link, '')
             ],
-            order: [[2, 'des']],
+            order: [[2, 'desc']],
             columnDefs: [
                 {
-                    searchPanes: {
-                        show: true
-                    },
+                    searchPanes: { show: true },
                     targets: [2, 4]
                 }
             ],
             layout: {
-                topStart: DataTableManager.returnDefaultLayout()
-            },
-            language: DataTableManager.returnDefaultLanguage()
+                topStart: DataTableFactory.returnDefaultLayout()
+            }
         };
-        this.streamTable = DataTableManager.initializeDataTable('#tableStream', config);
+
+        this.streamTable = DataTableFactory.initializeTable('#tableStream', config);
     }
 
-    addEventListeners()
-    {   
-        if(this.searchForm)
-        {
-                this.searchForm.addEventListener('submit', (e) => { this.initiateOffCanvas(e) });
+    addDataTablesEvents() {
+        new EventDelegator('#torrentTable tbody', this.handleTolokaAction.bind(this));
+        new EventDelegator('#tableStream tbody', this.handleStreamAction.bind(this));
+    }
+
+    renderTorrentTitle(data, type, row) {
+        if (type === 'sort' || type === 'filter' || type === 'search') {
+            return data;
+        }
+        return type === 'display' ? 
+            `<a href="https://toloka.to/${row.url}" target="_blank">${data}</a>` : 
+            data;
+    }
+
+    renderMultiSourceLink(data, row) {
+        const sourceUrls = {
+            'MAL': `https://myanimelist.net/anime/${data}`,
+            'TMDB': row.mediaType === 'tv' ? 
+                `https://www.themoviedb.org/tv/${data}` : 
+                `https://www.themoviedb.org/movie/${data}`,
+            'localdb': `/anime/${data}`
+        };
+
+        const url = sourceUrls[row.source];
+        return url ? `<a href="${url}">${data}</a>` : data;
+    }
+
+    renderTolokaActionButtons() {
+        return `
+            ${Utils.renderActionButton("action-download", "btn-outline-warning", "", "bi-download", translations.buttons.tolokaDownloadButton)}
+            ${Utils.renderActionButton("action-add", "btn-outline-warning", "", "bi-cloud-download", translations.buttons.tolokaAddButton)}
+            ${Utils.renderActionButton("action-copy", "btn-outline-primary", "", "bi-chevron-double-left", translations.buttons.tolokaCopyButton)}
+        `;
+    }
+
+    handleTolokaAction(actionName, element) {
+        const tr = element.closest('tr');
+        const row = this.tolokaTable.row(tr);
+        const data = row.data();
+        const childData = tr.dataset.childData;
+
+        const actions = {
+            expand: () => this.expandTolokaDetails(tr),
+            download: () => this.downloadTorrent(data),
+            copy: () => this.copyToReleaseForm(data, childData, tr),
+            add: () => this.addToClient(data),
+            show: () => this.toggleRemainingFiles(element)
+        };
+
+        const action = actions[actionName];
+        if (action) {
+            action();
+        } else {
+            console.error(`No handler defined for action: ${actionName}`);
         }
     }
 
-    addDataTablesEvents()
-    {
-        new EventDelegator('#torrentTable tbody', this.handleAction.bind(this));
-        new EventDelegator('#tableStream tbody', this.handleActionStream.bind(this));
+    handleStreamAction(actionName, element) {
+        const tr = element.closest('tr');
+        const row = this.streamTable.row(tr);
+        const data = row.data();
+
+        const actions = {
+            expand: () => this.expandStreamDetails(tr, data)
+        };
+
+        const action = actions[actionName];
+        if (action) {
+            action();
+        } else {
+            console.error(`No handler defined for action: ${actionName}`);
+        }
     }
 
+    async expandTolokaDetails(tr) {
+        const row = this.tolokaTable.row(tr);
+        
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.classList.remove('shown');
+            return;
+        }
 
-    formatDetail(detail, parentData) {
-        let fileItems = detail.files.map(file => `
+        try {
+            row.child(DataTableFactory.formatLoading()).show();
+            tr.classList.add('shown');
+
+            const data = row.data();
+            const detail = await ApiService.get(`/api/toloka/${data.url}`);
+            const childData = this.formatTolokaDetail(detail, data);
+            
+            row.child(childData).show();
+            tr.dataset.childData = JSON.stringify(detail);
+        } catch (error) {
+            console.error('Error expanding torrent details:', error);
+            row.child('Error loading details').show();
+        }
+    }
+
+    async expandStreamDetails(tr, data) {
+        const row = this.streamTable.row(tr);
+        
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.classList.remove('shown');
+            return;
+        }
+
+        try {
+            row.child(DataTableFactory.formatLoading()).show();
+            tr.classList.add('shown');
+
+            const detail = await ApiService.post('/api/stream/details', data);
+            const childData = this.formatStreamDetail(detail, data);
+            
+            row.child(childData).show();
+            tr.dataset.childData = JSON.stringify(detail);
+        } catch (error) {
+            console.error('Error expanding stream details:', error);
+            row.child('Error loading details').show();
+        }
+    }
+
+    async addToClient(data) {
+        try {
+            await ApiService.post("/api/toloka/", data);
+        } catch (error) {
+            console.error('Error adding to client:', error);
+        }
+    }
+
+    downloadTorrent(data) {
+        Utils.downloadFile(`https://toloka.to/${data.torrent_url}`);
+    }
+
+    async copyToReleaseForm(data, childData, tr) {
+        const handleCopy = (childDataToUse) => {
+            Utils.addRelease();
+            
+            // Set the title and URL
+            document.querySelector('#releaseTitle').value = data.name;
+            document.querySelector('#tolokaUrl').value = `https://toloka.to/${data.url}`;
+            
+            // Handle file name extraction from child data
+            if (childDataToUse) {
+                try {
+                    const parsedData = typeof childDataToUse === 'string' ? JSON.parse(childDataToUse) : childDataToUse;
+                    if (parsedData.files && parsedData.files.length > 0) {
+                        const file = parsedData.files[0];
+                        const filePath = file.folder_name ? `${file.folder_name}/${file.file_name}` : file.file_name;
+                        
+                        // Show the filename index group and set the value
+                        const indexGroup = document.querySelector('#filenameIndexGroup');
+                        const input = document.querySelector('#filenameIndex');
+                        
+                        indexGroup.classList.remove('d-none');
+                        input.value = filePath;
+                        
+                        // Trigger the input event to process the filename
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                } catch (error) {
+                    console.error('Error parsing child data:', error);
+                }
+            }
+            
+            // Hide the search results
+            this.searchOffcanvas.hide();
+        };
+
+        // If we don't have child data yet, expand the details first
+        if (!childData) {
+            const copyButton = tr.querySelector('.action-copy');
+            UiManager.setButtonLoading(copyButton);
+
+            await this.expandTolokaDetails(tr);
+
+            // Wait for child data to be available
+            const checkInterval = setInterval(() => {
+                if (tr.dataset.childData) {
+                    clearInterval(checkInterval);
+                    UiManager.resetButton(copyButton);
+                    handleCopy(tr.dataset.childData); // Pass the child data from dataset
+                }
+            }, 100);
+        } else {
+            handleCopy(childData);
+        }
+    }
+
+    formatTolokaDetail(detail, parentData) {
+        const generateFileItem = (file) => `
             <li class="list-group-item d-flex justify-content-between align-items-start">
                 <div class="ms-2 me-auto">
                     <div class="fw-bold">${file.folder_name}</div>
@@ -350,8 +411,31 @@ export default class Search {
                 </div>
                 <span class="badge text-bg-primary rounded-pill">${file.size}</span>
             </li>
-        `).join('');
-    
+        `;
+
+        const initialFiles = detail.files.slice(0, 4).map(generateFileItem).join('');
+        const remainingFiles = detail.files.length > 4 ? 
+            detail.files.slice(4).map(generateFileItem).join('') : '';
+
+        // Format the date to match parent table format
+        const dateParts = detail.date.split(' ')[0].split('-');
+        const timeParts = detail.date.split(' ')[1].split(':');
+        const date = new Date(
+            parseInt('20' + dateParts[2]), // Year
+            parseInt(dateParts[1]) - 1,    // Month (0-based)
+            parseInt(dateParts[0]),        // Day
+            parseInt(timeParts[0]),        // Hours
+            parseInt(timeParts[1])         // Minutes
+        );
+        const formattedDate = date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+        const showMoreButton = detail.files.length > 4 ? `
+            <div class="text-center mt-2">
+                <button class="btn btn-sm btn-outline-primary action-show" type="button" data-show-more="false">
+                    <i class="bi bi-chevron-down"></i> Show More (${detail.files.length - 4} more files)
+                </button>
+            </div>` : '';
+
         return `
             <div class="row">
                 <div class="col-md-12">
@@ -368,7 +452,7 @@ export default class Search {
                                         </span>
                                         <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">
                                             ${parentData.seeders}
-                                            <span class="visually-hidden">sead</span>
+                                            <span class="visually-hidden">seed</span>
                                         </span>
                                     </button>
                                 </div>
@@ -378,11 +462,17 @@ export default class Search {
                                     <h5 class="card-title">${detail.author}</h5>
                                     <p class="card-text">${detail.name}</p>
                                     <p class="card-text">${detail.description}</p>
-                                    <p class="card-text"><small class="text-body-secondary">Last updated ${detail.date}</small></p>
+                                    <p class="card-text"><small class="text-body-secondary">${formattedDate}</small></p>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <ol class="list-group list-group-numbered">${fileItems}</ol>
+                                <ol class="list-group list-group-numbered">
+                                    ${initialFiles}
+                                    <div class="remaining-files" style="display: none;">
+                                        ${remainingFiles}
+                                    </div>
+                                </ol>
+                                ${showMoreButton}
                             </div>
                         </div>
                     </div>
@@ -392,8 +482,6 @@ export default class Search {
     }
 
     formatStreamDetail(detail, parentData) {
-        let seriesHtml = this.generateSeriesExpandHTML(detail);
-
         return `
             <div class="row">
                 <div class="col-md-12">
@@ -411,7 +499,7 @@ export default class Search {
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                ${seriesHtml}
+                                ${this.generateSeriesExpandHTML(detail)}
                             </div>
                         </div>
                     </div>
@@ -438,159 +526,81 @@ export default class Search {
 
     generateSeriesExpandHTML(data) {
         const groupedData = this.groupByStudio(data);
-        let html = '';
-
-        Object.keys(groupedData).forEach((studioId, idx) => {
-            const studio = groupedData[studioId];
-            html += `<div class="accordion" id="accordionStudio${idx}">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="heading${idx}">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${idx}" aria-expanded="true" aria-controls="collapse${idx}">
-                                    ${studio.studio_name}
-                                </button>
-                            </h2>
-                            <div id="collapse${idx}" class="accordion-collapse collapse show" aria-labelledby="heading${idx}" data-bs-parent="#accordionStudio${idx}">
-                                <div class="accordion-body">
-                                    ${this.generateSeriesHTML(studio.series, idx)}
-                                </div>
-                            </div>
+        return Object.entries(groupedData).map(([studioId, studio], idx) => `
+            <div class="accordion" id="accordionStudio${idx}">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading${idx}">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapse${idx}" aria-expanded="true" 
+                                aria-controls="collapse${idx}">
+                            ${studio.studio_name}
+                        </button>
+                    </h2>
+                    <div id="collapse${idx}" class="accordion-collapse collapse show" 
+                         aria-labelledby="heading${idx}" data-bs-parent="#accordionStudio${idx}">
+                        <div class="accordion-body">
+                            ${this.generateSeriesHTML(studio.series, idx)}
                         </div>
-                    </div>`;
-        });
-
-        return html;
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     generateSeriesHTML(series, studioIdx) {
-        let seriesHTML = '<div class="accordion" id="accordionSeries' + studioIdx + '">';
-        Object.keys(series).forEach((seriesName, idx) => {
-            seriesHTML += `<div class="accordion-item">
-                                <h2 class="accordion-header" id="seriesHeading${studioIdx}_${idx}">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#seriesCollapse${studioIdx}_${idx}" aria-expanded="false" aria-controls="seriesCollapse${studioIdx}_${idx}">
-                                        ${seriesName}
-                                    </button>
-                                </h2>
-                                <div id="seriesCollapse${studioIdx}_${idx}" class="accordion-collapse collapse" aria-labelledby="seriesHeading${studioIdx}_${idx}" data-bs-parent="#accordionSeries${studioIdx}">
-                                    <div class="accordion-body">
-                                        ${series[seriesName].map(item => `<a href="${item.url}" target="_blank">${item.url}</a><br>`).join('')}
-                                    </div>
-                                </div>
-                            </div>`;
-        });
-        seriesHTML += '</div>';
-        return seriesHTML;
+        return `
+            <div class="accordion" id="accordionSeries${studioIdx}">
+                ${Object.entries(series).map(([seriesName, items], idx) => `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="seriesHeading${studioIdx}_${idx}">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#seriesCollapse${studioIdx}_${idx}" 
+                                    aria-expanded="false" 
+                                    aria-controls="seriesCollapse${studioIdx}_${idx}">
+                                ${seriesName}
+                            </button>
+                        </h2>
+                        <div id="seriesCollapse${studioIdx}_${idx}" 
+                             class="accordion-collapse collapse" 
+                             aria-labelledby="seriesHeading${studioIdx}_${idx}" 
+                             data-bs-parent="#accordionSeries${studioIdx}">
+                            <div class="accordion-body">
+                                ${items.map(item => 
+                                    `<a href="${item.url}" target="_blank">${item.url}</a><br>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
     }
 
-    performDetailsExpandAction(tr)
-    {
-        var row = this.tolokaTable.row(tr);
-
-        if (row.child.isShown()) {
-            row.child.hide();
-            tr.classList.remove('shown');
+    toggleRemainingFiles(button) {
+        const isShowing = button.dataset.showMore === 'true';
+        const remainingFiles = button.closest('.col-md-6').querySelector('.remaining-files');
+        
+        if (isShowing) {
+            remainingFiles.style.display = 'none';
+            button.innerHTML = `<i class="bi bi-chevron-down"></i> Show More (${remainingFiles.children.length} more files)`;
+            button.dataset.showMore = 'false';
         } else {
-            var data = row.data();
-            row.child(DataTableManager.formatLoading()).show();
-            tr.classList.add('shown');
-
-            fetch(`/api/toloka/${data.url}`)
-            .then(response => response.json())
-            .then(detail => {
-                const childData = this.formatDetail(detail, data);
-                row.child(childData).show();
-                tr.dataset.childData = JSON.stringify(detail);
-            });
+            remainingFiles.style.display = 'block';
+            button.innerHTML = `<i class="bi bi-chevron-up"></i> Show Less`;
+            button.dataset.showMore = 'true';
         }
     }
 
-    performStreamDetailsExpandAction(tr)
-    {
-        var row = this.streamTable.row(tr);
-
-        if (row.child.isShown()) {
-            row.child.hide();
-            tr.classList.remove('shown');
-        } else {
-            var data = row.data();
-            row.child(DataTableManager.formatLoading()).show();
-            tr.classList.add('shown');
-            data.link
-            fetch(`/api/stream/details`, {
-                method: 'POST', // Specifying the method
-                headers: {
-                    'Content-Type': 'application/json' // Specifying the content type
-                },
-                body: JSON.stringify(data) // Sending the data object as a JSON string
-            })
-            .then(response => response.json())
-            .then(detail => {
-                const childData = this.formatStreamDetail(detail, data);
-                row.child(childData).show();
-                tr.dataset.childData = JSON.stringify(detail);
-            });
+    clearTables() {
+        if (this.tolokaTable) {
+            this.tolokaTable.clear().draw();
         }
-    }
-
-    performAddAction(rowData, childData) {
-        fetch("/api/toloka/", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(rowData) 
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-
-    }
-    
-    performCopyAction(rowData, childData) {
-        Utils.addRelease();
-        document.querySelector('#releaseTitle').value = rowData.name;
-        document.querySelector('#tolokaUrl').value  = `https://toloka.to/${rowData.url}`;
-        if(childData != null)
-        {
-            childData = JSON.parse(childData);
-            var filePath = `${childData.files[0].folder_name}/${childData.files[0].file_name}`
-            var input = document.querySelector('#filenameIndex');
-            document.querySelector('#filenameIndexGroup').classList.toggle("d-none");
-            input.value = filePath
-            const event = new Event('input', {
-                bubbles: true,
-                cancelable: true,
-            });
-            input.dispatchEvent(event);
+        if (this.multiTable) {
+            this.multiTable.clear().draw();
         }
-        this.searchOffcanvas.hide()
-    }
-    
-    performDownloadAction(rowData, childData) {
-        console.log('Download action triggered', rowData, childData);
-        var url = `https://toloka.to/${rowData.torrent_url}`
-
-        Utils.downloadFile(url);
-    }
-
-    performAddAction(rowData, childData) {
-        fetch("/api/toloka/", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(rowData) 
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-
+        if (this.streamTable) {
+            this.streamTable.clear().draw();
+        }
     }
 }

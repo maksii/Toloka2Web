@@ -9,50 +9,28 @@
 <main class="form-signin w-100 m-auto">
     <form method="post">
         {{ form.hidden_tag() }}
-        <img class="mb-4" src="{{ url_for('static', filename='img/full-logo.png') }}" alt="" width="250" height="250"  style="margin-left: 25px;">
-        <h1 class="h3 mb-3 fw-normal">Please Register</h1>
-        {% for message in get_flashed_messages(category_filter=["error"]) %}
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% for message in get_flashed_messages(category_filter=["info"]) %}
-        <div class="alert alert-info" role="alert">
-            {{ message }}
-        </div>
-        {% endfor %}
-        <div class="form-floating mb-3">
-            {{ form.username(class_="form-control", id="floatingUsername", placeholder="Username") }}
-            {{ form.username.label(class_="form-label", for="floatingUsername") }}
-            {% for error in form.username.errors %}
-            <div class="invalid-feedback">
-                {{ error }}
-            </div>
-            {% endfor %}
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='img/full-logo.png') }}" alt="Logo" width="250" height="250">
+            <h1 class="h3 mb-3 fw-normal">Create Account</h1>
         </div>
 
-        <div class="form-floating mb-3">
-            {{ form.password(class_="form-control", id="floatingPassword", placeholder="Password") }}
-            {{ form.password.label(class_="form-label", for="floatingPassword") }}
-            {% for error in form.password.errors %}
-            <div class="invalid-feedback">
-                {{ error }}
-            </div>
-            {% endfor %}
-        </div>
+        {{ forms.form_messages() }}
+        
+        {{ forms.floating_input(form.username, type="text", placeholder="Username", required=true) }}
+        {{ forms.floating_input(form.password, type="password", placeholder="Password", required=true) }}
+        {{ forms.floating_input(form.confirm_password, type="password", placeholder="Confirm Password", required=true) }}
 
-        <div class="form-floating mb-3">
-            {{ form.confirm_password(class_="form-control", id="floatingConfirmPassword", placeholder="Confirm Password") }}
-            {{ form.confirm_password.label(class_="form-label", for="floatingConfirmPassword") }}
-            {% for error in form.confirm_password.errors %}
-            <div class="invalid-feedback">
-                {{ error }}
-            </div>
-            {% endfor %}
-        </div>
+        {{ forms.submit_button(
+            text="Register",
+            icon_class="bi bi-person-plus",
+            additional_classes="mb-3"
+        ) }}
 
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Register</button>
-        <a href="{{ url_for('login') }}">SignIn</a>
+        <div class="text-center">
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </a>
+        </div>
     </form>
 </main>
 {% endblock %}

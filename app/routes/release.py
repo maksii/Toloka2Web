@@ -2,9 +2,9 @@ from flask import Blueprint, jsonify, request, make_response
 from flask_login import login_required
 import jsonpickle
 
-from app.services.route_service import login_or_api_key_required
-from app.services.services import add_release_logic, get_releases_torrent_status, get_titles_logic, update_all_releases_logic, update_release_logic
-from app.services.config_service import edit_release as edit_release_db, delete_release as delete_release_db, sync_settings
+from app.services.route_service import RouteService
+from app.services.services import TolokaService, TorrentService
+from app.services.config_service import ConfigService
 
 release_bp = Blueprint('release', __name__)
 
@@ -12,8 +12,8 @@ release_bp = Blueprint('release', __name__)
 @login_required
 def get_titles():
     try:
-        titles_data = get_titles_logic()
-        torrents_data = get_releases_torrent_status()
+        titles_data = TolokaService.get_titles_logic()
+        torrents_data = TorrentService.get_releases_torrent_status()
 
         # Convert the list of torrents into a dictionary for easier access
         torrents_dict = {torrent['hash']: torrent for torrent in torrents_data.data if isinstance(torrent, dict)}
@@ -30,11 +30,10 @@ def get_titles():
                 }
                 data['torrent_info'] = torrent_info
 
-        return jsonify(titles_data)
+        return make_response(jsonify(titles_data), 200)
     except Exception as e:
-        # Return a custom JSON error message with a 500 Internal Server Error status
         error_message = {
-            "error": "titles.ini or other configuration not valid, please check your configs",
+            "error": "Failed to fetch titles",
             "details": str(e)
         }
         return make_response(jsonify(error_message), 500)
@@ -42,56 +41,93 @@ def get_titles():
 @release_bp.route('/api/releases', methods=['POST'])
 @login_required
 def add_release():
-    response = add_release_logic(request.form)
-    sync_settings("release", "from")
-    return jsonify(response)
+    try:
+        if not request.form:
+            return make_response(jsonify({"error": "Request form data is required"}), 400)
+            
+        response = TolokaService.add_release_logic(request.form)
+        ConfigService.sync_settings("release", "from")
+        return make_response(jsonify(response), 200)
+    except Exception as e:
+        error_message = {
+            "error": "Failed to add release",
+            "details": str(e)
+        }
+        return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases/update', methods=['POST'])
-@login_or_api_key_required 
+@RouteService.login_or_api_key_required
 def update_release():
-    if request.form:
-        response = update_release_logic(request.form)
-    else:
-        response = update_all_releases_logic()
-    sync_settings("release", "from")
-    return jsonify(response)
+    try:
+        if request.form:
+            response = TolokaService.update_release_logic(request.form)
+        else:
+            response = TolokaService.update_all_releases_logic()
+            
+        ConfigService.sync_settings("release", "from")
+        return make_response(jsonify(response), 200)
+    except Exception as e:
+        error_message = {
+            "error": "Failed to update release",
+            "details": str(e)
+        }
+        return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases/torrents', methods=['GET'])
-@login_or_api_key_required 
+@RouteService.login_or_api_key_required
 def torrent_info_all_releases():
-    return jsonpickle.encode(get_releases_torrent_status(), unpicklable=False)
+    try:
+        result = TorrentService.get_releases_torrent_status()
+        return make_response(jsonpickle.encode(result, unpicklable=False), 200)
+    except Exception as e:
+        error_message = {
+            "error": "Failed to fetch torrent info",
+            "details": str(e)
+        }
+        return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases/<string:hash>', methods=['GET'])
-@login_or_api_key_required 
+@RouteService.login_or_api_key_required
 def recieve_request_from_client(hash):
-    print(hash)
-    #TBD entry point to start automatic actions on torrent completion
-    return make_response(jsonify({"msg": f"{hash}"}), 200)
+    try:
+        if not hash:
+            return make_response(jsonify({"error": "Hash parameter is required"}), 400)
+        return make_response(jsonify({"msg": f"{hash}"}), 200)
+    except Exception as e:
+        error_message = {
+            "error": "Failed to process client request",
+            "details": str(e)
+        }
+        return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases', methods=['PUT'])
 @login_required
 def edit_release():
     try:
-        response = edit_release_db(request.form)
+        if not request.form:
+            return make_response(jsonify({"error": "Request form data is required"}), 400)
+            
+        response = ConfigService.edit_release(request.form)
+        return make_response(jsonify({"msg": response}), 200)
     except Exception as e:
         error_message = {
-            "error": "Error during releases manipulation",
+            "error": "Failed to edit release",
             "details": str(e)
         }
         return make_response(jsonify(error_message), 500)
-
-    return make_response(jsonify({"msg": response}), 200)
 
 @release_bp.route('/api/releases', methods=['DELETE'])
 @login_required
 def delete_release():
     try:
-        response = delete_release_db(request.form)
+        if not request.form:
+            return make_response(jsonify({"error": "Request form data is required"}), 400)
+            
+        response = ConfigService.delete_release(request.form)
+        return make_response(jsonify({"msg": response}), 200)
     except Exception as e:
         error_message = {
-            "error": "Error during releases manipulation",
+            "error": "Failed to delete release",
             "details": str(e)
         }
         return make_response(jsonify(error_message), 500)
-
-    return make_response(jsonify({"msg": response}), 200)
