@@ -132,10 +132,12 @@ def create_app(test_config=None):
     from .routes.tmdb import tmdb_bp
     from .routes.settings import setting_bp
     from .routes.auth import auth_bp
+    from .routes.users import user_bp
     
     blueprints = [
         anime_bp, release_bp, stream_bp, studio_bp,
-        toloka_bp, mal_bp, tmdb_bp, setting_bp, auth_bp
+        toloka_bp, mal_bp, tmdb_bp, setting_bp, auth_bp,
+        user_bp
     ]
     
     for blueprint in blueprints:
