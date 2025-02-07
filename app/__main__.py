@@ -4,7 +4,7 @@ import os
 
 import requests
 
-from app.services.services_db import initialize_database, update_database
+from app.services.services_db import DatabaseService
 from .app import create_app
 
 
@@ -24,7 +24,7 @@ def initialize_app():
     local_db_path = "data/anime_data.db"
     if not os.path.exists(local_db_path):
         print("Database not found. Downloading the database...")
-        update_database()
+        DatabaseService.update_database()
     else:
         print("Database already exists.")
 
@@ -45,7 +45,7 @@ def initialize_app():
         print("titles.ini already exists.")
 
 initialize_app()
-initialize_database()
+DatabaseService.initialize_database()
 app = create_app()
 
 if __name__ == '__main__':
