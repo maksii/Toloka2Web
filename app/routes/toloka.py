@@ -1,13 +1,11 @@
-from flask import Blueprint, jsonify, make_response, request
-from flask_login import login_required
-
+from flask import Blueprint, jsonify, request, make_response
+from app.utils.auth_utils import multi_auth_required
 from app.services.services import TolokaService
-
 
 toloka_bp = Blueprint('toloka', __name__)
 
 @toloka_bp.route('/api/toloka', methods=['GET'])
-@login_required
+@multi_auth_required
 def get_torrents():
     try:
         query = request.args.get('query')
@@ -25,7 +23,7 @@ def get_torrents():
         return make_response(jsonify(error_message), 500)
 
 @toloka_bp.route('/api/toloka/<string:release_id>', methods=['GET'])
-@login_required
+@multi_auth_required
 def get_torrent(release_id):
     try:
         result = TolokaService.get_torrent_logic(release_id)
@@ -40,7 +38,7 @@ def get_torrent(release_id):
         return make_response(jsonify(error_message), 500)
 
 @toloka_bp.route('/api/toloka', methods=['POST'])
-@login_required
+@multi_auth_required
 def add_torrent():
     try:
         if not request.form and not request.get_json():

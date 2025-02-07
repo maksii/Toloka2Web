@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, make_response
+from app.utils.auth_utils import multi_auth_admin_required
 from flask_login import login_required
 from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
 
@@ -9,8 +10,7 @@ setting_bp = Blueprint('setting', __name__)
 admin_permission = Permission(RoleNeed('admin'))
 
 @setting_bp.route('/api/settings', methods=['GET'])
-@login_required
-@admin_permission.require(http_exception=403)
+@multi_auth_admin_required
 def list_setting():
     try:
         result = ConfigService.read_all_settings_from_db()
@@ -23,8 +23,7 @@ def list_setting():
         return make_response(jsonify(error_message), 500)
 
 @setting_bp.route('/api/settings', methods=['POST'])
-@login_required
-@admin_permission.require(http_exception=403)
+@multi_auth_admin_required
 def add():
     try:
         if not request.form:

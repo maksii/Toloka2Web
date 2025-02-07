@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, make_response
 from flask_login import login_required
-
+from app.utils.auth_utils import multi_auth_required
 from app.services.services_db import DatabaseService
 
 anime_bp = Blueprint('anime', __name__)
@@ -16,7 +16,7 @@ def anime_detail(anime_id):
     return render_template('anime_detail.html', anime_id=anime_id)
 
 @anime_bp.route('/api/anime', methods=['GET'])
-@login_required
+@multi_auth_required
 def list_anime():
     try:
         query = request.args.get('query')
@@ -33,7 +33,7 @@ def list_anime():
         return make_response(jsonify(error_message), 500)
 
 @anime_bp.route('/api/anime/<int:anime_id>', methods=['GET'])
-@login_required
+@multi_auth_required
 def get_anime_byid(anime_id):
     try:
         result = DatabaseService.get_anime_by_id(anime_id)

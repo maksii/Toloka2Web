@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, make_response
 from flask_login import login_required
-
+from app.utils.auth_utils import multi_auth_required
 from app.services.services_db import DatabaseService
 
 
@@ -18,7 +18,7 @@ def studio_detail(studio_id):
     return render_template('studio_detail.html', studio_id=studio_id)
 
 @studio_bp.route('/api/studio', methods=['GET'])
-@login_required
+@multi_auth_required
 def search_studio():
     try:
         query = request.args.get('query')
@@ -35,7 +35,7 @@ def search_studio():
         return make_response(jsonify(error_message), 500)
 
 @studio_bp.route('/api/studio/<int:studio_id>', methods=['GET'])
-@login_required
+@multi_auth_required
 def get_studio_details(studio_id):
     try:
         result = DatabaseService.search_studio_by_id(studio_id)
@@ -50,7 +50,7 @@ def get_studio_details(studio_id):
         return make_response(jsonify(error_message), 500)
 
 @studio_bp.route('/api/studio/<int:studio_id>/anime', methods=['GET'])
-@login_required
+@multi_auth_required
 def list_titles_by_studio(studio_id):
     try:
         result = DatabaseService.get_anime_by_studio_id(studio_id)

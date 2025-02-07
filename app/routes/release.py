@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, make_response
-from flask_login import login_required
+from app.utils.auth_utils import multi_auth_required
 import jsonpickle
 
 from app.services.route_service import RouteService
@@ -9,7 +9,7 @@ from app.services.config_service import ConfigService
 release_bp = Blueprint('release', __name__)
 
 @release_bp.route('/api/releases', methods=['GET'])
-@login_required
+@multi_auth_required
 def get_titles():
     try:
         titles_data = TolokaService.get_titles_logic()
@@ -39,7 +39,7 @@ def get_titles():
         return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases', methods=['POST'])
-@login_required
+@multi_auth_required
 def add_release():
     try:
         if not request.form:
@@ -56,7 +56,7 @@ def add_release():
         return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases/update', methods=['POST'])
-@RouteService.login_or_api_key_required
+@multi_auth_required
 def update_release():
     try:
         if request.form:
@@ -74,7 +74,7 @@ def update_release():
         return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases/torrents', methods=['GET'])
-@RouteService.login_or_api_key_required
+@multi_auth_required
 def torrent_info_all_releases():
     try:
         result = TorrentService.get_releases_torrent_status()
@@ -87,7 +87,7 @@ def torrent_info_all_releases():
         return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases/<string:hash>', methods=['GET'])
-@RouteService.login_or_api_key_required
+@multi_auth_required
 def recieve_request_from_client(hash):
     try:
         if not hash:
@@ -101,7 +101,7 @@ def recieve_request_from_client(hash):
         return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases', methods=['PUT'])
-@login_required
+@multi_auth_required
 def edit_release():
     try:
         if not request.form:
@@ -117,7 +117,7 @@ def edit_release():
         return make_response(jsonify(error_message), 500)
 
 @release_bp.route('/api/releases', methods=['DELETE'])
-@login_required
+@multi_auth_required
 def delete_release():
     try:
         if not request.form:

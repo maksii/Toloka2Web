@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify, make_response
-from flask_login import login_required
-
+from app.utils.auth_utils import multi_auth_required
 from app.services.mal_service import MALService
 
 mal_bp = Blueprint('mal_bp', __name__)
 
 @mal_bp.route('/api/mal/search', methods=['GET'])
-@login_required
+@multi_auth_required
 def search():
     try:
         query = request.args.get('query')
@@ -22,7 +21,7 @@ def search():
         return make_response(jsonify(error_message), 500)
 
 @mal_bp.route('/api/mal/detail/<int:anime_id>', methods=['GET'])
-@login_required
+@multi_auth_required
 def get_detail(anime_id):
     try:
         result = MALService.get_anime_detail(anime_id)

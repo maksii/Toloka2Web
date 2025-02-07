@@ -104,10 +104,12 @@ pip install -r requirements.txt
 set FLASK_SECRET_KEY=your_random_secret_key
 set PORT=5000
 set API_KEY=your_api_key_here
+set JWT_SECRET_KEY=your_jwt_secret_key  # Required for JWT authentication
 # On Linux/Mac:
 export FLASK_SECRET_KEY=your_random_secret_key
 export PORT=5000
 export API_KEY=your_api_key_here
+export JWT_SECRET_KEY=your_jwt_secret_key  # Required for JWT authentication
 ```
 
 5. Create data directories:
@@ -121,6 +123,28 @@ python -m app
 ```
 
 7. Access the web interface at `http://localhost:5000`
+
+### API Authentication
+
+The API supports two authentication methods:
+
+1. **JWT Token** (for API clients):
+```bash
+# Get tokens
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "your_username", "password": "your_password"}'
+
+# Use token
+curl -H "Authorization: Bearer your_access_token" http://localhost:5000/api/anime
+```
+
+2. **API Key** (for automated tools):
+```bash
+curl -H "X-API-Key: your_api_key" http://localhost:5000/api/anime
+```
+
+Note: Some endpoints (like `/api/settings`) require admin privileges. Use an admin account for JWT auth or the API key.
 
 ### Configuration
 

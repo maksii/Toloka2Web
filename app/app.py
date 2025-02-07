@@ -1,13 +1,15 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_login import LoginManager
 from flask_principal import Principal, Permission, RoleNeed
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
 import os
 
 from app.services.config_service import ConfigService
 from app.services.services_db import DatabaseService
 from .models.base import db
-from .models.user import bcrypt
+from .models.user import bcrypt, User
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -20,7 +22,15 @@ def create_app(test_config=None):
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
             SESSION_COOKIE_SECURE=True,
             SESSION_COOKIE_HTTPONLY=True,
-            SESSION_COOKIE_SAMESITE='Lax'
+            SESSION_COOKIE_SAMESITE='Lax',
+            # JWT Configuration
+            JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY', 'default_jwt_secret'),  # Change this in production!
+            JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=24),
+            JWT_REFRESH_TOKEN_EXPIRES=timedelta(days=30),
+            JWT_COOKIE_SECURE=True,
+            JWT_COOKIE_CSRF_PROTECT=True,
+            JWT_COOKIE_SAMESITE='Lax',
+            JWT_ERROR_MESSAGE_KEY='error'
         )
     else:
         # Load the test config if passed in
@@ -35,6 +45,49 @@ def create_app(test_config=None):
     # Initialize Flask extensions
     db.init_app(app)
     bcrypt.init_app(app)
+    jwt = JWTManager(app)
+
+    # JWT error handlers
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return jsonify({
+            'error': 'Token has expired',
+            'code': 'token_expired'
+        }), 401
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):
+        return jsonify({
+            'error': 'Invalid token',
+            'code': 'invalid_token'
+        }), 401
+
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):
+        return jsonify({
+            'error': 'Authorization token is missing',
+            'code': 'authorization_required'
+        }), 401
+
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payload):
+        return jsonify({
+            'error': 'Fresh token required',
+            'code': 'fresh_token_required'
+        }), 401
+
+    @jwt.revoked_token_loader
+    def revoked_token_callback(jwt_header, jwt_payload):
+        return jsonify({
+            'error': 'Token has been revoked',
+            'code': 'token_revoked'
+        }), 401
+
+    @jwt.token_in_blocklist_loader
+    def check_if_token_revoked(jwt_header, jwt_payload):
+        from .routes.auth import token_blocklist
+        jti = jwt_payload["jti"]
+        return jti in token_blocklist
 
     # Initialize login manager
     login_manager = LoginManager(app)
@@ -78,10 +131,11 @@ def create_app(test_config=None):
     from .routes.mal import mal_bp
     from .routes.tmdb import tmdb_bp
     from .routes.settings import setting_bp
+    from .routes.auth import auth_bp
     
     blueprints = [
         anime_bp, release_bp, stream_bp, studio_bp,
-        toloka_bp, mal_bp, tmdb_bp, setting_bp
+        toloka_bp, mal_bp, tmdb_bp, setting_bp, auth_bp
     ]
     
     for blueprint in blueprints:

@@ -8,6 +8,7 @@ Flask-Bcrypt
 Flask-SQLAlchemy
 Flask-WTF
 Flask-CORS
+Flask-JWT-Extended==4.5.3
 SQLAlchemy
 requests
 configparser
