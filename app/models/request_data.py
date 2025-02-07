@@ -1,4 +1,20 @@
+"""Request data model for handling media requests."""
+from dataclasses import dataclass
+
+@dataclass
 class RequestData:
+    """Data class for handling media request parameters.
+    
+    Attributes:
+        url: Request URL
+        season: Season number
+        index: Episode index
+        correction: Episode number correction
+        title: Media title
+        codename: Internal codename
+        force: Force processing flag
+        path: File path
+    """
     url: str = ""
     season: int = 0
     index: int = 0
