@@ -74,7 +74,13 @@ main > .container-fluid {
     z-index: 1500;
   }
 
-  .bd-mode-toggle .dropdown-menu .active .bi {
+  .bd-language-toggle {
+    z-index: 1500;
+    margin-right: 4rem !important;
+  }
+
+  .bd-mode-toggle .dropdown-menu .active .bi,
+  .bd-language-toggle .dropdown-menu .active .bi {
     display: block !important;
   }
 

@@ -1,8 +1,7 @@
 // static/js/modules/releases-add.js
 import { ApiService } from '../common/api-service.js';
 import { UiManager } from '../common/ui-manager.js';
-import { Utils } from '../common/utils.js';
-import translations from '../l18n/en.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class ReleasesAdd {
     constructor() {

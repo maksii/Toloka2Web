@@ -95,7 +95,12 @@ const translations = {
         settingsAdd:"Add",
         settingsSyncTo:"Sync to app.ini",
         settingsSyncFrom:"Sync from app.ini",
-        settingsUpdateButton:"Update"
+        settingsUpdateButton:"Update",
+        closeButton: "Close",
+        signInButton: "Sign in",
+        registerButton: "Register",
+        parseButton: "Parse Binary",
+        cancelButton: "Cancel"
     },
     labels: {
         dataTableSearchInput: "Filter records",
@@ -110,8 +115,38 @@ const translations = {
         releaseAddNumber:'Number',
         noImageAvailable:'No image available',
         checkVersions: 'Installed Packages',
-        settingsNotification: 'Page shows last saved settings in DB. Please use Sync to and Sync from to keep them up to date state.'
+        settingsNotification: 'Page shows last saved settings in DB. Please use Sync to and Sync from to keep them up to date state.',
+        toggleTheme: 'Toggle theme',
+        toggleLanguage: 'Toggle language',
+        createAccount: 'Create Account',
+        pleaseSignIn: 'Please sign in',
+        systemActions: 'System Actions',
+        showVersions: 'Show Versions',
+        syncTitlesFromDb: 'Sync titles.ini from DB',
+        syncTitlesToDb: 'Sync titles.ini to DB',
+        profileSettings: 'Profile settings coming soon...',
+        userManagement: 'User management coming soon...',
+        editRelease: 'Edit Release',
+        addRelease: 'Add Release',
+        addedTitles: 'Added Titles',
+        indexExtractor: 'Index Extractor',
+        provideValidFilename: 'Please provide a valid filename.',
+        newSuggestions: 'New suggestions',
+        newStreams: 'New streams',
+        seed: 'seed',
+        notFound: 'Not Found',
+        system: 'System',
+        profile: 'Profile',
+        configuration: 'Configuration',
+        users: 'Users',
+        light: 'Light',
+        dark: 'Dark'
     },
+    pages: {
+        titles: {
+            base: 'Toloka2Web'
+        }
+    }
 };
 
 export default translations;

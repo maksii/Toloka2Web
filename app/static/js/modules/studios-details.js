@@ -1,7 +1,7 @@
 // static/js/modules/studios-details.js
 import { DataTableFactory } from '../common/data-table-factory.js';
 import { ApiService } from '../common/api-service.js';
-import translations from '../l18n/en.js';
+import { translations } from '../common/utils.js';
 
 export default class StudiosDetails {
     constructor() {

@@ -1,6 +1,42 @@
 // static/js/common/utils.js
-import translations from '../l18n/en.js';
+import enTranslations from '../l18n/en.js';
+import uaTranslations from '../l18n/ua.js';
+
 export class Utils {
+    static #translations = null;
+
+    static getTranslations() {
+        if (!this.#translations) {
+            const language = document.documentElement.getAttribute('data-bs-language') || 'en';
+            this.#translations = language === 'ua' ? uaTranslations : enTranslations;
+        }
+        return this.#translations;
+    }
+
+    static updateTranslations() {
+        const language = document.documentElement.getAttribute('data-bs-language') || 'en';
+        this.#translations = language === 'ua' ? uaTranslations : enTranslations;
+        // Update all elements with data-i18n attribute
+        this.translateElements();
+        // Dispatch an event to notify components that translations have changed
+        window.dispatchEvent(new CustomEvent('translationsChanged'));
+    }
+
+    static translateElements() {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = this.getNestedTranslation(key);
+            if (translation) {
+                element.textContent = translation;
+            }
+        });
+    }
+
+    static getNestedTranslation(key) {
+        return key.split('.').reduce((obj, i) => obj ? obj[i] : null, this.getTranslations());
+    }
+
     static async fetchData(url, options = {}) {
         try {
             const response = await fetch(url, options);
@@ -147,6 +183,35 @@ export class Utils {
     }
 
 }
+
+// Create a proxy to make translations reactive
+const translationsHandler = {
+    get(target, prop) {
+        // Always get fresh translations
+        return Utils.getTranslations()[prop];
+    }
+};
+
+export const translations = new Proxy({}, translationsHandler);
+
+// Listen for language changes and initialize translations
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial translation of elements
+    Utils.translateElements();
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'data-bs-language') {
+                Utils.updateTranslations();
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-bs-language']
+    });
+});
 
 export class Backdrop {
     constructor() {

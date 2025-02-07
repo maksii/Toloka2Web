@@ -20,7 +20,7 @@ const translations = {
         },        
         releases:
         {
-            codename:'Кодове ім’я',
+            codename:"Кодове ім'я",
             torrent_name:'Назва торренту', 
             season_number: 'Номер сезону',
             episode_index:'Індекс епізоду',
@@ -94,7 +94,12 @@ const translations = {
         settingsAdd:"Додати",
         settingsSyncTo:"Синхронізація з app.ini",
         settingsSyncFrom:"Синхронізація з app.ini",
-        settingsUpdateButton:"Оновити"
+        settingsUpdateButton:"Оновити",
+        closeButton: "Закрити",
+        signInButton: "Увійти",
+        registerButton: "Зареєструватися",
+        parseButton: "Розібрати бінарний",
+        cancelButton: "Скасувати"
     },
     labels: {
         dataTableSearchInput: "Фільтрувати записи",
@@ -108,8 +113,39 @@ const translations = {
         releaseAddIndex: 'Індекс',
         releaseAddNumber:'Номер',
         noImageAvailable:'Зображення недоступне',
-        checkVersions: 'Встановлені пакети'
+        checkVersions: 'Встановлені пакети',
+        settingsNotification: 'Сторінка показує останні збережені налаштування в БД. Будь ласка, використовуйте Синхронізацію для оновлення.',
+        toggleTheme: 'Перемкнути тему',
+        toggleLanguage: 'Перемкнути мову',
+        createAccount: 'Створити обліковий запис',
+        pleaseSignIn: 'Будь ласка, увійдіть',
+        systemActions: 'Системні дії',
+        showVersions: 'Показати версії',
+        syncTitlesFromDb: 'Синхронізувати titles.ini з БД',
+        syncTitlesToDb: 'Синхронізувати titles.ini в БД',
+        profileSettings: 'Налаштування профілю скоро будуть доступні...',
+        userManagement: 'Керування користувачами скоро буде доступне...',
+        editRelease: 'Редагувати реліз',
+        addRelease: 'Додати реліз',
+        addedTitles: 'Додані назви',
+        indexExtractor: 'Екстрактор індексу',
+        provideValidFilename: 'Будь ласка, вкажіть правильну назву файлу.',
+        newSuggestions: 'Нові пропозиції',
+        newStreams: 'Нові стріми',
+        seed: 'сід',
+        notFound: 'Не знайдено',
+        system: 'Система',
+        profile: 'Профіль',
+        configuration: 'Конфігурація',
+        users: 'Користувачі',
+        light: 'Світла',
+        dark: 'Темна'
     },
+    pages: {
+        titles: {
+            base: 'Toloka2Web'
+        }
+    }
 };
 
 export default translations;

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100" data-bs-theme="dark">
+<html lang="en" class="h-100" data-bs-theme="dark" data-bs-language="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Toloka2Web v2024.06.21.1548{% endblock %}</title>
+    <title>{% block title %}<span data-i18n="pages.titles.base">Toloka2Web</span>{% endblock %}</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon/favicon.ico') }}">
@@ -32,6 +32,7 @@
     <!-- Custom Styles and Scripts -->
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='js/common/color-modes.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/common/language-modes.js') }}"></script>
 
 
 
@@ -48,6 +49,7 @@
     
     <!-- Theme switcher and Navigation -->
     {% include 'partials/theme_switcher.html' %}
+    {% include 'partials/language_switcher.html' %}
     {% include 'partials/navbar.html' %}
     
     <!-- Main content area -->
