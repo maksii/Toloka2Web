@@ -8,10 +8,8 @@ import Studios from './modules/studios.js';
 import StudiosDetails from './modules/studios-details.js';
 import Settings from './modules/settings.js';
 import UpdateChecker from './common/update-checker.js';
-import { DataTableManager } from './common/datatable.js';
-import { Backdrop, Utils } from './common/utils.js';
-
-import user from './common/user.js';
+import { DataTableFactory } from './common/data-table-factory.js';
+import { Backdrop } from './common/utils.js';
 
 class AppController {
     constructor() {
@@ -24,43 +22,69 @@ class AppController {
             'studios-details-page': StudiosDetails,
             'settings-page': Settings
         };
+
+        this.commonModules = {
+            search: Search,
+            releasesAdd: ReleasesAdd,
+            updateChecker: UpdateChecker
+        };
     }
 
-    init() {
-        DataTableManager.disableAlertErrors();
-        DataTableManager.handleBootstrapTabs();
+    async init() {
+        try {
+            // Initialize DataTable global settings
+            DataTableFactory.initializeGlobalSettings();
 
-        // Usage
-        const backdrop = new Backdrop();
-        // To fetch and store data or update the background image
-        backdrop.fetchData();
-        backdrop.setRandomBackdrop();
+            // Initialize backdrop
+            const backdrop = new Backdrop();
+            await backdrop.fetchData();
+            backdrop.setRandomBackdrop();
 
-        const searchModule = new Search();
-        searchModule.init();
+            // Initialize common modules that should be available on all pages
+            await this.initializeCommonModules();
 
-        const updateCheckerModule = new UpdateChecker();
-        updateCheckerModule.init();
+            // Initialize page-specific module
+            await this.initializePageModule();
 
-        const releaseAddModule = new ReleasesAdd();
-        releaseAddModule.init();
+        } catch (error) {
+            console.error('Error initializing application:', error);
+        }
+    }
 
+    async initializeCommonModules() {
+        // Initialize search functionality (available on all pages)
+        const searchModule = new this.commonModules.search();
+        await searchModule.init();
+
+        // Initialize releases add functionality (available on all pages)
+        const releaseAddModule = new this.commonModules.releasesAdd();
+        await releaseAddModule.init();
+
+        // Initialize update checker
+        const updateCheckerModule = new this.commonModules.updateChecker();
+        await updateCheckerModule.init();
+    }
+
+    async initializePageModule() {
         // Get the page identifier from the body's ID
         const pageId = document.body.id;
 
         // Initialize the module corresponding to the current page
         if (this.modules[pageId]) {
-            const moduleInstance = new this.modules[pageId]();
-            moduleInstance.init();
+            try {
+                const moduleInstance = new this.modules[pageId]();
+                await moduleInstance.init();
+            } catch (error) {
+                console.error(`Error initializing module for page ${pageId}:`, error);
+            }
         } else {
             console.log('No specific module for this page or page identifier missing.');
         }
-
-        Utils.activeTooltips();
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize the application when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', async () => {
     const app = new AppController();
-    app.init();
+    await app.init();
 });

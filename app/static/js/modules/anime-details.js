@@ -1,102 +1,134 @@
 // static/js/modules/anime-details.js
-import { DataTableManager } from '../common/datatable.js';
-import { Utils } from '../common/utils.js';
+import { DataTableFactory } from '../common/data-table-factory.js';
+import { ApiService } from '../common/api-service.js';
 import translations from '../l18n/en.js';
 
 export default class AnimeDetails {
     constructor() {
         this.relatedAnimeTable = null;
         this.studiosTable = null;
+        this.animeId = null;
+        this.elements = {
+            title: document.querySelector('#animeTitle'),
+            description: document.querySelector('#animeDescription'),
+            malLink: document.querySelector('#linkMal'),
+            imdbLink: document.querySelector('#linkImdb')
+        };
     }
 
-    init() {
-        const url = new URL(window.location.href);
-        const segments = url.pathname.split('/');
-        const animeId = segments.pop();
-        
-        this.initializerelatedAnimeTableDataTable(animeId);
-        this.initializeStudiosDataTable(animeId);
+    async init() {
+        this.animeId = this.getAnimeIdFromUrl();
+        if (!this.animeId) {
+            console.error('No anime ID found in URL');
+            return;
+        }
 
-        // Fetch and display anime details
-        fetch(`../api/anime/${animeId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector('#animeTitle').textContent = data.titleEn;
-                document.querySelector('#animeDescription').textContent = data.description;
-                document.querySelector('#linkMal').href = `https://myanimelist.net/anime/${data.malId}`;
-                document.querySelector('#linkImdb').href = `https://www.imdb.com/title/${data.ashdiId}`;
-                // Additional links can be updated here
-            });
+        await this.loadAnimeDetails();
+        this.initializeTables();
     }
 
-    initializerelatedAnimeTableDataTable(animeId) {
+    getAnimeIdFromUrl() {
+        try {
+            const url = new URL(window.location.href);
+            const segments = url.pathname.split('/');
+            return segments.pop() || null;
+        } catch (error) {
+            console.error('Error getting anime ID from URL:', error);
+            return null;
+        }
+    }
+
+    async loadAnimeDetails() {
+        try {
+            const data = await ApiService.get(`../api/anime/${this.animeId}`);
+            if (!data) {
+                throw new Error('No data received from API');
+            }
+
+            this.updateAnimeDetails(data);
+        } catch (error) {
+            console.error('Error loading anime details:', error);
+            this.showErrorMessage('Failed to load anime details');
+        }
+    }
+
+    updateAnimeDetails(data) {
+        // Update title
+        if (this.elements.title) {
+            this.elements.title.textContent = data.titleEn || 'No title available';
+        }
+
+        // Update description
+        if (this.elements.description) {
+            this.elements.description.textContent = data.description || 'No description available';
+        }
+
+        // Update MAL link
+        if (this.elements.malLink && data.malId) {
+            this.elements.malLink.href = `https://myanimelist.net/anime/${data.malId}`;
+        }
+
+        // Update IMDB link
+        if (this.elements.imdbLink && data.ashdiId) {
+            this.elements.imdbLink.href = `https://www.imdb.com/title/${data.ashdiId}`;
+        }
+    }
+
+    showErrorMessage(message) {
+        // You can implement this based on your UI requirements
+        console.warn(message);
+        // Example: Show error in the title element if it exists
+        if (this.elements.title) {
+            this.elements.title.textContent = message;
+            this.elements.title.classList.add('text-danger');
+        }
+    }
+
+    initializeTables() {
+        this.initializeRelatedAnimeTable();
+        this.initializeStudiosTable();
+    }
+
+    initializeRelatedAnimeTable() {
         const config = {
-            ajax: {
-                url:  `../api/anime/${animeId}/related`,
-                dataSrc: function(json) {
-                    var result = [];
-                    Object.keys(json).forEach(function(key) {
-                        var item = json[key];
-                        item.codename = key;
-                        result.push(item);
-                    });
-                    return result;
-                }
-            },
-            responsive: true,
+            ajax: `../api/anime/${this.animeId}/related`,
             columns: [
-                { data: "id", title: translations.tableHeaders.anime.id, render: function(data, type, row) {
-                    return `<a href="/anime/${data}">${data}</a>`;
-                }, visible: true },
+                DataTableFactory.createLinkColumn('id', translations.tableHeaders.anime.id, '/anime/'),
                 { data: 'titleUa', title: translations.tableHeaders.anime.titleUa, visible: true },
                 { data: 'titleEn', title: translations.tableHeaders.anime.titleEn, visible: true },
                 { data: 'season', title: translations.tableHeaders.anime.season, visible: true },
                 { data: 'type.name', title: translations.tableHeaders.anime.type, visible: true },
                 { data: 'status.name', title: translations.tableHeaders.anime.status, visible: true },
-                { data: 'releaseDate', title: translations.tableHeaders.anime.releaseDate, visible: true },
+                DataTableFactory.createDateColumn('releaseDate', translations.tableHeaders.anime.releaseDate)
             ],
-            order: [[6, 'des']],
+            order: [[6, 'desc']],
             layout: {
-                topStart: DataTableManager.returnDefaultLayout()
-            },
-            language: DataTableManager.returnDefaultLanguage()
+                topStart: DataTableFactory.returnDefaultLayout()
+            }
         };
 
-        this.relatedAnimeTable = DataTableManager.initializeDataTable('#relatedAnimeTable', config);
+        this.relatedAnimeTable = DataTableFactory.initializeTable('#relatedAnimeTable', config);
     }
 
-    initializeStudiosDataTable(animeId) {
+    initializeStudiosTable() {
         const config = {
-            ajax: {
-                url:  `../api/anime/${animeId}/studios`,
-                dataSrc: function(json) {
-                    var result = [];
-                    Object.keys(json).forEach(function(key) {
-                        var item = json[key];
-                        item.codename = key;
-                        result.push(item);
-                    });
-                    return result;
-                }
-            },
-            responsive: true,
+            ajax: `../api/anime/${this.animeId}/studios`,
             columns: [
-                { data: "id", title: translations.tableHeaders.studioDetails.id, render: function(data, type, row) {
-                    return `<a href="/studios/${data}">${data}</a>`;
-                }, visible: true },
+                DataTableFactory.createLinkColumn('id', translations.tableHeaders.studioDetails.id, '/studios/'),
                 { data: 'name', title: translations.tableHeaders.studioDetails.name, visible: true },
-                { data: "telegram", title: translations.tableHeaders.studioDetails.telegram, render: function(data, type, row) {
-                    return `<a href="${data}">${data}</a>`;
-                }, visible: true },
+                { 
+                    data: 'telegram', 
+                    title: translations.tableHeaders.studioDetails.telegram,
+                    render: (data) => data ? `<a href="${data}">${data}</a>` : '',
+                    visible: true 
+                }
             ],
-            order: [[3, 'des']],
+            order: [[0, 'asc']],
             layout: {
-                topStart: DataTableManager.returnDefaultLayout()
-            },
-            language: DataTableManager.returnDefaultLanguage()
+                topStart: DataTableFactory.returnDefaultLayout()
+            }
         };
     
-        this.studiosTable = DataTableManager.initializeDataTable('#studiosTable', config);
+        this.studiosTable = DataTableFactory.initializeTable('#studiosTable', config);
     }
-
 }
