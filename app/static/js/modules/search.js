@@ -17,6 +17,11 @@ export default class Search {
 
     init() {
         this.addEventListeners();
+        // Add offcanvas close event listener
+        const searchOffcanvasElement = document.querySelector('#offcanvasTopSearchResults');
+        if (searchOffcanvasElement) {
+            searchOffcanvasElement.addEventListener('hidden.bs.offcanvas', () => this.clearTables());
+        }
     }
 
     addEventListeners() {
@@ -584,6 +589,18 @@ export default class Search {
             remainingFiles.style.display = 'block';
             button.innerHTML = `<i class="bi bi-chevron-up"></i> Show Less`;
             button.dataset.showMore = 'true';
+        }
+    }
+
+    clearTables() {
+        if (this.tolokaTable) {
+            this.tolokaTable.clear().draw();
+        }
+        if (this.multiTable) {
+            this.multiTable.clear().draw();
+        }
+        if (this.streamTable) {
+            this.streamTable.clear().draw();
         }
     }
 }
