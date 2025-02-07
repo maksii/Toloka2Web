@@ -100,7 +100,7 @@ export default class Search {
                 { data: "size", title: translations.tableHeaders.toloka.size, visible: false },
                 { data: "status", title: translations.tableHeaders.toloka.status, visible: false },
                 { data: "torrent_url", title: translations.tableHeaders.toloka.torrent_url, visible: false },
-                DataTableFactory.createLinkColumn('url', translations.tableHeaders.toloka.url, 'https://toloka.to/'),
+                { data: "url", title: translations.tableHeaders.toloka.url, visible: false },
                 { data: "verify", title: translations.tableHeaders.toloka.verify, visible: false },
                 DataTableFactory.createActionColumn(() => this.renderTolokaActionButtons())
             ],
@@ -213,11 +213,11 @@ export default class Search {
     }
 
     renderTorrentTitle(data, type, row) {
-        if (type === 'sort') {
+        if (type === 'sort' || type === 'filter' || type === 'search') {
             return data;
         }
         return type === 'display' ? 
-            DataTableFactory.createLinkColumn('url', data, 'https://toloka.to/').render(row.url, type, row) : 
+            `<a href="https://toloka.to/${row.url}" target="_blank">${data}</a>` : 
             data;
     }
 
@@ -252,7 +252,8 @@ export default class Search {
             expand: () => this.expandTolokaDetails(tr),
             download: () => this.downloadTorrent(data),
             copy: () => this.copyToReleaseForm(data, childData, tr),
-            add: () => this.addToClient(data)
+            add: () => this.addToClient(data),
+            show: () => this.toggleRemainingFiles(element)
         };
 
         const action = actions[actionName];
@@ -397,7 +398,7 @@ export default class Search {
     }
 
     formatTolokaDetail(detail, parentData) {
-        const fileItems = detail.files.map(file => `
+        const generateFileItem = (file) => `
             <li class="list-group-item d-flex justify-content-between align-items-start">
                 <div class="ms-2 me-auto">
                     <div class="fw-bold">${file.folder_name}</div>
@@ -405,7 +406,30 @@ export default class Search {
                 </div>
                 <span class="badge text-bg-primary rounded-pill">${file.size}</span>
             </li>
-        `).join('');
+        `;
+
+        const initialFiles = detail.files.slice(0, 4).map(generateFileItem).join('');
+        const remainingFiles = detail.files.length > 4 ? 
+            detail.files.slice(4).map(generateFileItem).join('') : '';
+
+        // Format the date to match parent table format
+        const dateParts = detail.date.split(' ')[0].split('-');
+        const timeParts = detail.date.split(' ')[1].split(':');
+        const date = new Date(
+            parseInt('20' + dateParts[2]), // Year
+            parseInt(dateParts[1]) - 1,    // Month (0-based)
+            parseInt(dateParts[0]),        // Day
+            parseInt(timeParts[0]),        // Hours
+            parseInt(timeParts[1])         // Minutes
+        );
+        const formattedDate = date.toLocaleDateString('en-GB') + ' ' + date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+        const showMoreButton = detail.files.length > 4 ? `
+            <div class="text-center mt-2">
+                <button class="btn btn-sm btn-outline-primary action-show" type="button" data-show-more="false">
+                    <i class="bi bi-chevron-down"></i> Show More (${detail.files.length - 4} more files)
+                </button>
+            </div>` : '';
 
         return `
             <div class="row">
@@ -433,11 +457,17 @@ export default class Search {
                                     <h5 class="card-title">${detail.author}</h5>
                                     <p class="card-text">${detail.name}</p>
                                     <p class="card-text">${detail.description}</p>
-                                    <p class="card-text"><small class="text-body-secondary">Last updated ${detail.date}</small></p>
+                                    <p class="card-text"><small class="text-body-secondary">${formattedDate}</small></p>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <ol class="list-group list-group-numbered">${fileItems}</ol>
+                                <ol class="list-group list-group-numbered">
+                                    ${initialFiles}
+                                    <div class="remaining-files" style="display: none;">
+                                        ${remainingFiles}
+                                    </div>
+                                </ol>
+                                ${showMoreButton}
                             </div>
                         </div>
                     </div>
@@ -540,5 +570,20 @@ export default class Search {
                 `).join('')}
             </div>
         `;
+    }
+
+    toggleRemainingFiles(button) {
+        const isShowing = button.dataset.showMore === 'true';
+        const remainingFiles = button.closest('.col-md-6').querySelector('.remaining-files');
+        
+        if (isShowing) {
+            remainingFiles.style.display = 'none';
+            button.innerHTML = `<i class="bi bi-chevron-down"></i> Show More (${remainingFiles.children.length} more files)`;
+            button.dataset.showMore = 'false';
+        } else {
+            remainingFiles.style.display = 'block';
+            button.innerHTML = `<i class="bi bi-chevron-up"></i> Show Less`;
+            button.dataset.showMore = 'true';
+        }
     }
 }
