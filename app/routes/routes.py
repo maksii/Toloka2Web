@@ -3,6 +3,8 @@
 from flask import Response, current_app, flash, redirect, request, render_template, url_for, get_flashed_messages, make_response, jsonify
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
+from flask_cors import CORS
+import os
 
 from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
@@ -13,6 +15,17 @@ from app.models.base import db
 from app.services.services import SearchService, TolokaService
 
 def configure_routes(app, login_manager, admin_permission, user_permission):
+    # Configure CORS
+    cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
+    CORS(app, resources={
+        r"/*": {
+            "origins": cors_origins,
+            "supports_credentials": True,
+            "allow_headers": ["Content-Type", "Authorization", "Accept"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        }
+    })
+
     @app.route('/')
     @login_required
     def index():
@@ -54,6 +67,23 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
             }
             return make_response(jsonify(error_message), 500)
 
+    @app.route('/api/auth/check')
+    def check_auth():
+        try:
+            if current_user.is_authenticated:
+                return jsonify({
+                    'id': current_user.id,
+                    'username': current_user.username,
+                    'roles': current_user.roles
+                })
+            return jsonify(None)
+        except Exception as e:
+            error_message = {
+                "error": "Failed to check authentication status",
+                "details": str(e)
+            }
+            return make_response(jsonify(error_message), 500)
+
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
@@ -61,6 +91,30 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         try:
+            # For API requests, handle form data differently
+            if request.headers.get('Accept') == 'application/json':
+                username = request.form.get('username')
+                password = request.form.get('password')
+                remember = request.form.get('remember_me', 'false').lower() == 'true'
+
+                if not username or not password:
+                    return jsonify({'error': 'Username and password are required'}), 400
+
+                user = User.query.filter_by(username=username).first()
+                
+                if user and user.check_password(password):
+                    login_user(user, remember=remember)
+                    identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+                    
+                    return jsonify({
+                        'id': user.id,
+                        'username': user.username,
+                        'roles': user.roles
+                    })
+                else:
+                    return jsonify({'error': 'Invalid username or password'}), 401
+
+            # For regular form submissions
             form = LoginForm()
             if form.validate_on_submit():
                 username = form.username.data
@@ -74,9 +128,15 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
                     return redirect(url_for('index'))
                 else:
                     flash('Invalid username or password', 'error')
+            
             return render_template('login.html', form=form)
         except Exception as e:
-            flash('Login failed due to an unexpected error', 'error')
+            app.logger.error(f'Login error: {str(e)}')
+            error_message = 'Login failed due to an unexpected error'
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'error': error_message}), 500
+            
+            flash(error_message, 'error')
             return render_template('login.html', form=form)
     
     @app.route('/register', methods=['GET', 'POST'])

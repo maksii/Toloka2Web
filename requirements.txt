@@ -7,6 +7,7 @@ Flask-Principal
 Flask-Bcrypt
 Flask-SQLAlchemy
 Flask-WTF
+Flask-CORS
 SQLAlchemy
 requests
 configparser

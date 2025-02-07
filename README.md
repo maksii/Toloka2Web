@@ -131,6 +131,7 @@ python -m app
 - `FLASK_SECRET_KEY`: Random string used for session security (required)
 - `PORT`: Web interface port (default: 5000)
 - `TZ`: Timezone (default: Europe/Kiev)
+- `CORS_ORIGINS`: Comma-separated list of allowed CORS origins (default: http://localhost:5173)
 
 #### External Service API Keys
 Third-party service API keys are managed through the web interface:
