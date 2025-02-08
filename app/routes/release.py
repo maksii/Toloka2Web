@@ -42,10 +42,11 @@ def get_titles():
 @multi_auth_required
 def add_release():
     try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
+        data = request.get_json() if request.is_json else request.form
+        if not data:
+            return make_response(jsonify({"error": "Request data is required"}), 400)
             
-        response = TolokaService.add_release_logic(request.form)
+        response = TolokaService.add_release_logic(data)
         ConfigService.sync_settings("release", "from")
         return make_response(jsonify(response), 200)
     except Exception as e:
@@ -59,8 +60,9 @@ def add_release():
 @multi_auth_required
 def update_release():
     try:
-        if request.form:
-            response = TolokaService.update_release_logic(request.form)
+        data = request.get_json() if request.is_json else request.form
+        if data:
+            response = TolokaService.update_release_logic(data)
         else:
             response = TolokaService.update_all_releases_logic()
             
@@ -104,10 +106,11 @@ def recieve_request_from_client(hash):
 @multi_auth_required
 def edit_release():
     try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
+        data = request.get_json() if request.is_json else request.form
+        if not data:
+            return make_response(jsonify({"error": "Request data is required"}), 400)
             
-        response = ConfigService.edit_release(request.form)
+        response = ConfigService.edit_release(data)
         return make_response(jsonify({"msg": response}), 200)
     except Exception as e:
         error_message = {
@@ -120,10 +123,11 @@ def edit_release():
 @multi_auth_required
 def delete_release():
     try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
+        data = request.get_json() if request.is_json else request.form
+        if not data:
+            return make_response(jsonify({"error": "Request data is required"}), 400)
             
-        response = ConfigService.delete_release(request.form)
+        response = ConfigService.delete_release(data)
         return make_response(jsonify({"msg": response}), 200)
     except Exception as e:
         error_message = {

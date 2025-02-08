@@ -26,12 +26,13 @@ def list_setting():
 @multi_auth_admin_required
 def add():
     try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
+        data = request.get_json() if request.is_json else request.form
+        if not data:
+            return make_response(jsonify({"error": "Request data is required"}), 400)
             
-        section = request.form.get('section')
-        key = request.form.get('key')
-        value = request.form.get('value')
+        section = data.get('section')
+        key = data.get('key')
+        value = data.get('value')
         
         if not all([section, key, value]):
             return make_response(jsonify({"error": "Section, key, and value are required"}), 400)
