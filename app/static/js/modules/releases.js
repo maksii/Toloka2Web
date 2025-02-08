@@ -232,7 +232,7 @@ export default class Releases {
         try {
             UiManager.setButtonLoading(node[0], translations.buttons.releaseUpdateAllButton);
             
-            const result = await ApiService.post('/api/releases/update');
+            const result = await ApiService.post('/api/releases/update', {});
             UiManager.showOperationResults(result);
             this.table.ajax.reload();
 
