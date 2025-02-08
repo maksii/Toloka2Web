@@ -133,11 +133,12 @@ def create_app(test_config=None):
     from .routes.settings import setting_bp
     from .routes.auth import auth_bp
     from .routes.users import user_bp
+    from .api import api_bp  # Import the API blueprint
     
     blueprints = [
         anime_bp, release_bp, stream_bp, studio_bp,
         toloka_bp, mal_bp, tmdb_bp, setting_bp, auth_bp,
-        user_bp
+        user_bp, api_bp  # Add the API blueprint to the list
     ]
     
     for blueprint in blueprints:
