@@ -146,6 +146,52 @@ curl -H "X-API-Key: your_api_key" http://localhost:5000/api/anime
 
 Note: Some endpoints (like `/api/settings`) require admin privileges. Use an admin account for JWT auth or the API key.
 
+### API Documentation (Swagger UI)
+
+The API documentation is available through Swagger UI, which provides an interactive interface to explore and test the API endpoints.
+
+#### Accessing Swagger UI
+- When running locally: `http://localhost:5000/api/docs`
+- Docker installation: `http://localhost:80/api/docs`
+
+#### Features
+- Interactive API documentation
+- Request/response examples for each endpoint
+- Built-in API testing interface
+- Authentication support (JWT Token and API Key)
+- Detailed error responses
+- Schema definitions for all models
+
+#### Authentication Setup
+1. **Getting JWT Token**:
+   - Use the `/api/auth/login` endpoint in Swagger UI
+   - Or use cURL:
+     ```bash
+     curl -X POST http://localhost:5000/api/auth/login \
+       -H "Content-Type: application/json" \
+       -d '{"username": "your_username", "password": "your_password"}'
+     ```
+   - The response will contain `access_token` and `refresh_token`
+   - Access tokens expire after 1 hour
+   - Use the `/api/auth/refresh` endpoint with your refresh token to get a new access token
+
+2. **API Key**:
+   - The API key is set through the `API_KEY` environment variable when starting the application
+   - For Docker: Set in your `docker-compose.yml`
+   - For manual installation: Set in your environment
+   - The key specified in `API_KEY` will be your authentication key
+
+#### Using Swagger UI
+1. Navigate to the Swagger UI URL
+2. Click the "Authorize" button at the top
+3. Choose your authentication method:
+   - For JWT: Enter `Bearer your_token` in the "bearerAuth" field
+   - For API Key: Enter your key in the "X-API-KEY" field
+4. Click "Authorize" to save
+5. Explore and test the available endpoints
+
+Note: The documentation is automatically generated from the codebase and always reflects the current API state.
+
 ### Configuration
 
 #### Environment Variables
