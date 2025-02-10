@@ -30,7 +30,14 @@ def create_app(test_config=None):
             JWT_COOKIE_SECURE=True,
             JWT_COOKIE_CSRF_PROTECT=True,
             JWT_COOKIE_SAMESITE='Lax',
-            JWT_ERROR_MESSAGE_KEY='error'
+            JWT_ERROR_MESSAGE_KEY='error',
+            # API Key Configuration
+            API_KEY=os.environ.get('API_KEY', 'default_api_key'),  # Change this in production!
+            # Server Configuration
+            PORT=int(os.environ.get('PORT', 5000)),
+            HOST=os.environ.get('HOST', '0.0.0.0'),
+            # CORS Configuration
+            CORS_ORIGINS=os.environ.get('CORS_ORIGINS', 'http://localhost:5173').split(',')
         )
     else:
         # Load the test config if passed in
@@ -151,6 +158,6 @@ def create_app(test_config=None):
 
 if __name__ == "__main__":
     app = create_app()
-    port = int(os.getenv('PORT', 5000))
-    host = os.getenv('HOST', '0.0.0.0')
+    port = app.config['PORT']
+    host = app.config['HOST']
     app.run(host=host, port=port, debug=True)

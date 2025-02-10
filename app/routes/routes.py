@@ -16,10 +16,9 @@ from app.services.services import SearchService, TolokaService
 
 def configure_routes(app, login_manager, admin_permission, user_permission):
     # Configure CORS
-    cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
     CORS(app, resources={
         r"/*": {
-            "origins": cors_origins,
+            "origins": app.config['CORS_ORIGINS'],
             "supports_credentials": True,
             "allow_headers": ["Content-Type", "Authorization", "Accept"],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
