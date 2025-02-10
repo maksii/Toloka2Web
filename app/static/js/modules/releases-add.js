@@ -23,6 +23,13 @@ export default class ReleasesAdd {
         this.filenameIndex.addEventListener('input', () => this.extractNumbers());
         this.cutButton.addEventListener('click', () => this.cutTextTillSeparator());
         this.releaseForm.addEventListener('submit', async (e) => this.handleFormSubmit(e));
+        
+        // Add validation on input
+        this.releaseTitle.addEventListener('input', () => this.validateTitle());
+        document.querySelector('#season').addEventListener('input', () => this.validateNumber('season'));
+        document.querySelector('#index').addEventListener('input', () => this.validateNumber('index'));
+        document.querySelector('#correction').addEventListener('input', () => this.validateNumber('correction'));
+        document.querySelector('#tolokaUrl').addEventListener('input', () => this.validateUrl());
     }
 
     toggleFilenameIndex() {
@@ -80,10 +87,67 @@ export default class ReleasesAdd {
             .trim();
 
         this.releaseTitle.value = text;
+        
+        // Trigger form validation after modifying the title
+        this.validateTitle();
+    }
+
+    validateTitle() {
+        const title = this.releaseTitle.value;
+        const invalidChars = /[\/\\:*?"<>|]/;
+        const isValid = !invalidChars.test(title);
+        
+        this.releaseTitle.setCustomValidity(isValid ? '' : translations.validation?.invalidTitle || 'Title contains invalid characters');
+        this.releaseTitle.reportValidity();
+        return isValid;
+    }
+
+    validateNumber(fieldId) {
+        const input = document.querySelector(`#${fieldId}`);
+        const value = input.value;
+        const isValid = /^\d+$/.test(value);
+        
+        input.setCustomValidity(isValid ? '' : translations.validation?.invalidNumber || 'Please enter a valid number');
+        input.reportValidity();
+        return isValid;
+    }
+
+    validateUrl() {
+        const url = document.querySelector('#tolokaUrl').value;
+        const isValid = url && url.trim() !== '' && url.startsWith('https://toloka.to/');
+        
+        document.querySelector('#tolokaUrl').setCustomValidity(
+            isValid ? '' : translations.validation?.invalidUrl || 'Please enter a valid Toloka URL'
+        );
+        document.querySelector('#tolokaUrl').reportValidity();
+        return isValid;
+    }
+
+    validateForm() {
+        return this.validateTitle() && 
+               this.validateNumber('season') && 
+               this.validateNumber('index') && 
+               this.validateNumber('correction') && 
+               this.validateUrl();
     }
 
     async handleFormSubmit(e) {
+        // Prevent default form submission immediately
         e.preventDefault();
+        e.stopPropagation();
+        
+        // Force form validation UI to show
+        this.releaseForm.classList.add('was-validated');
+        
+        // Check HTML5 form validity first
+        if (!this.releaseForm.checkValidity()) {
+            return;
+        }
+        
+        // Then check our custom validation
+        if (!this.validateForm()) {
+            return;
+        }
         
         try {
             UiManager.setButtonLoading(this.submitButton);
@@ -91,17 +155,24 @@ export default class ReleasesAdd {
             const formData = new FormData(this.releaseForm);
             const result = await ApiService.post('/api/releases', formData);
 
-            // Show operation results
-            UiManager.showOperationResults(result);
-            
-            // Close modal and refresh table
-            UiManager.hideModal('addReleaseModal');
-            if (window.releasesTable) {
-                window.releasesTable.ajax.reload();
+            // Check if the operation was successful
+            if (result && !result.error) {
+                // Show success message
+                UiManager.showOperationResults(result);
+                
+                // Close modal and refresh table only on success
+                UiManager.hideModal('addReleaseModal');
+                if (window.releasesTable) {
+                    window.releasesTable.ajax.reload();
+                }
+            } else {
+                // Show error message but keep modal open
+                UiManager.showOperationResults(result || { error: 'Failed to add release' });
             }
-
         } catch (error) {
             console.error('Error submitting form:', error);
+            // Show error message but keep modal open
+            UiManager.showOperationResults({ error: error.message || 'Failed to add release' });
         } finally {
             UiManager.resetButton(this.submitButton, translations.buttons.releaseAddSubmit);
         }

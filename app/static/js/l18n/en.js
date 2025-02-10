@@ -142,6 +142,11 @@ const translations = {
         light: 'Light',
         dark: 'Dark'
     },
+    validation: {
+        invalidTitle: 'Title contains invalid characters that could break paths or JSON (/, \\, :, *, ?, ", <, >, |)',
+        invalidNumber: 'Please enter a valid number',
+        invalidUrl: 'Please enter a valid Toloka URL (should start with https://toloka.to/)'
+    },
     pages: {
         titles: {
             base: 'Toloka2Web'

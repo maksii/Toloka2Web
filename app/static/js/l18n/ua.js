@@ -141,6 +141,11 @@ const translations = {
         light: 'Світла',
         dark: 'Темна'
     },
+    validation: {
+        invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',
+        invalidNumber: 'Будь ласка, введіть дійсне число',
+        invalidUrl: 'Будь ласка, введіть дійсну URL-адресу Toloka (має починатися з https://toloka.to/)'
+    },
     pages: {
         titles: {
             base: 'Toloka2Web'
