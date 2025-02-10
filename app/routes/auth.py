@@ -4,9 +4,11 @@ from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     get_jwt_identity, jwt_required,
     get_jwt, set_access_cookies,
-    set_refresh_cookies, unset_jwt_cookies
+    set_refresh_cookies, unset_jwt_cookies,
+    verify_jwt_in_request
 )
 from sqlalchemy.exc import IntegrityError
+from flask_login import current_user
 
 from app.models.user import User
 from app.models.application_settings import ApplicationSettings
@@ -16,6 +18,46 @@ auth_bp = Blueprint('auth', __name__)
 
 # Token blocklist for logged out tokens
 token_blocklist = set()
+
+def check_auth():
+    try:
+        # Check for JWT token
+        try:
+            verify_jwt_in_request(optional=True)
+            jwt = get_jwt()
+            if jwt and jwt.get("jti") not in token_blocklist:
+                return {
+                    'auth_type': 'jwt',
+                    'id': jwt.get("sub"),
+                    'username': jwt.get("username"),
+                    'roles': jwt.get("roles")
+                }
+        except Exception:
+            pass  # JWT not present or invalid, continue to next auth method
+
+        # Check for session auth
+        if current_user.is_authenticated:
+            return {
+                'auth_type': 'session',
+                'id': current_user.id,
+                'username': current_user.username,
+                'roles': current_user.roles
+            }
+
+        # Check for API key
+        api_key = request.headers.get('X-API-Key')
+        if api_key and api_key == current_app.config.get('API_KEY'):
+            return {
+                'auth_type': 'api_key',
+                'roles': 'admin'  # API key has admin privileges
+            }
+
+        return {'error': 'Not authenticated'}, 401
+    except Exception as e:
+        return {
+            'error': 'An error occurred while checking authentication',
+            'details': str(e)
+        }, 500
 
 @auth_bp.route('/api/auth/register', methods=['POST'])
 def register():

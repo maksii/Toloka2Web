@@ -4,6 +4,8 @@ from flask_login import current_user
 from app.utils.auth_utils import multi_auth_required, multi_auth_admin_required
 from app.models.user import User
 from app.models.base import db
+from flask import current_app
+from app.routes.auth import token_blocklist
 
 user_bp = Blueprint('user', __name__)
 
@@ -11,36 +13,40 @@ user_bp = Blueprint('user', __name__)
 @multi_auth_required
 def get_profile():
     try:
-        # Try JWT first
+        # Check for JWT token
         try:
             verify_jwt_in_request(optional=True)
-            jwt_identity = get_jwt_identity()
-            if jwt_identity:
-                user = User.query.get(int(jwt_identity))
-                if user:
-                    return make_response(jsonify({
-                        "id": user.id,
-                        "username": user.username,
-                        "roles": user.roles
-                    }), 200)
+            jwt = get_jwt()
+            if jwt and jwt.get("jti") not in token_blocklist:
+                return {
+                    'auth_type': 'jwt',
+                    'id': jwt.get("sub"),
+                    'username': jwt.get("username"),
+                    'roles': jwt.get("roles")
+                }
         except Exception:
-            pass
+            pass  # JWT not present or invalid, continue to next auth method
 
-        # Then try session auth
-        if current_user and current_user.is_authenticated:
-            return make_response(jsonify({
-                "id": current_user.id,
-                "username": current_user.username,
-                "roles": current_user.roles
-            }), 200)
+        # Check for session auth
+        if current_user.is_authenticated:
+            return {
+                'auth_type': 'session',
+                'id': current_user.id,
+                'username': current_user.username,
+                'roles': current_user.roles
+            }
 
-        return make_response(jsonify({"error": "User not found"}), 404)
+        # Check for API key
+        api_key = request.headers.get('X-API-Key')
+        if api_key and api_key == current_app.config.get('API_KEY'):
+            return {
+                'auth_type': 'api_key',
+                'roles': 'admin'  # API key has admin privileges
+            }
+
+        return {'error': 'Not authenticated'}, 401
     except Exception as e:
-        error_message = {
-            "error": "Failed to get profile",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+        return {'error': 'An error occurred while getting profile', 'details': str(e)}, 500
 
 @user_bp.route('/api/profile', methods=['PUT'])
 @multi_auth_required

@@ -1,7 +1,10 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
+from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask_restx import Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_login import current_user
 from app.utils.auth_utils import multi_auth_required, multi_auth_admin_required
+from app.routes.auth import token_blocklist, check_auth
 
 from . import api, auth_ns, releases_ns, settings_ns, anime_ns, stream_ns, studio_ns, toloka_ns, mal_ns, tmdb_ns, users_ns
 from .models import (
@@ -287,7 +290,7 @@ class UserProfile(Resource):
     )
     @multi_auth_required
     def get(self):
-        """Get current user's profile"""
+        """Get user profile information"""
         from app.routes.users import get_profile
         return get_profile()
 
@@ -515,7 +518,7 @@ class AuthCheck(Resource):
     )
     def get(self):
         """Check authentication status"""
-        from app.routes.routes import check_auth
+        from app.routes.auth import check_auth
         return check_auth()
 
 # Image Proxy Routes

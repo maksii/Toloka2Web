@@ -5,6 +5,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
 from flask_cors import CORS
 import os
+from flask_jwt_extended import verify_jwt_in_request, get_jwt
+from app.routes.auth import token_blocklist, check_auth
 
 from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
@@ -67,21 +69,11 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
             return make_response(jsonify(error_message), 500)
 
     @app.route('/api/auth/check')
-    def check_auth():
-        try:
-            if current_user.is_authenticated:
-                return jsonify({
-                    'id': current_user.id,
-                    'username': current_user.username,
-                    'roles': current_user.roles
-                })
-            return jsonify(None)
-        except Exception as e:
-            error_message = {
-                "error": "Failed to check authentication status",
-                "details": str(e)
-            }
-            return make_response(jsonify(error_message), 500)
+    def check_auth_route():
+        result = check_auth()
+        if isinstance(result, tuple):
+            return make_response(jsonify(result[0]), result[1])
+        return make_response(jsonify(result), 200)
 
     @login_manager.user_loader
     def load_user(user_id):
