@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, make_response, render_template
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, get_jwt
 from flask_login import current_user
 from app.utils.auth_utils import multi_auth_required, multi_auth_admin_required
 from app.models.user import User
