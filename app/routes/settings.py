@@ -1,8 +1,14 @@
+# Flask and extensions
 from flask import Blueprint, jsonify, request, make_response
-from app.utils.auth_utils import multi_auth_admin_required
 from flask_login import login_required
-from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
+from flask_principal import (
+    Permission, UserNeed, RoleNeed, 
+    identity_changed, Identity, AnonymousIdentity, 
+    identity_loaded
+)
 
+# Local imports
+from app.utils.auth_utils import multi_auth_admin_required
 from app.services.config_service import ConfigService
 from app.services.route_service import RouteService
 

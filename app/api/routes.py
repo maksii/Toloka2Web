@@ -1,24 +1,28 @@
+# Flask and extensions
 from flask import request, jsonify, current_app
-from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask_restx import Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request, get_jwt
 from flask_login import current_user
-from app.utils.auth_utils import multi_auth_required, multi_auth_admin_required
-from app.routes.auth import token_blocklist, check_auth
 
-from . import api, auth_ns, releases_ns, settings_ns, anime_ns, stream_ns, studio_ns, toloka_ns, mal_ns, tmdb_ns, users_ns
+# Local imports - API
+from . import (
+    api, auth_ns, releases_ns, settings_ns, anime_ns, 
+    stream_ns, studio_ns, toloka_ns, mal_ns, tmdb_ns, users_ns
+)
 from .models import (
     error_response, success_response, login_model, register_model, token_response,
     user_info, anime_model, studio_model, search_input, search_response,
-    release_input, setting_model,
-    anime_list_response, studio_list_response, user_list_response,
-    settings_list_response, mal_search_response, tmdb_search_response,
-    releases_list_response, release_model,
+    release_input, setting_model, anime_list_response, studio_list_response, 
+    user_list_response, settings_list_response, mal_search_response, 
+    tmdb_search_response, releases_list_response, release_model,
     stream_search_input, stream_add_input, stream_details_input, stream_response,
     toloka_torrent_model, toloka_search_response, toloka_add_input,
     aggregated_search_response, auth_check_response, image_proxy_response
 )
 
+# Local imports - App
+from app.utils.auth_utils import multi_auth_required, multi_auth_admin_required
+from app.routes.auth import token_blocklist, check_auth
 from app.services.services_db import DatabaseService
 from app.services.services import SearchService, TolokaService
 from app.services.mal_service import MALService

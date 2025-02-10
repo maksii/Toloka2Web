@@ -1,19 +1,27 @@
 # routes.py
 
-from flask import Response, current_app, flash, redirect, request, render_template, url_for, get_flashed_messages, make_response, jsonify
+# Flask and extensions
+from flask import (
+    Response, current_app, flash, redirect, 
+    request, render_template, url_for, 
+    make_response, jsonify
+)
 from flask_login import current_user, login_required, login_user, logout_user
-from flask_principal import Permission, UserNeed, RoleNeed, identity_changed, Identity, AnonymousIdentity, identity_loaded
+from flask_principal import (
+    Permission, UserNeed, RoleNeed, 
+    identity_changed, Identity, AnonymousIdentity, 
+    identity_loaded
+)
 from flask_cors import CORS
-import os
-from flask_jwt_extended import verify_jwt_in_request, get_jwt
-from app.routes.auth import token_blocklist, check_auth
+from flask_jwt_extended import get_jwt
 
+# Local imports
+from app.routes.auth import token_blocklist, check_auth
 from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
 from app.models.registration_form import RegistrationForm
 from app.models.user import User
-from app.models.base import db 
-
+from app.models.base import db
 from app.services.services import SearchService, TolokaService
 
 def configure_routes(app, login_manager, admin_permission, user_permission):

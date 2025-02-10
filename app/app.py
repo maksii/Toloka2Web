@@ -1,11 +1,15 @@
+# Standard library imports
+from datetime import timedelta
+import os
+
+# Flask and extensions
 from flask import Flask, jsonify
 from flask_login import LoginManager
 from flask_principal import Principal, Permission, RoleNeed
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
-from datetime import timedelta
-import os
 
+# Local imports
 from app.services.config_service import ConfigService
 from app.services.services_db import DatabaseService
 from .models.base import db

@@ -1,7 +1,9 @@
-from flask import Blueprint, jsonify, request, make_response
-from app.utils.auth_utils import multi_auth_required
+# Third-party imports
 import jsonpickle
+from flask import Blueprint, jsonify, request, make_response
 
+# Local imports
+from app.utils.auth_utils import multi_auth_required
 from app.services.services import StreamingService
 
 stream_bp = Blueprint('stream', __name__)

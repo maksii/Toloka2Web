@@ -1,4 +1,7 @@
+# Flask and extensions
 from flask import Blueprint, jsonify, request, make_response
+
+# Local imports
 from app.utils.auth_utils import multi_auth_required
 import jsonpickle
 

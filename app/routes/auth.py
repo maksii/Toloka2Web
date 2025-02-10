@@ -1,4 +1,7 @@
+# Standard library imports
 from datetime import datetime, timedelta, timezone
+
+# Flask and extensions
 from flask import Blueprint, jsonify, request, make_response, current_app
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
@@ -7,9 +10,10 @@ from flask_jwt_extended import (
     set_refresh_cookies, unset_jwt_cookies,
     verify_jwt_in_request
 )
-from sqlalchemy.exc import IntegrityError
 from flask_login import current_user
+from sqlalchemy.exc import IntegrityError
 
+# Local imports
 from app.models.user import User
 from app.models.application_settings import ApplicationSettings
 from app.models.base import db

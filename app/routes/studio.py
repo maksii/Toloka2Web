@@ -1,8 +1,10 @@
+# Flask and extensions
 from flask import Blueprint, jsonify, render_template, request, make_response
 from flask_login import login_required
+
+# Local imports
 from app.utils.auth_utils import multi_auth_required
 from app.services.services_db import DatabaseService
-
 
 studio_bp = Blueprint('studio', __name__)
 

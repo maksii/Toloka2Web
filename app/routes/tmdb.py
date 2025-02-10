@@ -1,4 +1,7 @@
+# Flask and extensions
 from flask import Blueprint, request, jsonify, make_response
+
+# Local imports
 from app.utils.auth_utils import multi_auth_required
 from app.services.tmdb_service import TMDBService
 

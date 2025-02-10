@@ -1,10 +1,12 @@
-from flask import Blueprint, jsonify, request, make_response, render_template
+# Flask and extensions
+from flask import Blueprint, jsonify, request, make_response, current_app
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, get_jwt
 from flask_login import current_user
+
+# Local imports
 from app.utils.auth_utils import multi_auth_required, multi_auth_admin_required
 from app.models.user import User
 from app.models.base import db
-from flask import current_app
 from app.routes.auth import token_blocklist
 
 user_bp = Blueprint('user', __name__)
