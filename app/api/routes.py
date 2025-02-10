@@ -7,9 +7,13 @@ from . import api, auth_ns, releases_ns, settings_ns, anime_ns, stream_ns, studi
 from .models import (
     error_response, success_response, login_model, register_model, token_response,
     user_info, anime_model, studio_model, search_input, search_response,
-    release_input, release_output, setting_model, torrent_info,
+    release_input, setting_model,
     anime_list_response, studio_list_response, user_list_response,
-    settings_list_response, mal_search_response, tmdb_search_response
+    settings_list_response, mal_search_response, tmdb_search_response,
+    releases_list_response, release_model,
+    stream_search_input, stream_add_input, stream_details_input, stream_response,
+    toloka_torrent_model, toloka_search_response, toloka_add_input,
+    aggregated_search_response, auth_check_response, image_proxy_response
 )
 
 from app.services.services_db import DatabaseService
@@ -189,6 +193,56 @@ class TMDBDetail(Resource):
         from app.routes.tmdb import get_detail
         return get_detail(id)
 
+# Stream Routes
+@stream_ns.route('')
+class Stream(Resource):
+    @api.doc('search_stream',
+        responses={
+            200: ('Success', stream_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.param('query', 'Search query', required=True)
+    @multi_auth_required
+    def get(self):
+        """Search titles from streaming services"""
+        from app.routes.stream import search_titles_from_streaming
+        return search_titles_from_streaming()
+
+    @api.doc('add_stream',
+        responses={
+            200: ('Success', stream_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(stream_add_input)
+    @multi_auth_required
+    def post(self):
+        """Add a title from streaming service"""
+        from app.routes.stream import add_title_from_streaming
+        return add_title_from_streaming()
+
+@stream_ns.route('/details')
+class StreamDetails(Resource):
+    @api.doc('get_stream_details',
+        responses={
+            200: ('Success', stream_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(stream_details_input)
+    @multi_auth_required
+    def post(self):
+        """Get details of a streaming title"""
+        from app.routes.stream import get_title_details
+        return get_title_details()
+
 # Settings Routes
 @settings_ns.route('')
 class Settings(Resource):
@@ -268,4 +322,214 @@ class UserDetail(Resource):
     def put(self, user_id):
         """Update user details (admin only)"""
         from app.routes.users import update_user
-        return update_user(user_id) 
+        return update_user(user_id)
+
+# Release Routes
+@releases_ns.route('')
+class ReleaseList(Resource):
+    @api.doc('list_releases',
+        responses={
+            200: ('Success', releases_list_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @multi_auth_required
+    def get(self):
+        """Get all releases with their torrent status"""
+        from app.routes.release import get_titles
+        return get_titles()
+
+    @api.doc('add_release',
+        responses={
+            200: ('Success', success_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(release_input)
+    @multi_auth_required
+    def post(self):
+        """Add a new release"""
+        from app.routes.release import add_release
+        return add_release()
+
+    @api.doc('edit_release',
+        responses={
+            200: ('Success', success_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(release_input)
+    @multi_auth_required
+    def put(self):
+        """Edit an existing release"""
+        from app.routes.release import edit_release
+        return edit_release()
+
+    @api.doc('delete_release',
+        responses={
+            200: ('Success', success_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(release_input)
+    @multi_auth_required
+    def delete(self):
+        """Delete a release"""
+        from app.routes.release import delete_release
+        return delete_release()
+
+@releases_ns.route('/update')
+class ReleaseUpdate(Resource):
+    @api.doc('update_release',
+        responses={
+            200: ('Success', success_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(release_input, required=False)
+    @multi_auth_required
+    def post(self):
+        """Update release(s) - if no data provided, updates all releases"""
+        from app.routes.release import update_release
+        return update_release()
+
+@releases_ns.route('/torrents')
+class ReleaseTorrents(Resource):
+    @api.doc('get_release_torrents',
+        responses={
+            200: ('Success', releases_list_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @multi_auth_required
+    def get(self):
+        """Get torrent information for all releases"""
+        from app.routes.release import torrent_info_all_releases
+        return torrent_info_all_releases()
+
+@releases_ns.route('/<string:hash>')
+class ReleaseDetail(Resource):
+    @api.doc('get_release',
+        responses={
+            200: ('Success', release_model),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            404: ('Not Found', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.param('hash', 'Release hash')
+    @multi_auth_required
+    def get(self, hash):
+        """Get details of a specific release"""
+        from app.routes.release import recieve_request_from_client
+        return recieve_request_from_client(hash)
+
+# Toloka Routes
+@toloka_ns.route('')
+class Toloka(Resource):
+    @api.doc('search_toloka',
+        responses={
+            200: ('Success', toloka_search_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            404: ('Not Found', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.param('query', 'Search query', required=True)
+    @multi_auth_required
+    def get(self):
+        """Search torrents on Toloka"""
+        from app.routes.toloka import get_torrents
+        return get_torrents()
+
+    @api.doc('add_toloka',
+        responses={
+            200: ('Success', success_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.expect(toloka_add_input)
+    @multi_auth_required
+    def post(self):
+        """Add a torrent from Toloka"""
+        from app.routes.toloka import add_torrent
+        return add_torrent()
+
+@toloka_ns.route('/<string:release_id>')
+class TolokaDetail(Resource):
+    @api.doc('get_toloka',
+        responses={
+            200: ('Success', toloka_torrent_model),
+            401: ('Unauthorized', error_response),
+            404: ('Not Found', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.param('release_id', 'Release ID')
+    @multi_auth_required
+    def get(self, release_id):
+        """Get details of a specific torrent"""
+        from app.routes.toloka import get_torrent
+        return get_torrent(release_id)
+
+# Search Routes
+@api.route('/api/search')
+class AggregatedSearch(Resource):
+    @api.doc('search_all',
+        responses={
+            200: ('Success', aggregated_search_response),
+            400: ('Bad Request', error_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.param('query', 'Search query', required=True)
+    @multi_auth_required
+    def get(self):
+        """Search across all services (anime, studios, toloka, streaming)"""
+        from app.routes.routes import search_aggregated
+        return search_aggregated()
+
+# Auth Check Routes
+@api.route('/api/auth/check')
+class AuthCheck(Resource):
+    @api.doc('check_auth',
+        responses={
+            200: ('Success', auth_check_response),
+            401: ('Unauthorized', error_response)
+        }
+    )
+    def get(self):
+        """Check authentication status"""
+        from app.routes.routes import check_auth
+        return check_auth()
+
+# Image Proxy Routes
+@api.route('/image')
+class ImageProxy(Resource):
+    @api.doc('proxy_image',
+        responses={
+            200: ('Success', image_proxy_response),
+            400: ('Bad Request', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @api.param('url', 'Image URL to proxy', required=True)
+    def get(self):
+        """Proxy an image through the server"""
+        from app.routes.routes import proxy_image
+        return proxy_image() 

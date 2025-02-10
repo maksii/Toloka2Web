@@ -64,27 +64,30 @@ search_response = api.model('SearchResponse', {
 })
 
 # Release Models
-release_input = api.model('ReleaseInput', {
-    'codename': fields.String(required=True, description='Release codename'),
-    'title': fields.String(required=True, description='Release title'),
-    'description': fields.String(description='Release description'),
-    'status': fields.String(description='Release status'),
-    'type': fields.String(description='Release type'),
-    'season': fields.String(description='Release season'),
-    'year': fields.Integer(description='Release year')
+torrent_info_model = api.model('TorrentInfo', {
+    'state': fields.String(description='Torrent state'),
+    'progress': fields.Float(description='Download progress'),
+    'name': fields.String(description='Torrent name')
 })
 
-release_output = api.model('ReleaseOutput', {
-    'id': fields.Integer(description='Release ID'),
-    'codename': fields.String(description='Release codename'),
+release_model = api.model('Release', {
+    'hash': fields.String(description='Release hash'),
     'title': fields.String(description='Release title'),
-    'description': fields.String(description='Release description'),
+    'torrent_info': fields.Nested(torrent_info_model, description='Torrent information'),
     'status': fields.String(description='Release status'),
-    'type': fields.String(description='Release type'),
-    'season': fields.String(description='Release season'),
-    'year': fields.Integer(description='Release year'),
     'created_at': fields.DateTime(description='Creation timestamp'),
     'updated_at': fields.DateTime(description='Last update timestamp')
+})
+
+releases_list_response = api.model('ReleasesListResponse', {
+    'data': fields.List(fields.Nested(release_model)),
+    'message': fields.String(description='Response message')
+})
+
+release_input = api.model('ReleaseInput', {
+    'title': fields.String(required=True, description='Release title'),
+    'hash': fields.String(required=True, description='Release hash'),
+    'status': fields.String(description='Release status')
 })
 
 # Settings Models
@@ -92,15 +95,6 @@ setting_model = api.model('Setting', {
     'section': fields.String(required=True, description='Setting section'),
     'key': fields.String(required=True, description='Setting key'),
     'value': fields.String(required=True, description='Setting value')
-})
-
-# Torrent Models
-torrent_info = api.model('TorrentInfo', {
-    'name': fields.String(description='Torrent name'),
-    'size': fields.String(description='Torrent size'),
-    'seeders': fields.Integer(description='Number of seeders'),
-    'leechers': fields.Integer(description='Number of leechers'),
-    'uploaded_at': fields.DateTime(description='Upload timestamp')
 })
 
 # Common response wrappers
@@ -148,4 +142,65 @@ mal_search_response = api.model('MALSearchResponse', {
 
 tmdb_search_response = api.model('TMDBSearchResponse', {
     'data': fields.List(fields.Raw(description='TMDB search results'))
+})
+
+# Stream Models
+stream_search_input = api.model('StreamSearchInput', {
+    'query': fields.String(required=True, description='Search query')
+})
+
+stream_add_input = api.model('StreamAddInput', {
+    'provider': fields.String(required=True, description='Streaming provider'),
+    'link': fields.String(required=True, description='Title link'),
+    'title': fields.String(required=True, description='Title name')
+})
+
+stream_details_input = api.model('StreamDetailsInput', {
+    'provider': fields.String(required=True, description='Streaming provider'),
+    'link': fields.String(required=True, description='Title link')
+})
+
+stream_response = api.model('StreamResponse', {
+    'data': fields.Raw(description='Stream data'),
+    'message': fields.String(description='Response message')
+})
+
+# Toloka Models
+toloka_torrent_model = api.model('TolokaTorrent', {
+    'id': fields.String(description='Torrent ID'),
+    'title': fields.String(description='Torrent title'),
+    'size': fields.String(description='Torrent size'),
+    'seeders': fields.Integer(description='Number of seeders'),
+    'leechers': fields.Integer(description='Number of leechers'),
+    'hash': fields.String(description='Torrent hash')
+})
+
+toloka_search_response = api.model('TolokaSearchResponse', {
+    'data': fields.List(fields.Nested(toloka_torrent_model)),
+    'message': fields.String(description='Response message')
+})
+
+toloka_add_input = api.model('TolokaAddInput', {
+    'release_id': fields.String(required=True, description='Release ID'),
+    'title': fields.String(required=True, description='Torrent title')
+})
+
+# Aggregated Search Models
+aggregated_search_response = api.model('AggregatedSearchResponse', {
+    'anime': fields.List(fields.Nested(anime_model)),
+    'studios': fields.List(fields.Nested(studio_model)),
+    'toloka': fields.List(fields.Nested(toloka_torrent_model)),
+    'streaming': fields.List(fields.Raw(description='Streaming search results'))
+})
+
+# Auth Check Models
+auth_check_response = api.model('AuthCheckResponse', {
+    'authenticated': fields.Boolean(description='Authentication status'),
+    'user': fields.Nested(user_info, description='User information if authenticated')
+})
+
+# Image Proxy Models
+image_proxy_response = api.model('ImageProxyResponse', {
+    'content_type': fields.String(description='Image content type'),
+    'data': fields.String(description='Base64 encoded image data')
 }) 
