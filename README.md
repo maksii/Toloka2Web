@@ -14,7 +14,7 @@ A web interface for managing anime content, with features for searching, downloa
 ## Quick Start
 
 ### Prerequisites
-- Python 3.12+ or Docker
+- Python or Docker
 - Storage space for media files
 - (Optional) Plex Media Server
 
