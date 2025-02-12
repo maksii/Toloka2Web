@@ -42,7 +42,6 @@ def get_detail(id):
         return make_response(jsonify(error_message), 500)
 
 @tmdb_bp.route('/api/tmdb/trending', methods=['GET'])
-@multi_auth_required
 def get_trending():
     try:
         media_type = request.args.get('type')

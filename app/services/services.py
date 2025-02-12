@@ -14,7 +14,7 @@ from toloka2MediaServer.main_logic import (
     search_torrents, get_torrent as get_torrent_external,
     add_torrent as add_torrent_external
 )
-from stream2mediaserver.main_logic import search_releases as search_releases_stream, get_release_details as get_release_details_stream
+from stream2mediaserver.main_logic import MainLogic
 
 from app.models.request_data import RequestData
 from app.services.base_service import BaseService
@@ -210,15 +210,14 @@ class StreamingService(BaseService):
         """Search for titles on streaming sites."""
         if not query:
             return {}
-            
-        config = TolokaService.initiate_config()
-        config.args = SimpleNamespace(query=query)
-        return search_releases_stream(config)
+        main_logic = MainLogic()
+        return main_logic.search_releases(query)
 
     @classmethod
     def get_streaming_site_release_details(cls, provider_name: str, release_url: str) -> Dict:
         """Get detailed information about a streaming release."""
-        return get_release_details_stream(f'{provider_name}_provider', release_url)
+        main_logic = MainLogic()
+        return main_logic.get_release_details(provider_name, release_url)
 
 class SearchService(BaseService):
     """Service for handling multi-source search operations."""
