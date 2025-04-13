@@ -14,6 +14,7 @@ from flask_principal import (
 )
 from flask_cors import CORS
 from flask_jwt_extended import get_jwt
+from flask_wtf.csrf import CSRFError
 
 # Local imports
 from app.routes.auth import token_blocklist, check_auth
@@ -53,15 +54,26 @@ def proxy_image():
         return make_response(jsonify(error_message), 500)
 
 def configure_routes(app, login_manager, admin_permission, user_permission):
-    # Configure CORS
+    # Configure CORS with explicit allowed origins
+    cors_origins = app.config['CORS_ORIGINS']
+
     CORS(app, resources={
         r"/*": {
-            "origins": app.config['CORS_ORIGINS'],
+            "origins": cors_origins,
             "supports_credentials": True,
-            "allow_headers": ["Content-Type", "Authorization", "Accept"],
+            "allow_headers": ["Content-Type", "Authorization", "Accept", "X-CSRF-Token"],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         }
     })
+
+    # CSRF Error handler
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        app.logger.warning(f"CSRF Error: {str(e)}")
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({'error': 'CSRF token validation failed. Please refresh the page and try again.'}), 400
+        flash('Security validation failed. Please try again.', 'error')
+        return render_template('login.html', form=LoginForm()), 200
 
     @app.route('/')
     @login_required
