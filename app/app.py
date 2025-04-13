@@ -24,14 +24,19 @@ def create_app(test_config=None):
             SECRET_KEY=os.environ.get('FLASK_SECRET_KEY', 'default_secret_key'),
             SQLALCHEMY_DATABASE_URI=f'sqlite:///{os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "toloka2web.db")}',
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
-            SESSION_COOKIE_SECURE=True,
+            SESSION_COOKIE_SECURE=False,  # Changed from True to allow both HTTP and HTTPS
             SESSION_COOKIE_HTTPONLY=True,
             SESSION_COOKIE_SAMESITE='Lax',
+            SESSION_COOKIE_DOMAIN=None,  # Allow cookies to work across different IPs
+            # CSRF Configuration
+            WTF_CSRF_TIME_LIMIT=3600,  # 1 hour CSRF token validity
+            WTF_CSRF_SSL_STRICT=False,  # Allow CSRF token to work across HTTP/HTTPS
+            WTF_CSRF_CHECK_DEFAULT=False,  # Don't enforce referrer checking (allows different hostnames/IPs)
             # JWT Configuration
             JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY', 'default_jwt_secret'),  # Change this in production!
             JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=24),
             JWT_REFRESH_TOKEN_EXPIRES=timedelta(days=30),
-            JWT_COOKIE_SECURE=True,
+            JWT_COOKIE_SECURE=False,  # Changed from True to allow both HTTP and HTTPS
             JWT_COOKIE_CSRF_PROTECT=True,
             JWT_COOKIE_SAMESITE='Lax',
             JWT_ERROR_MESSAGE_KEY='error',
@@ -134,10 +139,10 @@ def create_app(test_config=None):
 
     # Register blueprints
     from .routes.routes import configure_routes
-    from .routes.anime import anime_bp
+    from .routes.anime import anime_bp, anime_api_bp
     from .routes.release import release_bp
     from .routes.stream import stream_bp
-    from .routes.studio import studio_bp
+    from .routes.studio import studio_bp, studio_api_bp
     from .routes.toloka import toloka_bp
     from .routes.mal import mal_bp
     from .routes.tmdb import tmdb_bp
@@ -149,15 +154,26 @@ def create_app(test_config=None):
     # Register blueprints with URL prefixes
     app.register_blueprint(api_bp)  # api_bp already has url_prefix='/api'
     
-    # Register route blueprints with '/api' prefix
-    route_blueprints = [
-        anime_bp, release_bp, stream_bp, studio_bp,
+    # Define which blueprints should be registered with API prefix
+    api_blueprints = [
+        anime_api_bp, studio_api_bp, release_bp, stream_bp,
         toloka_bp, mal_bp, tmdb_bp, setting_bp, auth_bp,
         user_bp
     ]
     
-    for blueprint in route_blueprints:
+    # Define blueprints that should be registered without API prefix (HTML pages)
+    html_blueprints = [
+        anime_bp,  # Contains HTML routes for anime pages
+        studio_bp,  # Contains HTML routes for studio pages
+    ]
+    
+    # Register API blueprints with '/api' prefix
+    for blueprint in api_blueprints:
         app.register_blueprint(blueprint, url_prefix='/api')
+    
+    # Register HTML blueprints without prefix
+    for blueprint in html_blueprints:
+        app.register_blueprint(blueprint)
 
     # Configure main routes that should be registered directly with the app
     configure_routes(app, login_manager, admin_permission, user_permission)

@@ -6,9 +6,11 @@ from flask_login import login_required
 from app.utils.auth_utils import multi_auth_required
 from app.services.services_db import DatabaseService
 
-studio_bp = Blueprint('studio', __name__)
+# Create two separate blueprints: one for HTML routes and one for API routes
+studio_bp = Blueprint('studio', __name__)  # For HTML page routes
+studio_api_bp = Blueprint('studio_api', __name__)  # For API routes
 
-
+# HTML routes
 @studio_bp.route('/studios')
 @login_required
 def studios():
@@ -19,7 +21,8 @@ def studios():
 def studio_detail(studio_id):
     return render_template('studio_detail.html', studio_id=studio_id)
 
-@studio_bp.route('/studio', methods=['GET'])
+# API routes
+@studio_api_bp.route('/studio', methods=['GET'])
 @multi_auth_required
 def search_studio():
     try:
@@ -36,7 +39,7 @@ def search_studio():
         }
         return make_response(jsonify(error_message), 500)
 
-@studio_bp.route('/studio/<int:studio_id>', methods=['GET'])
+@studio_api_bp.route('/studio/<int:studio_id>', methods=['GET'])
 @multi_auth_required
 def get_studio_details(studio_id):
     try:
@@ -51,7 +54,7 @@ def get_studio_details(studio_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@studio_bp.route('/studio/<int:studio_id>/anime', methods=['GET'])
+@studio_api_bp.route('/studio/<int:studio_id>/anime', methods=['GET'])
 @multi_auth_required
 def list_titles_by_studio(studio_id):
     try:

@@ -6,8 +6,11 @@ from flask_login import login_required
 from app.utils.auth_utils import multi_auth_required
 from app.services.services_db import DatabaseService
 
-anime_bp = Blueprint('anime', __name__)
+# Create two separate blueprints: one for HTML routes and one for API routes
+anime_bp = Blueprint('anime', __name__)  # For HTML page routes
+anime_api_bp = Blueprint('anime_api', __name__)  # For API routes
 
+# HTML routes
 @anime_bp.route('/anime')
 @login_required
 def anime():
@@ -18,7 +21,8 @@ def anime():
 def anime_detail(anime_id):
     return render_template('anime_detail.html', anime_id=anime_id)
 
-@anime_bp.route('/anime', methods=['GET'])
+# API routes
+@anime_api_bp.route('/anime', methods=['GET'])
 @multi_auth_required
 def list_anime():
     try:
@@ -35,7 +39,7 @@ def list_anime():
         }
         return make_response(jsonify(error_message), 500)
 
-@anime_bp.route('/anime/<int:anime_id>', methods=['GET'])
+@anime_api_bp.route('/anime/<int:anime_id>', methods=['GET'])
 @multi_auth_required
 def get_anime_byid(anime_id):
     try:
@@ -50,7 +54,7 @@ def get_anime_byid(anime_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@anime_bp.route('/anime/<int:anime_id>/related', methods=['GET'])
+@anime_api_bp.route('/anime/<int:anime_id>/related', methods=['GET'])
 @login_required
 def get_anime_related(anime_id):
     try:
@@ -63,7 +67,7 @@ def get_anime_related(anime_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@anime_bp.route('/anime/<int:anime_id>/studios', methods=['GET'])
+@anime_api_bp.route('/anime/<int:anime_id>/studios', methods=['GET'])
 @login_required
 def get_anime_studios(anime_id):
     try:
