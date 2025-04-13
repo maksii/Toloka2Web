@@ -24,6 +24,34 @@ from app.models.user import User
 from app.models.base import db
 from app.services.services import SearchService, TolokaService
 
+def search_aggregated():
+    try:
+        query = request.args.get('query')
+        if not query:
+            return make_response(jsonify({"error": "Query parameter is required"}), 400)
+        result = SearchService.multi_search(query)
+        return make_response(jsonify(result), 200)
+    except Exception as e:
+        error_message = {
+            "error": "Failed to perform search",
+            "details": str(e)
+        }
+        return make_response(jsonify(error_message), 500)
+
+def proxy_image():
+    try:
+        url = request.args.get('url')
+        if not url:
+            return make_response(jsonify({"error": "URL parameter is required"}), 400)
+        result = TolokaService.proxy_image_logic(url)
+        return make_response(result, 200)
+    except Exception as e:
+        error_message = {
+            "error": "Failed to proxy image",
+            "details": str(e)
+        }
+        return make_response(jsonify(error_message), 500)
+
 def configure_routes(app, login_manager, admin_permission, user_permission):
     # Configure CORS
     CORS(app, resources={
@@ -46,35 +74,13 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         return render_template('settings.html')
 
     @app.route('/image/')
-    def proxy_image():
-        try:
-            url = request.args.get('url')
-            if not url:
-                return make_response(jsonify({"error": "URL parameter is required"}), 400)
-            result = TolokaService.proxy_image_logic(url)
-            return make_response(result, 200)
-        except Exception as e:
-            error_message = {
-                "error": "Failed to proxy image",
-                "details": str(e)
-            }
-            return make_response(jsonify(error_message), 500)
+    def proxy_image_route():
+        return proxy_image()
     
     @app.route('/api/search')
     @login_required
-    def search_aggregated():
-        try:
-            query = request.args.get('query')
-            if not query:
-                return make_response(jsonify({"error": "Query parameter is required"}), 400)
-            result = SearchService.multi_search(query)
-            return make_response(jsonify(result), 200)
-        except Exception as e:
-            error_message = {
-                "error": "Failed to perform search",
-                "details": str(e)
-            }
-            return make_response(jsonify(error_message), 500)
+    def search_aggregated_route():
+        return search_aggregated()
 
     @app.route('/api/auth/check')
     def check_auth_route():
