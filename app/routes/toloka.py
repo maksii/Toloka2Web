@@ -7,7 +7,7 @@ from app.services.services import TolokaService
 
 toloka_bp = Blueprint('toloka', __name__)
 
-@toloka_bp.route('/api/toloka', methods=['GET'])
+@toloka_bp.route('/toloka', methods=['GET'])
 @multi_auth_required
 def get_torrents():
     try:
@@ -25,7 +25,7 @@ def get_torrents():
         }
         return make_response(jsonify(error_message), 500)
 
-@toloka_bp.route('/api/toloka/<string:release_id>', methods=['GET'])
+@toloka_bp.route('/toloka/<string:release_id>', methods=['GET'])
 @multi_auth_required
 def get_torrent(release_id):
     try:
@@ -40,7 +40,7 @@ def get_torrent(release_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@toloka_bp.route('/api/toloka', methods=['POST'])
+@toloka_bp.route('/toloka', methods=['POST'])
 @multi_auth_required
 def add_torrent():
     try:

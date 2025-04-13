@@ -15,7 +15,7 @@ from app.services.route_service import RouteService
 setting_bp = Blueprint('setting', __name__)
 admin_permission = Permission(RoleNeed('admin'))
 
-@setting_bp.route('/api/settings', methods=['GET'])
+@setting_bp.route('/settings', methods=['GET'])
 @multi_auth_admin_required
 def list_setting():
     try:
@@ -28,7 +28,7 @@ def list_setting():
         }
         return make_response(jsonify(error_message), 500)
 
-@setting_bp.route('/api/settings', methods=['POST'])
+@setting_bp.route('/settings', methods=['POST'])
 @multi_auth_admin_required
 def add():
     try:
@@ -52,7 +52,7 @@ def add():
         }
         return make_response(jsonify(error_message), 500)
 
-@setting_bp.route('/api/settings/<int:setting_id>', methods=['POST'])
+@setting_bp.route('/settings/<int:setting_id>', methods=['POST'])
 @login_required
 @admin_permission.require(http_exception=403)
 def update(setting_id):
@@ -76,7 +76,7 @@ def update(setting_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@setting_bp.route('/api/settings/sync', methods=['POST'])
+@setting_bp.route('/settings/sync', methods=['POST'])
 @login_required
 @admin_permission.require(http_exception=403)
 def sync():
@@ -99,7 +99,7 @@ def sync():
         }
         return make_response(jsonify(error_message), 500)
 
-@setting_bp.route('/api/settings/versions', methods=['GET'])
+@setting_bp.route('/settings/versions', methods=['GET'])
 @login_required
 @admin_permission.require(http_exception=403)
 def versions():
@@ -113,7 +113,7 @@ def versions():
         }
         return make_response(jsonify(error_message), 500)
 
-@setting_bp.route('/api/settings/files', methods=['GET'])
+@setting_bp.route('/settings/files', methods=['GET'])
 @login_required
 @admin_permission.require(http_exception=403)
 def check_config_files():

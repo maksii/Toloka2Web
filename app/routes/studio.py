@@ -19,7 +19,7 @@ def studios():
 def studio_detail(studio_id):
     return render_template('studio_detail.html', studio_id=studio_id)
 
-@studio_bp.route('/api/studio', methods=['GET'])
+@studio_bp.route('/studio', methods=['GET'])
 @multi_auth_required
 def search_studio():
     try:
@@ -36,7 +36,7 @@ def search_studio():
         }
         return make_response(jsonify(error_message), 500)
 
-@studio_bp.route('/api/studio/<int:studio_id>', methods=['GET'])
+@studio_bp.route('/studio/<int:studio_id>', methods=['GET'])
 @multi_auth_required
 def get_studio_details(studio_id):
     try:
@@ -51,7 +51,7 @@ def get_studio_details(studio_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@studio_bp.route('/api/studio/<int:studio_id>/anime', methods=['GET'])
+@studio_bp.route('/studio/<int:studio_id>/anime', methods=['GET'])
 @multi_auth_required
 def list_titles_by_studio(studio_id):
     try:

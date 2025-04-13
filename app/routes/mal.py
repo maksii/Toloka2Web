@@ -7,7 +7,7 @@ from app.services.mal_service import MALService
 
 mal_bp = Blueprint('mal_bp', __name__)
 
-@mal_bp.route('/api/mal/search', methods=['GET'])
+@mal_bp.route('/mal/search', methods=['GET'])
 @multi_auth_required
 def search():
     try:
@@ -23,7 +23,7 @@ def search():
         }
         return make_response(jsonify(error_message), 500)
 
-@mal_bp.route('/api/mal/detail/<int:anime_id>', methods=['GET'])
+@mal_bp.route('/mal/detail/<int:anime_id>', methods=['GET'])
 @multi_auth_required
 def get_detail(anime_id):
     try:

@@ -494,7 +494,7 @@ class TolokaDetail(Resource):
         return get_torrent(release_id)
 
 # Search Routes
-@api.route('/api/search')
+@api.route('/search')
 class AggregatedSearch(Resource):
     @api.doc('search_all',
         responses={
@@ -512,7 +512,7 @@ class AggregatedSearch(Resource):
         return search_aggregated()
 
 # Auth Check Routes
-@api.route('/api/auth/check')
+@api.route('/auth/check')
 class AuthCheck(Resource):
     @api.doc('check_auth',
         responses={

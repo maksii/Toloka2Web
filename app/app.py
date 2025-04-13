@@ -41,7 +41,7 @@ def create_app(test_config=None):
             PORT=int(os.environ.get('PORT', 5000)),
             HOST=os.environ.get('HOST', '0.0.0.0'),
             # CORS Configuration
-            CORS_ORIGINS=os.environ.get('CORS_ORIGINS', 'http://localhost:5173').split(',')
+            CORS_ORIGINS=os.environ.get('CORS_ORIGINS', '*').split(',')
         )
     else:
         # Load the test config if passed in
@@ -146,16 +146,20 @@ def create_app(test_config=None):
     from .routes.users import user_bp
     from .api import api_bp  # Import the API blueprint
     
-    blueprints = [
+    # Register blueprints with URL prefixes
+    app.register_blueprint(api_bp)  # api_bp already has url_prefix='/api'
+    
+    # Register route blueprints with '/api' prefix
+    route_blueprints = [
         anime_bp, release_bp, stream_bp, studio_bp,
         toloka_bp, mal_bp, tmdb_bp, setting_bp, auth_bp,
-        user_bp, api_bp  # Add the API blueprint to the list
+        user_bp
     ]
     
-    for blueprint in blueprints:
-        app.register_blueprint(blueprint)
+    for blueprint in route_blueprints:
+        app.register_blueprint(blueprint, url_prefix='/api')
 
-    # Configure main routes
+    # Configure main routes that should be registered directly with the app
     configure_routes(app, login_manager, admin_permission, user_permission)
 
     return app

@@ -8,7 +8,7 @@ from app.services.services import StreamingService
 
 stream_bp = Blueprint('stream', __name__)
 
-@stream_bp.route('/api/stream', methods=['GET'])
+@stream_bp.route('/stream', methods=['GET'])
 @multi_auth_required
 def search_titles_from_streaming():
     try:
@@ -24,7 +24,7 @@ def search_titles_from_streaming():
         }
         return make_response(jsonify(error_message), 500)
 
-@stream_bp.route('/api/stream', methods=['POST'])
+@stream_bp.route('/stream', methods=['POST'])
 @multi_auth_required
 def add_title_from_streaming():
     try:
@@ -40,7 +40,7 @@ def add_title_from_streaming():
         }
         return make_response(jsonify(error_message), 500)
 
-@stream_bp.route('/api/stream/details', methods=['POST'])
+@stream_bp.route('/stream/details', methods=['POST'])
 @multi_auth_required
 def get_title_details():
     try:

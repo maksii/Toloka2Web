@@ -63,7 +63,7 @@ def check_auth():
             'details': str(e)
         }, 500
 
-@auth_bp.route('/api/auth/register', methods=['POST'])
+@auth_bp.route('/auth/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
@@ -109,7 +109,7 @@ def register():
         current_app.logger.error(f'Registration error: {str(e)}')
         return jsonify({'error': 'Registration failed'}), 500
 
-@auth_bp.route('/api/auth/login', methods=['POST'])
+@auth_bp.route('/auth/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
@@ -157,7 +157,7 @@ def login():
         current_app.logger.error(f'Login error: {str(e)}')
         return jsonify({'error': 'Login failed'}), 500
 
-@auth_bp.route('/api/auth/refresh', methods=['POST'])
+@auth_bp.route('/auth/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
     try:
@@ -198,7 +198,7 @@ def refresh():
         current_app.logger.error(f'Token refresh error: {str(e)}')
         return jsonify({'error': 'Token refresh failed'}), 500
 
-@auth_bp.route('/api/auth/logout', methods=['POST'])
+@auth_bp.route('/auth/logout', methods=['POST'])
 @jwt_required(verify_type=False)
 def logout():
     try:
@@ -214,7 +214,7 @@ def logout():
         current_app.logger.error(f'Logout error: {str(e)}')
         return jsonify({'error': 'Logout failed'}), 500
 
-@auth_bp.route('/api/auth/me', methods=['GET'])
+@auth_bp.route('/auth/me', methods=['GET'])
 @jwt_required()
 def me():
     try:
@@ -240,7 +240,7 @@ def me():
         current_app.logger.error(f'User info error: {str(e)}')
         return jsonify({'error': 'Failed to get user info'}), 500
 
-@auth_bp.route('/api/auth/change-password', methods=['POST'])
+@auth_bp.route('/auth/change-password', methods=['POST'])
 @jwt_required()
 def change_password():
     try:
@@ -282,7 +282,7 @@ def change_password():
 
 # JWT token callbacks
 @jwt_required(verify_type=False)
-@auth_bp.route('/api/auth/validate', methods=['POST'])
+@auth_bp.route('/auth/validate', methods=['POST'])
 def validate_token():
     try:
         jwt = get_jwt()

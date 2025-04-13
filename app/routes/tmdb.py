@@ -7,7 +7,7 @@ from app.services.tmdb_service import TMDBService
 
 tmdb_bp = Blueprint('tmdb_bp', __name__)
 
-@tmdb_bp.route('/api/tmdb/search', methods=['GET'])
+@tmdb_bp.route('/tmdb/search', methods=['GET'])
 @multi_auth_required
 def search():
     try:
@@ -23,7 +23,7 @@ def search():
         }
         return make_response(jsonify(error_message), 500)
 
-@tmdb_bp.route('/api/tmdb/detail/<int:id>', methods=['GET'])
+@tmdb_bp.route('/tmdb/detail/<int:id>', methods=['GET'])
 @multi_auth_required
 def get_detail(id):
     try:
@@ -41,7 +41,7 @@ def get_detail(id):
         }
         return make_response(jsonify(error_message), 500)
 
-@tmdb_bp.route('/api/tmdb/trending', methods=['GET'])
+@tmdb_bp.route('/tmdb/trending', methods=['GET'])
 def get_trending():
     try:
         media_type = request.args.get('type')

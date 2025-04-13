@@ -11,7 +11,7 @@ from app.routes.auth import token_blocklist
 
 user_bp = Blueprint('user', __name__)
 
-@user_bp.route('/api/profile', methods=['GET'])
+@user_bp.route('/profile', methods=['GET'])
 @multi_auth_required
 def get_profile():
     try:
@@ -50,7 +50,7 @@ def get_profile():
     except Exception as e:
         return {'error': 'An error occurred while getting profile', 'details': str(e)}, 500
 
-@user_bp.route('/api/profile', methods=['PUT'])
+@user_bp.route('/profile', methods=['PUT'])
 @multi_auth_required
 def update_profile():
     try:
@@ -102,7 +102,7 @@ def update_user_profile(user):
         }
     }), 200)
 
-@user_bp.route('/api/users', methods=['GET'])
+@user_bp.route('/users', methods=['GET'])
 @multi_auth_admin_required
 def list_users():
     try:
@@ -119,7 +119,7 @@ def list_users():
         }
         return make_response(jsonify(error_message), 500)
 
-@user_bp.route('/api/users/<int:user_id>', methods=['PUT'])
+@user_bp.route('/users/<int:user_id>', methods=['PUT'])
 @multi_auth_admin_required
 def update_user(user_id):
     try:
@@ -156,7 +156,7 @@ def update_user(user_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@user_bp.route('/api/users/<int:user_id>', methods=['DELETE'])
+@user_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @multi_auth_admin_required
 def delete_user(user_id):
     try:

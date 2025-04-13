@@ -18,7 +18,7 @@ def anime():
 def anime_detail(anime_id):
     return render_template('anime_detail.html', anime_id=anime_id)
 
-@anime_bp.route('/api/anime', methods=['GET'])
+@anime_bp.route('/anime', methods=['GET'])
 @multi_auth_required
 def list_anime():
     try:
@@ -35,7 +35,7 @@ def list_anime():
         }
         return make_response(jsonify(error_message), 500)
 
-@anime_bp.route('/api/anime/<int:anime_id>', methods=['GET'])
+@anime_bp.route('/anime/<int:anime_id>', methods=['GET'])
 @multi_auth_required
 def get_anime_byid(anime_id):
     try:
@@ -50,7 +50,7 @@ def get_anime_byid(anime_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@anime_bp.route('/api/anime/<int:anime_id>/related', methods=['GET'])
+@anime_bp.route('/anime/<int:anime_id>/related', methods=['GET'])
 @login_required
 def get_anime_related(anime_id):
     try:
@@ -63,7 +63,7 @@ def get_anime_related(anime_id):
         }
         return make_response(jsonify(error_message), 500)
 
-@anime_bp.route('/api/anime/<int:anime_id>/studios', methods=['GET'])
+@anime_bp.route('/anime/<int:anime_id>/studios', methods=['GET'])
 @login_required
 def get_anime_studios(anime_id):
     try:

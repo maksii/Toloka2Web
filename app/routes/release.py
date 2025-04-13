@@ -11,7 +11,7 @@ from app.services.config_service import ConfigService
 
 release_bp = Blueprint('release', __name__)
 
-@release_bp.route('/api/releases', methods=['GET'])
+@release_bp.route('/releases', methods=['GET'])
 @multi_auth_required
 def get_titles():
     try:
@@ -41,7 +41,7 @@ def get_titles():
         }
         return make_response(jsonify(error_message), 500)
 
-@release_bp.route('/api/releases', methods=['POST'])
+@release_bp.route('/releases', methods=['POST'])
 @multi_auth_required
 def add_release():
     try:
@@ -59,7 +59,7 @@ def add_release():
         }
         return make_response(jsonify(error_message), 500)
 
-@release_bp.route('/api/releases/update', methods=['POST'])
+@release_bp.route('/releases/update', methods=['POST'])
 @multi_auth_required
 def update_release():
     try:
@@ -78,7 +78,7 @@ def update_release():
         }
         return make_response(jsonify(error_message), 500)
 
-@release_bp.route('/api/releases/torrents', methods=['GET'])
+@release_bp.route('/releases/torrents', methods=['GET'])
 @multi_auth_required
 def torrent_info_all_releases():
     try:
@@ -91,7 +91,7 @@ def torrent_info_all_releases():
         }
         return make_response(jsonify(error_message), 500)
 
-@release_bp.route('/api/releases/<string:hash>', methods=['GET'])
+@release_bp.route('/releases/<string:hash>', methods=['GET'])
 @multi_auth_required
 def recieve_request_from_client(hash):
     try:
@@ -105,7 +105,7 @@ def recieve_request_from_client(hash):
         }
         return make_response(jsonify(error_message), 500)
 
-@release_bp.route('/api/releases', methods=['PUT'])
+@release_bp.route('/releases', methods=['PUT'])
 @multi_auth_required
 def edit_release():
     try:
@@ -122,7 +122,7 @@ def edit_release():
         }
         return make_response(jsonify(error_message), 500)
 
-@release_bp.route('/api/releases', methods=['DELETE'])
+@release_bp.route('/releases', methods=['DELETE'])
 @multi_auth_required
 def delete_release():
     try:
