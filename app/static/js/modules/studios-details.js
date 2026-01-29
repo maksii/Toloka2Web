@@ -24,9 +24,25 @@ export default class StudiosDetails {
     async loadStudioDetails() {
         try {
             const data = await ApiService.get(`../api/studio/${this.studioId}`);
-            if (data && data[0]) {
-                document.querySelector('#studioName').textContent = data[0].name;
-                document.querySelector('#studioTelegram').textContent = data[0].telegram;
+            // Handle both array and object responses
+            const studio = Array.isArray(data) ? data[0] : data;
+            
+            if (studio) {
+                const nameElement = document.querySelector('#studioName');
+                const telegramElement = document.querySelector('#studioTelegram');
+                
+                if (nameElement) {
+                    nameElement.textContent = studio.name || 'Unknown Studio';
+                }
+                
+                if (telegramElement) {
+                    if (studio.telegram) {
+                        // Make telegram a clickable link
+                        telegramElement.innerHTML = `<a href="${studio.telegram}" target="_blank">${studio.telegram}</a>`;
+                    } else {
+                        telegramElement.textContent = 'No telegram link';
+                    }
+                }
             }
         } catch (error) {
             console.error('Error loading studio details:', error);
