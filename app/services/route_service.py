@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple, Any
 import datetime
 import os
-import pkg_resources
+from importlib.metadata import distributions
 from flask import request, jsonify, abort, g, current_app
 from flask_login import current_user
 from functools import wraps
@@ -26,7 +26,7 @@ class RouteService(BaseService):
     @classmethod
     def get_installed_packages(cls) -> Dict[str, str]:
         """Get list of installed Python packages and their versions."""
-        return {dist.project_name: dist.version for dist in pkg_resources.working_set}
+        return {dist.metadata["Name"]: dist.version for dist in distributions()}
 
     @classmethod
     def list_files(cls, path: str) -> Tuple[Dict[str, Any], int]:

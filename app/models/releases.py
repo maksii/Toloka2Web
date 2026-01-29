@@ -19,6 +19,7 @@ class Releases(db.Model):
         adjusted_episode_number: Corrected episode number
         guid: Global unique identifier
         user_id: Foreign key to users table
+        ongoing: Whether this release is ongoing (auto-update enabled)
     """
     __tablename__ = 'releases'
     
@@ -35,6 +36,7 @@ class Releases(db.Model):
     adjusted_episode_number = db.Column(db.Integer)
     guid = db.Column(db.String(50), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    ongoing = db.Column(db.Boolean, default=True, nullable=False)
     
     def __repr__(self) -> str:
         """String representation of the Release model."""

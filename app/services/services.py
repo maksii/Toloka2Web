@@ -123,13 +123,19 @@ class TolokaService(BaseService):
         """Add a new release."""
         try:
             config = cls.initiate_config()
+            
+            # Handle ongoing field (UI) -> partial (CLI arg for library)
+            ongoing_value = request.get('ongoing', 'true')
+            is_partial = ongoing_value in ('true', 'True', True, '1', 1)
+            
             request_data = RequestData(
                 url=request['url'],
                 season=request['season'],
                 index=int(request['index']),
                 correction=int(request['correction']),
                 title=request['title'],
-                path=config.application_config.default_download_dir
+                path=config.application_config.default_download_dir,
+                partial=is_partial
             )
 
             config.args = request_data

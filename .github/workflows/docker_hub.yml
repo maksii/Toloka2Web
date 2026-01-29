@@ -25,14 +25,14 @@ jobs:
         id: set_docker_tag
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "::set-output name=tag::latest"
+            echo "tag=latest" >> $GITHUB_OUTPUT
           else
             BRANCH_NAME=$(echo ${{ github.ref }} | sed 's|refs/heads/||')
-            echo "::set-output name=tag::$BRANCH_NAME"
+            echo "tag=$BRANCH_NAME" >> $GITHUB_OUTPUT
           fi
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: maksii/toloka2web:${{ steps.set_docker_tag.outputs.tag }}

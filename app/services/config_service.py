@@ -86,6 +86,10 @@ class ConfigService(BaseService):
         release.hash = form['hash']
         release.adjusted_episode_number = int(form['adjusted_episode_number'])
         release.guid = form['guid']
+        
+        # Handle ongoing field - convert string to boolean
+        ongoing_value = form.get('ongoing', 'true')
+        release.ongoing = ongoing_value in ('true', 'True', True, '1', 1)
 
         db.session.commit()
         cls.sync_settings("release", "to")
@@ -159,6 +163,7 @@ class ConfigService(BaseService):
             config.set(section, 'hash', release.hash)
             config.set(section, 'adjusted_episode_number', str(release.adjusted_episode_number))
             config.set(section, 'guid', release.guid)
+            config.set(section, 'is_partial_season', str(release.ongoing if release.ongoing is not None else True))
 
         with open(file_path, 'w', encoding='utf-8') as configfile:
             config.write(configfile)
@@ -193,6 +198,10 @@ class ConfigService(BaseService):
             release.hash = config.get(section, 'hash', fallback='')
             release.adjusted_episode_number = int(config.get(section, 'adjusted_episode_number', fallback='1'))
             release.guid = config.get(section, 'guid', fallback='')
+            
+            # Handle is_partial_season from INI (displayed as "Ongoing" in UI) - default to True for backward compatibility
+            is_partial_str = config.get(section, 'is_partial_season', fallback='True')
+            release.ongoing = is_partial_str.lower() in ('true', '1', 'yes')
 
         db.session.commit()
 

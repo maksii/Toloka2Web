@@ -153,6 +153,11 @@ export default class ReleasesAdd {
             UiManager.setButtonLoading(this.submitButton);
             
             const formData = new FormData(this.releaseForm);
+            
+            // Handle ongoing checkbox - ensure it's sent as a proper boolean value
+            const ongoingCheckbox = document.querySelector('#ongoing');
+            formData.set('ongoing', ongoingCheckbox.checked ? 'true' : 'false');
+            
             const result = await ApiService.post('/api/releases', formData);
 
             // Check if the operation was successful

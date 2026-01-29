@@ -1,4 +1,4 @@
-FROM python:3.12.4-alpine3.20
+FROM python:3.13-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -12,7 +12,7 @@ RUN apk add --no-cache \
  && adduser -S appuser -G appgroup
 
 # Set the timezone
-ENV TZ=Europe/Kiev
+ENV TZ=Europe/Kyiv
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 WORKDIR /app

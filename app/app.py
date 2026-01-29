@@ -1,6 +1,7 @@
 # Standard library imports
 from datetime import timedelta
 import os
+import sqlite3
 
 # Flask and extensions
 from flask import Flask, jsonify
@@ -14,6 +15,49 @@ from app.services.config_service import ConfigService
 from app.services.services_db import DatabaseService
 from .models.base import db
 from .models.user import bcrypt, User
+
+
+def run_database_migrations(app):
+    """Run database migrations for schema changes.
+    
+    This function handles adding new columns to existing tables
+    that db.create_all() cannot handle for existing databases.
+    """
+    db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+    
+    if not os.path.exists(db_path):
+        # Database doesn't exist yet, no migration needed
+        return
+    
+    migrations = [
+        # Migration: Add 'ongoing' column to releases table
+        {
+            'table': 'releases',
+            'column': 'ongoing',
+            'sql': "ALTER TABLE releases ADD COLUMN ongoing BOOLEAN DEFAULT 1 NOT NULL"
+        },
+    ]
+    
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        for migration in migrations:
+            # Check if column exists
+            cursor.execute(f"PRAGMA table_info({migration['table']})")
+            columns = [info[1] for info in cursor.fetchall()]
+            
+            if migration['column'] not in columns:
+                try:
+                    cursor.execute(migration['sql'])
+                    conn.commit()
+                    app.logger.info(f"Migration: Added '{migration['column']}' column to '{migration['table']}' table")
+                except sqlite3.Error as e:
+                    app.logger.warning(f"Migration warning for {migration['column']}: {e}")
+        
+        conn.close()
+    except sqlite3.Error as e:
+        app.logger.error(f"Database migration error: {e}")
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -115,6 +159,9 @@ def create_app(test_config=None):
     admin_permission = Permission(RoleNeed('admin'))
     user_permission = Permission(RoleNeed('user'))
 
+    # Run database migrations before creating tables
+    run_database_migrations(app)
+    
     with app.app_context():
         # Import models here to avoid circular imports
         from .models.user import User

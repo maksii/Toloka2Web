@@ -28,8 +28,10 @@ const translations = {
             publish_date: 'Дата публікації',
             release_group: 'Група випуску', 
             download_dir: 'Директорія завантаження',
+            guid: 'Toloka ID',
             hash: 'Хеш', 
             meta: 'Мета', 
+            ongoing: 'Онгоїнг',
             actions: 'Дії'
         },
         toloka:
@@ -139,7 +141,9 @@ const translations = {
         configuration: 'Конфігурація',
         users: 'Користувачі',
         light: 'Світла',
-        dark: 'Темна'
+        dark: 'Темна',
+        ongoing: 'Онгоїнг',
+        ongoingDescription: 'Використовувати діапазон епізодів (S01E01-E02) замість паку сезону (S01)'
     },
     validation: {
         invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',

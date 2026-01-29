@@ -31,6 +31,7 @@ const translations = {
             guid: 'Toloka ID', 
             hash: 'Hash', 
             meta: 'Meta', 
+            ongoing: 'Ongoing',
             actions: 'Actions'
         },
         toloka:
@@ -140,7 +141,9 @@ const translations = {
         configuration: 'Configuration',
         users: 'Users',
         light: 'Light',
-        dark: 'Dark'
+        dark: 'Dark',
+        ongoing: 'Ongoing',
+        ongoingDescription: 'Use episode range naming (S01E01-E02) instead of season pack (S01)'
     },
     validation: {
         invalidTitle: 'Title contains invalid characters that could break paths or JSON (/, \\, :, *, ?, ", <, >, |)',
