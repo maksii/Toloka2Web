@@ -32,7 +32,7 @@ jobs:
           fi
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: maksii/toloka2web:${{ steps.set_docker_tag.outputs.tag }}
