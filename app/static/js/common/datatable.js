@@ -1,39 +1,64 @@
 // static/js/common/datatable.js
+// Note: DataTableFactory (in data-table-factory.js) is the primary class for DataTable operations.
+// DataTableManager provides additional utility methods and legacy compatibility.
+
+import { DataTableFactory } from './data-table-factory.js';
 import { translations } from './utils.js';
 
 export class DataTableManager {
+    /**
+     * Initialize a DataTable with given config.
+     * @deprecated Use DataTableFactory.initializeTable() instead
+     */
     static initializeDataTable(selector, config) {
-        return $(selector).DataTable(config);
+        return DataTableFactory.initializeTable(selector, config);
     }
 
+    /**
+     * Render a value as a clickable URL link.
+     */
     static dataTableRenderAsUrl(host, url, text) {
         const fullPath = url ? `${host}/${url}` : host;
         return `<a href="${fullPath}" target="_blank">${text}</a>`;
     }
 
+    /**
+     * Render a value as an editable input field.
+     */
     static dataTableRenderAsInput(value) {
-        return `<input type="text" class="form-control" value="${value}">`;
+        return `<input type="text" class="form-control" value="${value || ''}">`;
     }
 
+    /**
+     * Refresh/reload a DataTable's AJAX data.
+     */
     static refreshTable(table) {
-        table.ajax.reload();
+        if (table && typeof table.ajax?.reload === 'function') {
+            table.ajax.reload();
+        }
     }
 
+    /**
+     * Get loading spinner HTML.
+     * @deprecated Use DataTableFactory.formatLoading() instead
+     */
     static formatLoading() {
-        return '<div class="d-flex justify-content-center">' +
-               '<div class="spinner-border" role="status">' +
-               `<span class="visually-hidden">${translations.labels.dataTablesLoadingText}</span>` +
-               '</div>' +
-               '</div>';
+        return DataTableFactory.formatLoading();
     }
 
-    static disableAlertErrors()
-    {
+    /**
+     * Disable DataTable's default error alerts.
+     * @deprecated Use DataTableFactory.initializeGlobalSettings() instead
+     */
+    static disableAlertErrors() {
         $.fn.dataTable.ext.errMode = 'none';
     }
 
-    static handleBootstrapTabs()
-    {
+    /**
+     * Handle Bootstrap tabs to properly adjust columns on tab switch.
+     * @deprecated Use DataTableFactory.initializeGlobalSettings() instead
+     */
+    static handleBootstrapTabs() {
         document.querySelectorAll('button[data-bs-toggle="tab"]').forEach((el) => {
             el.addEventListener('shown.bs.tab', () => {
                 DataTable.tables({ visible: true, api: true }).columns.adjust();
@@ -41,128 +66,50 @@ export class DataTableManager {
         });
     }
 
-    static onDataTableXhr(table)
-    {
+    /**
+     * Track original data from XHR responses for comparison/editing.
+     * @param {DataTable} table - The DataTable instance
+     * @param {Object} originalDataStore - Object to store original data by ID
+     */
+    static onDataTableXhr(table, originalDataStore = {}) {
         table.on('xhr', function() {
-            var data = table.ajax.json();
-            originalData = {};
-            data.forEach(function(item) {
-                originalData[item.id] = item;
-            });
-        });
-    }
-
-    static customDateRenderer(data, type, row) {
-        // Function to parse the date string and determine its components
-        function parseDate(dateStr) {
-            const dateTimeParts = dateStr.split(' ');
-            const dateParts = dateTimeParts[0].split('-');
-            const timePart = dateTimeParts.length > 1 ? dateTimeParts[1] : null;
-    
-            return {
-                year: parseInt('20' + dateParts[0], 10),
-                month: parseInt(dateParts[1], 10),
-                day: parseInt(dateParts[2], 10),
-                time: timePart
-            };
-        }
-    
-        // Function to format the date
-        function formatDate({ day, month, year, time }) {
-            let formattedDate = `${day}/${month}/${year}`;
-            if (time && time !== '00:00') {
-                formattedDate += ` ${time}`;
-            }
-            return formattedDate;
-        }
-    
-        // Function to calculate time difference
-        function timeSince(date) {
-            const now = new Date();
-            const past = new Date(date.year, date.month - 1, date.day, ...date.time ? date.time.split(':') : [0, 0]);
-            const diff = now - past;
-            const daysTotal = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const years = Math.floor(daysTotal / 365);
-            const days = daysTotal % 365;
-        
-            if (years > 0) {
-                return `${years} ${translations.labels.dataTablesYearText} ${days} ${translations.labels.dataTablesDaysText} ${hours} ${translations.labels.dataTablesHrsText}`;
-            } else {
-                return `${days} ${translations.labels.dataTablesDaysText} ${hours} ${translations.labels.dataTablesHrsText}`;
-            }
-        }
-    
-        const parsedDate = parseDate(data);
-    
-        // Return different data based on the type of data request
-        if (type === 'sort') {
-            // Return an ISO format date for correct sorting
-            const isoDate = `${parsedDate.year}-${parsedDate.month.toString().padStart(2, '0')}-${parsedDate.day.toString().padStart(2, '0')}`;
-            if (parsedDate.time) {
-                return isoDate + 'T' + parsedDate.time;
-            }
-            return isoDate;
-        } else if (type === 'display') {
-            if (parsedDate.time) {
-                if (parsedDate.time === '00:00') {
-                    return formatDate(parsedDate);
-                } else {
-                    const since = timeSince(parsedDate);
-                    const fullDate = formatDate(parsedDate);
-                    return `<span title="${fullDate}">${since}</span>`;
-                }
-            } else {
-                return formatDate(parsedDate);
-            }
-        } else {
-            // For filtering and type detection, return the formatted date
-            return formatDate(parsedDate);
-        }
-    }
-
-    static returnDefaultLayout()
-    {
-        let topStart = {
-                buttons: [
-                    {
-                        extend: 'colvis',
-                        postfixButtons: ['colvisRestore'],
-                        text: '<i class="bi bi-table"></i>',
-                        titleAttr: translations.buttons.dataTableColumnVisibilityhButton
-                        
-                    },
-                    {
-                        extend: 'searchPanes',
-                        className: 'btn btn-secondary',
-                        config: {
-                            cascadePanes: true
-                        }
-                        
-                    },
-                    { 
-                        action: function ( e, dt, node, config ) {dt.ajax.reload();},                        
-                        text: '<i class="bi bi-arrow-clockwise"></i>',
-                        titleAttr: translations.buttons.dataTableRefreshButton
-                    },
-                    {
-                        extend: 'pageLength',
-                        className: 'btn btn-secondary'
+            const data = table.ajax.json();
+            if (Array.isArray(data)) {
+                data.forEach(function(item) {
+                    if (item.id !== undefined) {
+                        originalDataStore[item.id] = item;
                     }
-                ]
+                });
             }
-
-        return topStart;
+        });
+        return originalDataStore;
     }
 
-    static returnDefaultLanguage()
-    {
-        let language = {
-            search: "_INPUT_",
-            searchPlaceholder: translations.labels.dataTableSearchInput
-        }
+    /**
+     * Custom date renderer for DataTable columns.
+     * @deprecated Use DataTableFactory.renderDate() instead - it handles more date formats
+     */
+    static customDateRenderer(data, type, row) {
+        return DataTableFactory.renderDate(data, type);
+    }
 
-        return language;
+    /**
+     * Get default layout configuration for DataTable buttons.
+     * @deprecated Use DataTableFactory.returnDefaultLayout() instead
+     */
+    static returnDefaultLayout() {
+        return DataTableFactory.returnDefaultLayout();
+    }
+
+    /**
+     * Get default language configuration for DataTable.
+     */
+    static returnDefaultLanguage() {
+        return {
+            search: "_INPUT_",
+            searchPlaceholder: translations.labels.dataTableSearchInput,
+            loadingRecords: DataTableFactory.formatLoading()
+        };
     }
 }
 

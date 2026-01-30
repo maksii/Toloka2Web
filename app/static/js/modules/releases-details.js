@@ -19,9 +19,7 @@ export default class ReleasesDetails {
     }
 
     getReleaseIdFromUrl() {
-        const url = new URL(window.location.href);
-        const segments = url.pathname.split('/');
-        return segments.pop();
+        return Utils.getIdFromUrl();
     }
 
     async loadReleaseDetails() {

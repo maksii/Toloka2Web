@@ -97,28 +97,6 @@ setting_model = api.model('Setting', {
     'value': fields.String(required=True, description='Setting value')
 })
 
-# Common response wrappers
-def with_pagination(model):
-    """Wrap a model with pagination fields"""
-    return api.model(f'Paginated{model.name}', {
-        'items': fields.List(fields.Nested(model)),
-        'total': fields.Integer(description='Total number of items'),
-        'page': fields.Integer(description='Current page number'),
-        'per_page': fields.Integer(description='Items per page'),
-        'pages': fields.Integer(description='Total number of pages')
-    })
-
-# Standard response codes
-responses = {
-    200: 'Success',
-    201: 'Created',
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    403: 'Forbidden',
-    404: 'Not Found',
-    500: 'Internal Server Error'
-}
-
 # Collection Response Models
 anime_list_response = api.model('AnimeListResponse', {
     'data': fields.List(fields.Nested(anime_model))

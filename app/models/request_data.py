@@ -25,13 +25,3 @@ class RequestData:
     force: bool = False
     path: str = ""
     partial: bool = True
-    def __init__(self, url = "", season = 0, index = 0, correction = 0, title = "", codename = "", force=False, path="", partial=True):
-        self.url = url
-        self.season = season
-        self.index = index
-        self.correction = correction
-        self.title = title
-        self.codename = codename
-        self.force = force
-        self.path = path
-        self.partial = partial

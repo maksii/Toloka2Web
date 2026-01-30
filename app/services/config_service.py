@@ -204,20 +204,3 @@ class ConfigService(BaseService):
             release.ongoing = is_partial_str.lower() in ('true', '1', 'yes')
 
         db.session.commit()
-
-    @classmethod
-    def serialize(cls, data):
-        """Serialize SQLAlchemy objects to JSON-compatible format."""
-        if isinstance(data, list):
-            return [cls.serialize(item) for item in data]
-        elif hasattr(data, '__dict__'):
-            result = {}
-            for column in data.__dict__:
-                if not column.startswith('_'):
-                    attr = getattr(data, column)
-                    if hasattr(attr, '__dict__') or isinstance(attr, list):
-                        result[column] = cls.serialize(attr)
-                    else:
-                        result[column] = attr
-            return result
-        return data

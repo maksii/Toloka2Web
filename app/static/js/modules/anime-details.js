@@ -1,7 +1,7 @@
 // static/js/modules/anime-details.js
 import { DataTableFactory } from '../common/data-table-factory.js';
 import { ApiService } from '../common/api-service.js';
-import { translations } from '../common/utils.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class AnimeDetails {
     constructor() {
@@ -28,14 +28,7 @@ export default class AnimeDetails {
     }
 
     getAnimeIdFromUrl() {
-        try {
-            const url = new URL(window.location.href);
-            const segments = url.pathname.split('/');
-            return segments.pop() || null;
-        } catch (error) {
-            console.error('Error getting anime ID from URL:', error);
-            return null;
-        }
+        return Utils.getIdFromUrl();
     }
 
     async loadAnimeDetails() {

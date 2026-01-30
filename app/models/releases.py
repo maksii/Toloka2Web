@@ -1,6 +1,7 @@
 """Releases model for tracking media releases."""
+from datetime import datetime, timezone
+
 from .base import db
-from datetime import datetime
 
 class Releases(db.Model):
     """Model for tracking media releases.
@@ -29,13 +30,13 @@ class Releases(db.Model):
     season_number = db.Column(db.String(10))
     torrent_name = db.Column(db.String(100))
     download_dir = db.Column(db.String(200))
-    publish_date = db.Column(db.DateTime, default=datetime.utcnow)
+    publish_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     release_group = db.Column(db.String(100))
     meta = db.Column(db.String(200))
     hash = db.Column(db.String(40))
     adjusted_episode_number = db.Column(db.Integer)
     guid = db.Column(db.String(50), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
     ongoing = db.Column(db.Boolean, default=True, nullable=False)
     
     def __repr__(self) -> str:

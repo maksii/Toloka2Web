@@ -199,14 +199,16 @@ class TolokaService(BaseService):
         }
         
         try:
-            response = requests.get(url, headers=headers, stream=True)
+            response = requests.get(url, headers=headers, stream=True, timeout=30)
             response.raise_for_status()
             return Response(
                 response.iter_content(chunk_size=1024),
-                content_type=response.headers['Content-Type']
+                content_type=response.headers.get('Content-Type', 'image/jpeg')
             )
         except requests.RequestException as e:
-            return Response(f"Failed to fetch image: {str(e)}", status=response.status_code)
+            # Get status code if available, otherwise use 502 Bad Gateway
+            status_code = getattr(e.response, 'status_code', 502) if hasattr(e, 'response') else 502
+            return Response(f"Failed to fetch image: {str(e)}", status=status_code)
 
 class StreamingService(BaseService):
     """Service for handling streaming site operations."""
@@ -341,20 +343,3 @@ class TorrentService(BaseService):
             sort="added_on",
             reverse=True
         )
-
-# Placeholder functions for new endpoints
-def search_voice_studio(query):
-    # Logic for searching voice studios
-    pass
-
-def list_voice_studios():
-    # Logic for listing voice studios
-    pass
-
-def list_titles_by_studio(studio_id):
-    # Logic for listing titles by a specific studio
-    pass
-
-def add_title_from_streaming_site(data):
-    # Logic for adding a title from a streaming site
-    pass

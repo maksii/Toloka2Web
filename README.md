@@ -194,14 +194,61 @@ Note: The documentation is automatically generated from the codebase and always 
 
 ### Configuration
 
-#### Environment Variables
-- `PUID/PGID`: Set to match your user/group ID (run `id` command to find yours)
-- `CRON_SCHEDULE`: Update frequency in cron format (Docker only)
-- `API_KEY`: Key for accessing API endpoints without authentication (used by cron jobs)
-- `FLASK_SECRET_KEY`: Random string used for session security (required)
-- `PORT`: Web interface port (default: 5000)
-- `TZ`: Timezone (default: Europe/Kiev)
-- `CORS_ORIGINS`: Comma-separated list of allowed CORS origins (default: http://localhost:5173)
+#### Configuration Architecture
+
+The application uses three configuration sources, each serving a specific purpose:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Configuration Sources                         │
+├─────────────────────────────────────────────────────────────────┤
+│  Environment Variables     │  Secrets & Server Settings         │
+│  (Required at startup)     │  - FLASK_SECRET_KEY                │
+│                            │  - JWT_SECRET_KEY                  │
+│                            │  - API_KEY                         │
+│                            │  - PORT, HOST, TZ                  │
+├────────────────────────────┼────────────────────────────────────┤
+│  Database                  │  Runtime Settings (Web UI)         │
+│  (ApplicationSettings)     │  - MAL API Key                     │
+│                            │  - TMDB API Key                    │
+│                            │  - Open Registration flag          │
+│                            │  - Other app preferences           │
+├────────────────────────────┼────────────────────────────────────┤
+│  INI Files                 │  toloka2MediaServer Package        │
+│  (data/app.ini,            │  - Toloka credentials              │
+│   data/titles.ini)         │  - Download paths                  │
+│                            │  - Media server settings           │
+│                            │  - Release tracking                │
+└────────────────────────────┴────────────────────────────────────┘
+```
+
+**Why INI Files?**
+The `toloka2MediaServer` external package reads configuration directly from INI files. The application provides bidirectional sync between the database and INI files:
+- Changes made in the Web UI are saved to the database, then synced to INI files
+- This allows the external package to read the latest configuration
+
+#### Required Environment Variables
+
+The following environment variables **must** be set before starting the application:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `FLASK_SECRET_KEY` | Secret key for Flask sessions (use a random string) | `openssl rand -hex 32` |
+| `JWT_SECRET_KEY` | Secret key for JWT tokens (use a random string) | `openssl rand -hex 32` |
+| `API_KEY` | Key for API access without login (for cron jobs) | `your-secure-api-key` |
+
+**Security Note:** Never use default values in production. The application will log a warning if default secrets are detected.
+
+#### Optional Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Web interface port | `5000` |
+| `HOST` | Bind address | `0.0.0.0` |
+| `TZ` | Timezone | `Europe/Kiev` |
+| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `*` |
+| `PUID/PGID` | User/Group ID for Docker | - |
+| `CRON_SCHEDULE` | Update schedule (Docker only) | `0 */2 * * *` |
 
 #### External Service API Keys
 Third-party service API keys are managed through the web interface:

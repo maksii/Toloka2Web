@@ -165,11 +165,9 @@ export default class ReleasesAdd {
                 // Show success message
                 UiManager.showOperationResults(result);
                 
-                // Close modal and refresh table only on success
+                // Close modal and dispatch event to refresh table
                 UiManager.hideModal('addReleaseModal');
-                if (window.releasesTable) {
-                    window.releasesTable.ajax.reload();
-                }
+                window.dispatchEvent(new CustomEvent('releaseAdded'));
             } else {
                 // Show error message but keep modal open
                 UiManager.showOperationResults(result || { error: 'Failed to add release' });

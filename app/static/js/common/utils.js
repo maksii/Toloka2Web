@@ -5,6 +5,29 @@ import uaTranslations from '../l18n/ua.js';
 export class Utils {
     static #translations = null;
 
+    /**
+     * Extract ID from URL path.
+     * Handles patterns like /anime/123, /studio/456, /releases/789
+     * @param {string} pattern - Optional regex pattern. Defaults to last numeric segment.
+     * @returns {string|null} - The extracted ID or null if not found.
+     */
+    static getIdFromUrl(pattern = null) {
+        const path = window.location.pathname;
+        if (pattern) {
+            const match = path.match(pattern);
+            return match ? match[1] : null;
+        }
+        // Default: extract last numeric segment from path
+        const segments = path.split('/').filter(Boolean);
+        for (let i = segments.length - 1; i >= 0; i--) {
+            if (/^\d+$/.test(segments[i])) {
+                return segments[i];
+            }
+        }
+        // Fallback: return last segment if no numeric found
+        return segments[segments.length - 1] || null;
+    }
+
     static getTranslations() {
         if (!this.#translations) {
             const language = document.documentElement.getAttribute('data-bs-language') || 'en';
@@ -211,6 +234,27 @@ document.addEventListener('DOMContentLoaded', () => {
         attributes: true,
         attributeFilter: ['data-bs-language']
     });
+});
+
+// Global error handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+    const error = event.reason;
+    
+    // Check if it's an APIError (from api-service.js)
+    if (error && error.name === 'APIError') {
+        console.error(`Unhandled API Error [${error.code}]:`, error.message);
+        
+        // Handle authentication errors globally
+        if (error.status === 401) {
+            // Optionally redirect to login or show notification
+            console.warn('Authentication required. User may need to log in.');
+        }
+    } else {
+        console.error('Unhandled promise rejection:', error);
+    }
+    
+    // Prevent the default browser error handling (optional)
+    // event.preventDefault();
 });
 
 export class Backdrop {

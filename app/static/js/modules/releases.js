@@ -78,8 +78,12 @@ export default class Releases {
         };
 
         this.table = DataTableFactory.initializeTable('#dataTableTitles', config);
-        window.releasesTable = this.table;
         this.tableBody = document.querySelector('#dataTableTitles tbody');
+        
+        // Listen for release added events to refresh the table
+        window.addEventListener('releaseAdded', () => {
+            this.table.ajax.reload();
+        });
     }
 
     getTableButtons() {

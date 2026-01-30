@@ -1,7 +1,7 @@
 // static/js/modules/studios-details.js
 import { DataTableFactory } from '../common/data-table-factory.js';
 import { ApiService } from '../common/api-service.js';
-import { translations } from '../common/utils.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class StudiosDetails {
     constructor() {
@@ -16,9 +16,7 @@ export default class StudiosDetails {
     }
 
     getStudioIdFromUrl() {
-        const url = new URL(window.location.href);
-        const segments = url.pathname.split('/');
-        return segments.pop();
+        return Utils.getIdFromUrl();
     }
 
     async loadStudioDetails() {

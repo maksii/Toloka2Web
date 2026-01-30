@@ -2,6 +2,10 @@
 from datetime import timedelta
 import os
 import sqlite3
+import logging
+
+# Third-party imports
+import requests
 
 # Flask and extensions
 from flask import Flask, jsonify
@@ -15,6 +19,96 @@ from app.services.config_service import ConfigService
 from app.services.services_db import DatabaseService
 from .models.base import db
 from .models.user import bcrypt, User
+
+# Default secret values that should not be used in production
+_DEFAULT_SECRETS = {
+    'FLASK_SECRET_KEY': 'default_secret_key',
+    'JWT_SECRET_KEY': 'default_jwt_secret',
+    'API_KEY': 'default_api_key',
+}
+
+
+def _initialize_data_files():
+    """Initialize required data files before app startup.
+    
+    Creates necessary directories and downloads required files if they don't exist:
+    - data/anime_data.db: Anime database (downloaded if missing)
+    - data/app.ini: Application configuration (downloaded if missing)
+    - data/titles.ini: Release tracking (created empty if missing)
+    
+    This function is called during create_app() to ensure all required
+    files exist before the Flask application is fully initialized.
+    """
+    import requests
+    
+    # Ensure data directory exists
+    os.makedirs('data', exist_ok=True)
+    
+    # Check and download anime database if not exists
+    local_db_path = "data/anime_data.db"
+    if not os.path.exists(local_db_path):
+        logging.info("Database not found. Downloading the database...")
+        try:
+            DatabaseService.update_database()
+        except Exception as e:
+            logging.warning(f"Failed to download anime database: {e}")
+    
+    # Check and download app.ini if not exists
+    app_ini_path = "data/app.ini"
+    if not os.path.exists(app_ini_path):
+        logging.info("app.ini not found. Downloading template...")
+        try:
+            response = requests.get(
+                "https://raw.githubusercontent.com/CakesTwix/Toloka2MediaServer/main/data/app-example.ini",
+                timeout=30
+            )
+            response.raise_for_status()
+            with open(app_ini_path, 'wb') as f:
+                f.write(response.content)
+            logging.info(f"Downloaded app.ini to {app_ini_path}")
+        except Exception as e:
+            logging.warning(f"Failed to download app.ini: {e}")
+    
+    # Check and create titles.ini if not exists
+    titles_ini_path = "data/titles.ini"
+    if not os.path.exists(titles_ini_path):
+        logging.info("titles.ini not found. Creating empty file...")
+        try:
+            with open(titles_ini_path, 'w', encoding='utf-8') as f:
+                pass  # Create empty file
+        except OSError as e:
+            logging.warning(f"Failed to create titles.ini: {e}")
+
+
+def _validate_environment_config(app):
+    """Validate environment configuration and log warnings for insecure defaults.
+    
+    This function checks if the application is using default secret values
+    and logs appropriate warnings. In production, these should be set to
+    secure random values.
+    """
+    warnings = []
+    
+    if app.config.get('SECRET_KEY') == _DEFAULT_SECRETS['FLASK_SECRET_KEY']:
+        warnings.append(
+            "FLASK_SECRET_KEY is using default value. "
+            "Set FLASK_SECRET_KEY environment variable for production."
+        )
+    
+    if app.config.get('JWT_SECRET_KEY') == _DEFAULT_SECRETS['JWT_SECRET_KEY']:
+        warnings.append(
+            "JWT_SECRET_KEY is using default value. "
+            "Set JWT_SECRET_KEY environment variable for production."
+        )
+    
+    if app.config.get('API_KEY') == _DEFAULT_SECRETS['API_KEY']:
+        warnings.append(
+            "API_KEY is using default value. "
+            "Set API_KEY environment variable for production."
+        )
+    
+    for warning in warnings:
+        app.logger.warning(f"SECURITY WARNING: {warning}")
 
 
 def run_database_migrations(app):
@@ -60,6 +154,18 @@ def run_database_migrations(app):
         app.logger.error(f"Database migration error: {e}")
 
 def create_app(test_config=None):
+    """Create and configure the Flask application.
+    
+    Args:
+        test_config: Optional configuration dictionary for testing.
+        
+    Returns:
+        Configured Flask application instance.
+    """
+    # Initialize data files before creating app (downloads if missing)
+    if test_config is None:
+        _initialize_data_files()
+    
     app = Flask(__name__)
     
     if test_config is None:
@@ -95,6 +201,9 @@ def create_app(test_config=None):
     else:
         # Load the test config if passed in
         app.config.update(test_config)
+
+    # Validate environment configuration (warn about insecure defaults)
+    _validate_environment_config(app)
 
     # Ensure the instance folder exists
     try:
@@ -145,9 +254,17 @@ def create_app(test_config=None):
 
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
+        """Check if a JWT token has been revoked.
+        
+        Checks both the in-memory blocklist (for immediate revocation)
+        and the database (for persistence across restarts).
+        """
         from .routes.auth import token_blocklist
+        from .models.revoked_token import RevokedToken
+        
         jti = jwt_payload["jti"]
-        return jti in token_blocklist
+        # Check in-memory first (faster), then database
+        return jti in token_blocklist or RevokedToken.is_token_revoked(jti)
 
     # Initialize login manager
     login_manager = LoginManager(app)
@@ -159,6 +276,14 @@ def create_app(test_config=None):
     admin_permission = Permission(RoleNeed('admin'))
     user_permission = Permission(RoleNeed('user'))
 
+    # Configure logging
+    from .utils.logging_config import configure_logging
+    configure_logging(app)
+
+    # Register error handlers for consistent API error responses
+    from .utils.errors import register_error_handlers
+    register_error_handlers(app)
+
     # Run database migrations before creating tables
     run_database_migrations(app)
     
@@ -168,8 +293,9 @@ def create_app(test_config=None):
         from .models.user_settings import UserSettings
         from .models.releases import Releases
         from .models.application_settings import ApplicationSettings
+        from .models.revoked_token import RevokedToken
 
-        # Create database tables
+        # Create database tables (including revoked_tokens for JWT blocklist)
         db.create_all()
         DatabaseService.initialize_database()
 

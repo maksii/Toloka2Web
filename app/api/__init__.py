@@ -1,5 +1,6 @@
-from flask_restx import Api, fields, Resource
-from flask import Blueprint, current_app
+"""API Blueprint and Flask-RESTX configuration."""
+from flask_restx import Api, Resource
+from flask import Blueprint
 from flask_jwt_extended import create_access_token, create_refresh_token
 
 # Create a blueprint for the API
@@ -43,28 +44,6 @@ api = Api(
     security=['bearerAuth', 'apiKey']
 )
 
-# Authentication models
-login_model = api.model('Login', {
-    'username': fields.String(required=True, description='User username'),
-    'password': fields.String(required=True, description='User password'),
-    'remember_me': fields.Boolean(required=False, description='Remember me flag')
-})
-
-token_response = api.model('TokenResponse', {
-    'access_token': fields.String(description='JWT access token'),
-    'refresh_token': fields.String(description='JWT refresh token'),
-    'user': fields.Nested(api.model('UserInfo', {
-        'id': fields.Integer(description='User ID'),
-        'username': fields.String(description='Username'),
-        'roles': fields.String(description='User roles')
-    }))
-})
-
-error_response = api.model('ErrorResponse', {
-    'error': fields.String(description='Error message'),
-    'code': fields.String(description='Error code')
-})
-
 # Create namespaces for existing route groups
 auth_ns = api.namespace('auth', 
     description='Authentication operations',
@@ -80,8 +59,15 @@ mal_ns = api.namespace('mal', description='MyAnimeList operations')
 tmdb_ns = api.namespace('tmdb', description='TMDB operations')
 users_ns = api.namespace('users', description='User operations')
 
+# Import models (defined in models.py - single source of truth)
+# This must be done after api is created since models use api.model()
+from .models import (
+    login_model, token_response, error_response, user_info
+)
+
 # Import routes to register them with the API
 from . import routes
+
 
 # Add login endpoint to auth namespace
 @auth_ns.route('/login')
@@ -106,7 +92,6 @@ class Login(Resource):
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
-        remember = data.get('remember_me', False)
         
         user = User.query.filter_by(username=username).first()
         
@@ -138,6 +123,7 @@ class Login(Resource):
             
         return {'error': 'Invalid username or password', 'code': 'invalid_credentials'}, 401 
 
+
 # Add refresh token endpoint to auth namespace
 @auth_ns.route('/refresh')
 class TokenRefresh(Resource):
@@ -156,6 +142,8 @@ class TokenRefresh(Resource):
         """
         from flask_jwt_extended import get_jwt_identity, get_jwt, verify_jwt_in_request
         from app.models.user import User
+        from app.models.revoked_token import RevokedToken
+        from app.routes.auth import token_blocklist
         
         try:
             verify_jwt_in_request(refresh=True)
@@ -164,10 +152,9 @@ class TokenRefresh(Resource):
             current_user_id = get_jwt_identity()
             jwt = get_jwt()
             
-            # Check if token is in blocklist
-            from .routes.auth import token_blocklist
+            # Check if token is in blocklist (both in-memory and database)
             jti = jwt.get('jti')
-            if jti in token_blocklist:
+            if jti in token_blocklist or RevokedToken.is_token_revoked(jti):
                 return {'error': 'Token has been revoked', 'code': 'token_revoked'}, 401
             
             user = User.query.get(int(current_user_id))
@@ -194,4 +181,4 @@ class TokenRefresh(Resource):
             }
             
         except Exception as e:
-            return {'error': str(e), 'code': 'refresh_failed'}, 401 
+            return {'error': str(e), 'code': 'refresh_failed'}, 401
