@@ -57,6 +57,15 @@ def torrent_info_all_releases():
     return make_response(jsonpickle.encode(result, unpicklable=False), 200)
 
 
+@release_bp.route('/releases/defaults', methods=['GET'])
+@multi_auth_required
+@handle_errors
+def get_release_defaults():
+    """Get default values for the Add Release form (e.g. default_meta from Toloka section)."""
+    result = ConfigService.get_release_defaults()
+    return make_response(jsonify(result), 200)
+
+
 @release_bp.route('/releases/<string:hash>', methods=['GET'])
 @multi_auth_required
 @handle_errors

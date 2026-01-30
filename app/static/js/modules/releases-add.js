@@ -12,10 +12,13 @@ export default class ReleasesAdd {
         this.releaseTitle = document.querySelector('#releaseTitle');
         this.submitButton = document.querySelector('#submitButton');
         this.releaseForm = document.querySelector('#releaseForm');
+        this.releasePreview = document.querySelector('#releasePreview');
+        this.addReleaseModal = document.querySelector('#addReleaseModal');
     }
 
     init() {
         this.addEventListeners();
+        this.setupModalDefaults();
     }
 
     addEventListeners() {
@@ -25,11 +28,63 @@ export default class ReleasesAdd {
         this.releaseForm.addEventListener('submit', async (e) => this.handleFormSubmit(e));
         
         // Add validation on input
-        this.releaseTitle.addEventListener('input', () => this.validateTitle());
-        document.querySelector('#season').addEventListener('input', () => this.validateNumber('season'));
-        document.querySelector('#index').addEventListener('input', () => this.validateNumber('index'));
+        const previewInputs = () => { this.updateReleasePreview(); };
+        this.releaseTitle.addEventListener('input', () => { this.validateTitle(); previewInputs(); });
+        const seasonEl = document.querySelector('#season');
+        const indexEl = document.querySelector('#index');
+        if (seasonEl) { seasonEl.addEventListener('input', () => { this.validateNumber('season'); previewInputs(); }); seasonEl.addEventListener('change', previewInputs); }
+        if (indexEl) { indexEl.addEventListener('input', () => { this.validateNumber('index'); previewInputs(); }); indexEl.addEventListener('change', previewInputs); }
         document.querySelector('#correction').addEventListener('input', () => this.validateNumber('correction'));
         document.querySelector('#tolokaUrl').addEventListener('input', () => this.validateUrl());
+        const releaseGroup = document.querySelector('#releaseGroup');
+        const meta = document.querySelector('#meta');
+        const ongoing = document.querySelector('#ongoing');
+        if (releaseGroup) { releaseGroup.addEventListener('input', previewInputs); releaseGroup.addEventListener('change', previewInputs); }
+        if (meta) { meta.addEventListener('input', previewInputs); meta.addEventListener('change', previewInputs); }
+        if (ongoing) ongoing.addEventListener('change', previewInputs);
+    }
+
+    setupModalDefaults() {
+        if (!this.addReleaseModal) return;
+        this.addReleaseModal.addEventListener('shown.bs.modal', () => this.loadReleaseDefaults());
+    }
+
+    async loadReleaseDefaults() {
+        try {
+            const result = await ApiService.get('/api/releases/defaults');
+            const metaInput = document.querySelector('#meta');
+            if (metaInput && result?.default_meta !== undefined && metaInput.value === '') {
+                metaInput.value = result.default_meta || '';
+            }
+            this.updateReleasePreview();
+        } catch (err) {
+            console.warn('Could not load release defaults:', err);
+            this.updateReleasePreview();
+        }
+    }
+
+    updateReleasePreview() {
+        if (!this.releasePreview) return;
+        const title = (document.querySelector('#releaseTitle')?.value || '').trim();
+        const season = (document.querySelector('#season')?.value || '').trim();
+        const metaVal = (document.querySelector('#meta')?.value || '').trim();
+        const groupVal = (document.querySelector('#releaseGroup')?.value || '').trim();
+        const isOngoing = document.querySelector('#ongoing')?.checked ?? true;
+        const indexVal = (document.querySelector('#index')?.value || '1').trim();
+        const parts = [];
+        if (title) parts.push(title);
+        if (season !== '' || title) {
+            const s = season !== '' ? season : '1';
+            const idx = indexVal ? parseInt(indexVal, 10) : 1;
+            if (isOngoing && !isNaN(idx)) {
+                parts.push(`S${s.padStart(2, '0')}E01-E${String(idx).padStart(2, '0')}`);
+            } else {
+                parts.push(`S${s.padStart(2, '0')}`);
+            }
+        }
+        if (metaVal) parts.push(metaVal);
+        if (groupVal) parts.push(`[${groupVal}]`);
+        this.releasePreview.textContent = parts.length ? parts.join(' ') : '—';
     }
 
     toggleFilenameIndex() {
@@ -88,8 +143,9 @@ export default class ReleasesAdd {
 
         this.releaseTitle.value = text;
         
-        // Trigger form validation after modifying the title
+        // Trigger form validation and preview update after modifying the title
         this.validateTitle();
+        this.updateReleasePreview();
     }
 
     validateTitle() {

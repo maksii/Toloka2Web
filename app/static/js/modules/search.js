@@ -355,6 +355,9 @@ export default class Search {
             // Set the title and URL
             document.querySelector('#releaseTitle').value = data.name;
             document.querySelector('#tolokaUrl').value = `https://toloka.to/${data.url}`;
+            // Set release group from Toloka search author
+            const releaseGroupInput = document.querySelector('#releaseGroup');
+            if (releaseGroupInput) releaseGroupInput.value = data.author != null ? data.author : '';
             
             // Handle file name extraction from child data
             if (childDataToUse) {

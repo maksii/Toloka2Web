@@ -87,7 +87,13 @@ releases_list_response = api.model('ReleasesListResponse', {
 release_input = api.model('ReleaseInput', {
     'title': fields.String(required=True, description='Release title'),
     'hash': fields.String(required=True, description='Release hash'),
-    'status': fields.String(description='Release status')
+    'status': fields.String(description='Release status'),
+    'release_group': fields.String(description='Release group (optional, e.g. when adding release)'),
+    'meta': fields.String(description='Meta/tags (optional, e.g. WEBDL; default from Toloka default_meta)')
+})
+
+release_defaults_response = api.model('ReleaseDefaultsResponse', {
+    'default_meta': fields.String(description='Default meta value from Toloka section in app.ini (synced to DB)')
 })
 
 # Settings Models

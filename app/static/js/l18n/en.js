@@ -143,7 +143,11 @@ const translations = {
         light: 'Light',
         dark: 'Dark',
         ongoing: 'Ongoing',
-        ongoingDescription: 'Use episode range naming (S01E01-E02) instead of season pack (S01)'
+        ongoingDescription: 'Use episode range naming (S01E01-E02) instead of season pack (S01)',
+        releaseGroup: 'Release Group',
+        meta: 'Meta',
+        releaseGroupMeta: 'Release group & Meta',
+        releasePreview: 'Preview'
     },
     validation: {
         invalidTitle: 'Title contains invalid characters that could break paths or JSON (/, \\, :, *, ?, ", <, >, |)',

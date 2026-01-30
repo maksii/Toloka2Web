@@ -12,7 +12,7 @@ from . import (
 from .models import (
     error_response, success_response, login_model, register_model, token_response,
     user_info, anime_model, studio_model, search_input, search_response,
-    release_input, setting_model, anime_list_response, studio_list_response, 
+    release_input, release_defaults_response, setting_model, anime_list_response, studio_list_response, 
     user_list_response, settings_list_response, mal_search_response, 
     tmdb_search_response, releases_list_response, release_model,
     stream_search_input, stream_add_input, stream_details_input, stream_response,
@@ -423,6 +423,21 @@ class ReleaseTorrents(Resource):
         """Get torrent information for all releases"""
         from app.routes.release import torrent_info_all_releases
         return torrent_info_all_releases()
+
+@releases_ns.route('/defaults')
+class ReleaseDefaults(Resource):
+    @api.doc('get_release_defaults',
+        responses={
+            200: ('Success', release_defaults_response),
+            401: ('Unauthorized', error_response),
+            500: ('Server Error', error_response)
+        }
+    )
+    @multi_auth_required
+    def get(self):
+        """Get default values for the Add Release form"""
+        from app.routes.release import get_release_defaults
+        return get_release_defaults()
 
 @releases_ns.route('/<string:hash>')
 class ReleaseDetail(Resource):

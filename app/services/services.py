@@ -165,7 +165,9 @@ class TolokaService(BaseService):
                 correction=int(request['correction']),
                 title=request['title'],
                 path=config.application_config.default_download_dir,
-                partial=is_partial
+                partial=is_partial,
+                release_group=request.get('release_group', ''),
+                meta=request.get('meta', '')
             )
 
             config.args = request_data

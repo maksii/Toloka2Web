@@ -17,6 +17,13 @@ class ConfigService(BaseService):
         return cls.serialize(settings)
 
     @classmethod
+    def get_release_defaults(cls) -> Dict:
+        """Get default values for the Add Release form (e.g. default_meta from Toloka section in DB)."""
+        setting = ApplicationSettings.query.filter_by(section='Toloka', key='default_meta').first()
+        default_meta = setting.value if setting else ''
+        return {'default_meta': default_meta}
+
+    @classmethod
     def init_web_settings(cls) -> None:
         """Initialize default web settings."""
         cls.add_new_setting('toloka2web', 'open_registration', 'True')

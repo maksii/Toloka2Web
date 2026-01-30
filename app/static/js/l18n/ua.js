@@ -143,7 +143,11 @@ const translations = {
         light: 'Світла',
         dark: 'Темна',
         ongoing: 'Онгоїнг',
-        ongoingDescription: 'Використовувати діапазон епізодів (S01E01-E02) замість паку сезону (S01)'
+        ongoingDescription: 'Використовувати діапазон епізодів (S01E01-E02) замість паку сезону (S01)',
+        releaseGroup: 'Група',
+        meta: 'Мета',
+        releaseGroupMeta: 'Теги',
+        releasePreview: 'Попередній перегляд'
     },
     validation: {
         invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',
