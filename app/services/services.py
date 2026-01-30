@@ -83,6 +83,36 @@ class TolokaService(BaseService):
         return sections
 
     @classmethod
+    def get_titles_with_torrent_status(cls) -> Dict:
+        """Get all titles with torrent status merged in.
+        
+        Fetches titles from INI config and torrent status from the client,
+        then merges torrent state/progress/name into each title by hash.
+        """
+        titles_data = cls.get_titles_logic()
+        torrents_data = TorrentService.get_releases_torrent_status()
+        
+        torrents_dict = {}
+        if hasattr(torrents_data, 'data') and torrents_data.data:
+            for torrent in torrents_data.data:
+                if isinstance(torrent, dict) and torrent.get('hash'):
+                    torrents_dict[torrent['hash']] = torrent
+        
+        for title, data in titles_data.items():
+            if not isinstance(data, dict):
+                continue
+            hash_value = data.get('hash')
+            if hash_value in torrents_dict:
+                t = torrents_dict[hash_value]
+                data['torrent_info'] = {
+                    'state': t.get('state'),
+                    'progress': t.get('progress'),
+                    'name': t.get('name'),
+                }
+        
+        return titles_data
+
+    @classmethod
     def get_torrents_logic(cls, query: str) -> Dict:
         """Search for torrents using query."""
         if not query:

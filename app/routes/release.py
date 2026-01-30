@@ -15,26 +15,7 @@ release_bp = Blueprint('release', __name__)
 @handle_errors
 def get_titles():
     """Get all releases with their torrent status."""
-    titles_data = TolokaService.get_titles_logic()
-    torrents_data = TorrentService.get_releases_torrent_status()
-
-    # Convert the list of torrents into a dictionary for easier access
-    torrents_dict = {
-        torrent['hash']: torrent 
-        for torrent in torrents_data.data 
-        if isinstance(torrent, dict)
-    }
-
-    # Extend each title with torrent info
-    for title, data in titles_data.items():
-        hash_value = data.get('hash')
-        if hash_value in torrents_dict:
-            data['torrent_info'] = {
-                "state": torrents_dict[hash_value].get("state"),
-                "progress": torrents_dict[hash_value].get("progress"),
-                "name": torrents_dict[hash_value].get("name"),
-            }
-
+    titles_data = TolokaService.get_titles_with_torrent_status()
     return make_response(jsonify(titles_data), 200)
 
 

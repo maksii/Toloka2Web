@@ -19,6 +19,15 @@ from app.models.user import User
 from app.models.application_settings import ApplicationSettings
 from app.models.revoked_token import RevokedToken
 from app.models.base import db
+from app.utils.errors import (
+    handle_errors,
+    ValidationError,
+    UnauthorizedError,
+    NotFoundError,
+    ForbiddenError,
+    ConflictError,
+    InternalError,
+)
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -84,126 +93,74 @@ def check_auth():
                 'roles': 'admin'  # API key has admin privileges
             }
 
-        return {'error': 'Not authenticated'}, 401
+        raise UnauthorizedError('Not authenticated')
+    except UnauthorizedError:
+        raise
     except Exception as e:
-        return {
-            'error': 'An error occurred while checking authentication',
-            'details': str(e)
-        }, 500
+        raise InternalError('An error occurred while checking authentication', details=str(e))
 
 @auth_bp.route('/auth/register', methods=['POST'])
+@handle_errors
 def register():
+    """Register a new user."""
+    data = request.get_json()
+    
+    if not data or not data.get('username') or not data.get('password'):
+        raise ValidationError('Username and password are required')
+
+    # Check if registration is open
+    open_registration = ApplicationSettings.query.filter_by(key='open_registration').first()
+    if not getattr(open_registration, 'value', None) or open_registration.value.lower() != 'true':
+        raise ForbiddenError('Registration is currently closed')
+
+    # Validate password strength
+    password = data['password']
+    if len(password) < 8:
+        raise ValidationError('Password must be at least 8 characters long')
+    
+    # Create new user
+    user = User(username=data['username'])
+    user.set_password(password)
+    
+    # First user gets admin role
+    user.roles = 'admin' if User.query.count() == 0 else 'user'
+    
     try:
-        data = request.get_json()
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        raise ConflictError('Username already exists')
         
-        if not data or not data.get('username') or not data.get('password'):
-            return jsonify({'error': 'Username and password are required'}), 400
+    return jsonify({
+        'message': 'User registered successfully',
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'roles': user.roles
+        }
+    }), 201
 
-        # Check if registration is open
-        open_registration = ApplicationSettings.query.filter_by(key='open_registration').first()
-        if not getattr(open_registration, 'value', None) or open_registration.value.lower() != 'true':
-            return jsonify({'error': 'Registration is currently closed'}), 403
+@auth_bp.route('/auth/login', methods=['POST'])
+@handle_errors
+def login():
+    """Authenticate user and return JWT tokens."""
+    data = request.get_json()
+    
+    if not data or not data.get('username') or not data.get('password'):
+        raise ValidationError('Username and password are required')
 
-        # Validate password strength
-        password = data['password']
-        if len(password) < 8:
-            return jsonify({'error': 'Password must be at least 8 characters long'}), 400
-        
-        # Create new user
-        user = User(username=data['username'])
-        user.set_password(password)
-        
-        # First user gets admin role
-        user.roles = 'admin' if User.query.count() == 0 else 'user'
-        
-        try:
-            db.session.add(user)
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-            return jsonify({'error': 'Username already exists'}), 409
-            
-        return jsonify({
-            'message': 'User registered successfully',
-            'user': {
-                'id': user.id,
+    user = User.query.filter_by(username=data['username']).first()
+    
+    if user and user.check_password(data['password']):
+        access_token = create_access_token(
+            identity=str(user.id),  # Convert ID to string
+            additional_claims={
                 'username': user.username,
                 'roles': user.roles
             }
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f'Registration error: {str(e)}')
-        return jsonify({'error': 'Registration failed'}), 500
-
-@auth_bp.route('/auth/login', methods=['POST'])
-def login():
-    try:
-        data = request.get_json()
-        
-        if not data or not data.get('username') or not data.get('password'):
-            return jsonify({'error': 'Username and password are required'}), 400
-
-        user = User.query.filter_by(username=data['username']).first()
-        
-        if user and user.check_password(data['password']):
-            access_token = create_access_token(
-                identity=str(user.id),  # Convert ID to string
-                additional_claims={
-                    'username': user.username,
-                    'roles': user.roles
-                }
-            )
-            refresh_token = create_refresh_token(
-                identity=str(user.id),  # Convert ID to string
-                additional_claims={
-                    'username': user.username,
-                    'roles': user.roles
-                }
-            )
-            
-            response = jsonify({
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'roles': user.roles
-                }
-            })
-            
-            # Set cookies for enhanced security (optional, frontend can also store in memory)
-            set_access_cookies(response, access_token)
-            set_refresh_cookies(response, refresh_token)
-            
-            return response
-            
-        return jsonify({'error': 'Invalid username or password'}), 401
-        
-    except Exception as e:
-        current_app.logger.error(f'Login error: {str(e)}')
-        return jsonify({'error': 'Login failed'}), 500
-
-@auth_bp.route('/auth/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    """Refresh an access token using a refresh token."""
-    try:
-        current_user_id = get_jwt_identity()
-        jwt = get_jwt()
-        
-        # Check if token is in blocklist (both in-memory and database)
-        token_id = jwt.get('jti')
-        if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
-            return jsonify({'error': 'Token has been revoked'}), 401
-            
-        user = User.query.get(int(current_user_id))  # Convert string ID back to int
-        
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-            
-        access_token = create_access_token(
+        )
+        refresh_token = create_refresh_token(
             identity=str(user.id),  # Convert ID to string
             additional_claims={
                 'username': user.username,
@@ -213,6 +170,7 @@ def refresh():
         
         response = jsonify({
             'access_token': access_token,
+            'refresh_token': refresh_token,
             'user': {
                 'id': user.id,
                 'username': user.username,
@@ -220,116 +178,141 @@ def refresh():
             }
         })
         
+        # Set cookies for enhanced security (optional, frontend can also store in memory)
         set_access_cookies(response, access_token)
+        set_refresh_cookies(response, refresh_token)
+        
         return response
         
-    except Exception as e:
-        current_app.logger.error(f'Token refresh error: {str(e)}')
-        return jsonify({'error': 'Token refresh failed'}), 500
+    raise UnauthorizedError('Invalid username or password')
 
-@auth_bp.route('/auth/logout', methods=['POST'])
-@jwt_required(verify_type=False)
-def logout():
-    """Log out by revoking the current JWT token."""
-    try:
-        # Add token to persistent blocklist
-        jwt = get_jwt()
-        token_id = jwt.get('jti')
+@auth_bp.route('/auth/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+@handle_errors
+def refresh():
+    """Refresh an access token using a refresh token."""
+    current_user_id = get_jwt_identity()
+    jwt = get_jwt()
+    
+    # Check if token is in blocklist (both in-memory and database)
+    token_id = jwt.get('jti')
+    if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
+        raise UnauthorizedError('Token has been revoked')
         
-        # Store in database for persistence
-        RevokedToken.revoke_token(token_id)
-        # Also add to in-memory set for immediate effect
-        token_blocklist.add(token_id)
+    user = User.query.get(int(current_user_id))  # Convert string ID back to int
+    
+    if not user:
+        raise NotFoundError('User not found')
         
-        response = jsonify({'message': 'Successfully logged out'})
-        unset_jwt_cookies(response)
-        return response
-    except Exception as e:
-        current_app.logger.error(f'Logout error: {str(e)}')
-        return jsonify({'error': 'Logout failed'}), 500
-
-@auth_bp.route('/auth/me', methods=['GET'])
-@jwt_required()
-def me():
-    """Get current user information."""
-    try:
-        current_user_id = get_jwt_identity()
-        jwt = get_jwt()
-        
-        # Check if token is in blocklist (both in-memory and database)
-        token_id = jwt.get('jti')
-        if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
-            return jsonify({'error': 'Token has been revoked'}), 401
-            
-        user = User.query.get(int(current_user_id))  # Convert string ID back to int
-        
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-            
-        return jsonify({
+    access_token = create_access_token(
+        identity=str(user.id),  # Convert ID to string
+        additional_claims={
+            'username': user.username,
+            'roles': user.roles
+        }
+    )
+    
+    response = jsonify({
+        'access_token': access_token,
+        'user': {
             'id': user.id,
             'username': user.username,
             'roles': user.roles
-        })
-    except Exception as e:
-        current_app.logger.error(f'User info error: {str(e)}')
-        return jsonify({'error': 'Failed to get user info'}), 500
+        }
+    })
+    
+    set_access_cookies(response, access_token)
+    return response
+
+@auth_bp.route('/auth/logout', methods=['POST'])
+@jwt_required(verify_type=False)
+@handle_errors
+def logout():
+    """Log out by revoking the current JWT token."""
+    jwt = get_jwt()
+    token_id = jwt.get('jti')
+    
+    # Store in database for persistence
+    RevokedToken.revoke_token(token_id)
+    # Also add to in-memory set for immediate effect
+    token_blocklist.add(token_id)
+    
+    response = jsonify({'message': 'Successfully logged out'})
+    unset_jwt_cookies(response)
+    return response
+
+@auth_bp.route('/auth/me', methods=['GET'])
+@jwt_required()
+@handle_errors
+def me():
+    """Get current user information."""
+    current_user_id = get_jwt_identity()
+    jwt = get_jwt()
+    
+    # Check if token is in blocklist (both in-memory and database)
+    token_id = jwt.get('jti')
+    if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
+        raise UnauthorizedError('Token has been revoked')
+        
+    user = User.query.get(int(current_user_id))  # Convert string ID back to int
+    
+    if not user:
+        raise NotFoundError('User not found')
+        
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'roles': user.roles
+    })
 
 @auth_bp.route('/auth/change-password', methods=['POST'])
 @jwt_required()
+@handle_errors
 def change_password():
     """Change the current user's password."""
-    try:
-        current_user_id = get_jwt_identity()
-        jwt = get_jwt()
+    current_user_id = get_jwt_identity()
+    jwt = get_jwt()
+    
+    # Check if token is in blocklist (both in-memory and database)
+    token_id = jwt.get('jti')
+    if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
+        raise UnauthorizedError('Token has been revoked')
         
-        # Check if token is in blocklist (both in-memory and database)
-        token_id = jwt.get('jti')
-        if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
-            return jsonify({'error': 'Token has been revoked'}), 401
-            
-        data = request.get_json()
-        if not data or not data.get('current_password') or not data.get('new_password'):
-            return jsonify({'error': 'Current password and new password are required'}), 400
-            
-        user = User.query.get(int(current_user_id))  # Convert string ID back to int
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
-            
-        if not user.check_password(data['current_password']):
-            return jsonify({'error': 'Current password is incorrect'}), 401
-            
-        # Validate new password
-        if len(data['new_password']) < 8:
-            return jsonify({'error': 'New password must be at least 8 characters long'}), 400
-            
-        user.set_password(data['new_password'])
-        db.session.commit()
+    data = request.get_json()
+    if not data or not data.get('current_password') or not data.get('new_password'):
+        raise ValidationError('Current password and new password are required')
         
-        # Invalidate current token (persist to database)
-        RevokedToken.revoke_token(token_id)
-        token_blocklist.add(token_id)
+    user = User.query.get(int(current_user_id))  # Convert string ID back to int
+    if not user:
+        raise NotFoundError('User not found')
         
-        return jsonify({'message': 'Password changed successfully'}), 200
+    if not user.check_password(data['current_password']):
+        raise UnauthorizedError('Current password is incorrect')
         
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f'Password change error: {str(e)}')
-        return jsonify({'error': 'Failed to change password'}), 500
+    # Validate new password
+    if len(data['new_password']) < 8:
+        raise ValidationError('New password must be at least 8 characters long')
+        
+    user.set_password(data['new_password'])
+    db.session.commit()
+    
+    # Invalidate current token (persist to database)
+    RevokedToken.revoke_token(token_id)
+    token_blocklist.add(token_id)
+    
+    return jsonify({'message': 'Password changed successfully'}), 200
 
 # JWT token callbacks
 @auth_bp.route('/auth/validate', methods=['POST'])
 @jwt_required(verify_type=False)
+@handle_errors
 def validate_token():
     """Validate if a JWT token is still valid and not revoked."""
-    try:
-        jwt = get_jwt()
-        token_id = jwt.get('jti')
+    jwt = get_jwt()
+    token_id = jwt.get('jti')
+    
+    # Check both in-memory and database blocklist
+    if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
+        raise UnauthorizedError('Token has been revoked')
         
-        # Check both in-memory and database blocklist
-        if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
-            return jsonify({'valid': False, 'error': 'Token has been revoked'}), 401
-            
-        return jsonify({'valid': True}), 200
-    except Exception as e:
-        return jsonify({'valid': False, 'error': str(e)}), 401 
+    return jsonify({'valid': True}), 200
