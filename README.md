@@ -1,281 +1,172 @@
 # Toloka2Web [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) [![CI](https://github.com/maksii/Toloka2Web/actions/workflows/docker_hub.yml/badge.svg?branch=main)](https://github.com/maksii/Toloka2Web/actions/workflows/docker_hub.yml)
 
-A web interface for managing anime content, with features for searching, downloading, and organizing media from various sources. Primarily focused on Ukrainian anime content management.
+A web interface for managing Ukrainian anime content with multi-source search, torrent management, and media server integration.
 
 ## Features
 
-- Search and download content from Toloka
-- Automatic file naming and organization
-- Integration with MAL and TheMovieDB for metadata
-- Scheduled updates via cron jobs
-- Local database for studios and anime tracking
-- Docker-based deployment for easy setup
+### Core
+- **Multi-source Search** - Search across Toloka torrents, streaming sites, and local anime database simultaneously
+- **Release Management** - Track, download, and organize Toloka anime releases with automatic file naming
+- **Metadata Integration** - Enrich content with MAL and TheMovieDB data
+- **Scheduled Updates** - Cron-based automatic release checking (Docker)
+
+### User Interface
+- **Theme Switcher** - Light, Dark, and Auto (system) modes
+- **Language Switcher** - English and Ukrainian UI
+- **Update Notifications** - Automatic new version alerts from GitHub
+
+### Administration
+- **User Management** - Create, edit roles, reset passwords, delete users
+- **Role-based Access** - `user` (basic) and `admin` (settings + user management) roles
+- **API Documentation** - Interactive Swagger UI at `/api/docs`
 
 ## Quick Start
 
 ### Prerequisites
-- Python or Docker
+- Python 3.10+ or Docker
 - Storage space for media files
-- (Optional) Plex Media Server
 
-### First Start Behavior
+### First Start
 
-On first start, the application will automatically:
+On first launch, the application automatically creates:
 
-1. Create or download required files:
-   - `data/anime_data.db`: Downloads the anime database
-   - `data/app.ini`: Downloads template from Toloka2MediaServer
-   - `data/titles.ini`: Creates empty file for release tracking
-   - `data/toloka2web.db`: Creates SQLite database for application data
+| File | Purpose |
+|------|---------|
+| `data/anime_data.db` | Ukrainian anime database (downloaded) |
+| `data/app.ini` | Toloka2MediaServer config template |
+| `data/titles.ini` | Release tracking |
+| `data/toloka2web.db` | Application database (users, settings) |
 
-2. Initialize the database with:
-   - Default application settings
-   - User authentication tables
-   - Release tracking tables
-
-3. Default settings include:
-   - Open registration enabled
-   - Empty MAL and TMDB API keys (configure in web interface)
-
-The application will create these files automatically, but you can also pre-configure them by placing them in the data directory before starting.
+Default: Open registration enabled, API keys empty (configure via web UI).
 
 ### Docker Installation
 
-1. Create required directories:
-```bash
-mkdir -p /path/to/your/config
-mkdir -p /path/to/your/downloads
-```
-
-2. Create a docker-compose.yml file:
 ```yaml
-version: '3.8'
+# docker-compose.yml
 services:
   toloka2web:
     image: maksii/toloka2web:latest
     container_name: toloka2web
     volumes:
-      - /path/to/your/config:/app/data
-      - /path/to/your/downloads:/path/to/your/downloads
+      - ./config:/app/data
+      - ./downloads:/downloads
     environment:
       - PORT=80
-      - PUID=1024  # Your user ID
-      - PGID=100   # Your group ID
-      - CRON_SCHEDULE=0 */2 * * *  # Update schedule
+      - PUID=1000
+      - PGID=1000
       - TZ=Europe/Kiev
-      - API_KEY=your_api_key_here  # Key for automated API access
-      - FLASK_SECRET_KEY=your_random_secret_key  # Used for session security
+      - CRON_SCHEDULE=0 */2 * * *
+      - API_KEY=your_api_key_here
+      - FLASK_SECRET_KEY=your_random_secret_key
+      - JWT_SECRET_KEY=your_jwt_secret_key
     restart: unless-stopped
     user: "${PUID}:${PGID}"
 ```
 
-3. Start the container:
 ```bash
 docker-compose up -d
+# Access at http://localhost:80
 ```
-
-4. Access the web interface at `http://localhost:80`
 
 ### Manual Installation
 
-1. Clone the repository:
 ```bash
 git clone https://github.com/maksii/Toloka2Web.git
 cd Toloka2Web
-```
-
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/Mac:
-source venv/bin/activate
-```
-
-3. Install dependencies:
-```bash
+python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-4. Set up environment variables:
-```bash
-# On Windows:
-set FLASK_SECRET_KEY=your_random_secret_key
-set PORT=5000
-set API_KEY=your_api_key_here
-set JWT_SECRET_KEY=your_jwt_secret_key  # Required for JWT authentication
-# On Linux/Mac:
+# Set environment variables (Linux/Mac)
 export FLASK_SECRET_KEY=your_random_secret_key
-export PORT=5000
+export JWT_SECRET_KEY=your_jwt_secret_key
 export API_KEY=your_api_key_here
-export JWT_SECRET_KEY=your_jwt_secret_key  # Required for JWT authentication
-```
+export PORT=5000
 
-5. Create data directories:
-```bash
-mkdir -p data/downloads
-```
-
-6. Run the application:
-```bash
 python -m app
+# Access at http://localhost:5000
 ```
-
-7. Access the web interface at `http://localhost:5000`
 
 ### API Authentication
 
-The API supports two authentication methods:
+Two authentication methods supported:
 
-1. **JWT Token** (for API clients):
+| Method | Header | Use Case |
+|--------|--------|----------|
+| JWT Token | `Authorization: Bearer <token>` | API clients, web sessions |
+| API Key | `X-API-Key: <key>` | Automated tools, cron jobs |
+
 ```bash
-# Get tokens
+# Get JWT token
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "your_username", "password": "your_password"}'
+  -d '{"username": "user", "password": "pass"}'
 
-# Use token
-curl -H "Authorization: Bearer your_access_token" http://localhost:5000/api/anime
-```
+# Use JWT token
+curl -H "Authorization: Bearer <access_token>" http://localhost:5000/api/anime
 
-2. **API Key** (for automated tools):
-```bash
+# Use API key
 curl -H "X-API-Key: your_api_key" http://localhost:5000/api/anime
 ```
 
-Note: Some endpoints (like `/api/settings`) require admin privileges. Use an admin account for JWT auth or the API key.
+JWT tokens expire after 1 hour. Use `/api/auth/refresh` with your refresh token to renew.
 
-### API Documentation (Swagger UI)
+### Swagger UI
 
-The API documentation is available through Swagger UI, which provides an interactive interface to explore and test the API endpoints.
+Interactive API documentation available at `/api/docs`:
+- Local: `http://localhost:5000/api/docs`
+- Docker: `http://localhost:80/api/docs`
 
-#### Accessing Swagger UI
-- When running locally: `http://localhost:5000/api/docs`
-- Docker installation: `http://localhost:80/api/docs`
+Click "Authorize" to authenticate with JWT (`Bearer <token>`) or API Key.
 
-#### Features
-- Interactive API documentation
-- Request/response examples for each endpoint
-- Built-in API testing interface
-- Authentication support (JWT Token and API Key)
-- Detailed error responses
-- Schema definitions for all models
+## Configuration
 
-#### Authentication Setup
-1. **Getting JWT Token**:
-   - Use the `/api/auth/login` endpoint in Swagger UI
-   - Or use cURL:
-     ```bash
-     curl -X POST http://localhost:5000/api/auth/login \
-       -H "Content-Type: application/json" \
-       -d '{"username": "your_username", "password": "your_password"}'
-     ```
-   - The response will contain `access_token` and `refresh_token`
-   - Access tokens expire after 1 hour
-   - Use the `/api/auth/refresh` endpoint with your refresh token to get a new access token
+### Environment Variables
 
-2. **API Key**:
-   - The API key is set through the `API_KEY` environment variable when starting the application
-   - For Docker: Set in your `docker-compose.yml`
-   - For manual installation: Set in your environment
-   - The key specified in `API_KEY` will be your authentication key
+**Required:**
 
-#### Using Swagger UI
-1. Navigate to the Swagger UI URL
-2. Click the "Authorize" button at the top
-3. Choose your authentication method:
-   - For JWT: Enter `Bearer your_token` in the "bearerAuth" field
-   - For API Key: Enter your key in the "X-API-KEY" field
-4. Click "Authorize" to save
-5. Explore and test the available endpoints
+| Variable | Description |
+|----------|-------------|
+| `FLASK_SECRET_KEY` | Flask session secret (`openssl rand -hex 32`) |
+| `JWT_SECRET_KEY` | JWT token secret (`openssl rand -hex 32`) |
+| `API_KEY` | API access key for automated tools |
 
-Note: The documentation is automatically generated from the codebase and always reflects the current API state.
+**Optional:**
 
-### Configuration
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `5000` | Web interface port |
+| `HOST` | `0.0.0.0` | Bind address |
+| `TZ` | `Europe/Kiev` | Timezone |
+| `CORS_ORIGINS` | `*` | Allowed CORS origins |
+| `PUID/PGID` | - | User/Group ID (Docker) |
+| `CRON_SCHEDULE` | `0 */2 * * *` | Auto-update schedule (Docker) |
 
-#### Configuration Architecture
+### Web UI Settings
 
-The application uses three configuration sources, each serving a specific purpose:
+Configure in Settings page (admin only):
+- **MAL API Key** - MyAnimeList integration
+- **TMDB API Key** - TheMovieDB integration
+- **Open Registration** - Allow new user signups
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Configuration Sources                         │
-├─────────────────────────────────────────────────────────────────┤
-│  Environment Variables     │  Secrets & Server Settings         │
-│  (Required at startup)     │  - FLASK_SECRET_KEY                │
-│                            │  - JWT_SECRET_KEY                  │
-│                            │  - API_KEY                         │
-│                            │  - PORT, HOST, TZ                  │
-├────────────────────────────┼────────────────────────────────────┤
-│  Database                  │  Runtime Settings (Web UI)         │
-│  (ApplicationSettings)     │  - MAL API Key                     │
-│                            │  - TMDB API Key                    │
-│                            │  - Open Registration flag          │
-│                            │  - Other app preferences           │
-├────────────────────────────┼────────────────────────────────────┤
-│  INI Files                 │  toloka2MediaServer Package        │
-│  (data/app.ini,            │  - Toloka credentials              │
-│   data/titles.ini)         │  - Download paths                  │
-│                            │  - Media server settings           │
-│                            │  - Release tracking                │
-└────────────────────────────┴────────────────────────────────────┘
-```
+### INI Files
 
-**Why INI Files?**
-The `toloka2MediaServer` external package reads configuration directly from INI files. The application provides bidirectional sync between the database and INI files:
-- Changes made in the Web UI are saved to the database, then synced to INI files
-- This allows the external package to read the latest configuration
+The app syncs settings bidirectionally with INI files for [Toloka2MediaServer](https://github.com/CakesTwix/Toloka2MediaServer) compatibility:
+- `data/app.ini` - Toloka credentials, download paths, media server config
+- `data/titles.ini` - Release tracking
 
-#### Required Environment Variables
+## Related Projects
 
-The following environment variables **must** be set before starting the application:
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `FLASK_SECRET_KEY` | Secret key for Flask sessions (use a random string) | `openssl rand -hex 32` |
-| `JWT_SECRET_KEY` | Secret key for JWT tokens (use a random string) | `openssl rand -hex 32` |
-| `API_KEY` | Key for API access without login (for cron jobs) | `your-secure-api-key` |
-
-**Security Note:** Never use default values in production. The application will log a warning if default secrets are detected.
-
-#### Optional Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Web interface port | `5000` |
-| `HOST` | Bind address | `0.0.0.0` |
-| `TZ` | Timezone | `Europe/Kiev` |
-| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | `*` |
-| `PUID/PGID` | User/Group ID for Docker | - |
-| `CRON_SCHEDULE` | Update schedule (Docker only) | `0 */2 * * *` |
-
-#### External Service API Keys
-Third-party service API keys are managed through the web interface:
-1. Log in as admin
-2. Go to Settings
-3. Configure the following keys:
-   - MAL API Key: Required for MyAnimeList integration
-   - TMDB API Key: Required for TheMovieDB integration
+| Project | Description |
+|---------|-------------|
+| [Toloka2Python](https://github.com/CakesTwix/toloka2python) | Toloka API wrapper |
+| [Toloka2MediaServer](https://github.com/CakesTwix/Toloka2MediaServer) | Media server integration |
+| [Stream2MediaServer](https://github.com/maksii/Stream2MediaServer) | Streaming site support |
 
 ## Contributing
 
-1. **Bug Reports & Feature Requests**
-   - Use GitHub Issues for bugs and feature requests
-   - Include steps to reproduce for bugs
-   - Provide clear use cases for features
-
-2. **Code Contributions**
-   - Fork the repository
-   - Create a feature branch
-   - Submit a Pull Request
-   - Keep changes focused and maintainable
-   - Use English for code comments
-
-3. **Related Projects**
-   - [Toloka2Python](https://github.com/CakesTwix/toloka2python) - Core functionality
-   - [Toloka2MediaServer](https://github.com/CakesTwix/Toloka2MediaServer) - Media server integration
-   - [Stream2MediaServer](https://github.com/maksii/Stream2MediaServer) - Streaming support
+- **Issues**: Bug reports and feature requests via GitHub Issues
+- **PRs**: Fork → feature branch → Pull Request
+- Use English for code comments
 
 ## License
 
