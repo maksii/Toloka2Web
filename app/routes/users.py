@@ -81,7 +81,7 @@ def update_profile():
         verify_jwt_in_request(optional=True)
         jwt_identity = get_jwt_identity()
         if jwt_identity:
-            user = User.query.get(int(jwt_identity))
+            user = db.session.get(User, int(jwt_identity))
             if user:
                 return update_user_profile(user)
     except Exception:
@@ -142,7 +142,7 @@ def list_users():
 @handle_errors
 def update_user(user_id):
     """Update a user by ID (admin only)."""
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         raise NotFoundError("User not found")
 
@@ -174,7 +174,7 @@ def update_user(user_id):
 @handle_errors
 def delete_user(user_id):
     """Delete a user by ID (admin only)."""
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         raise NotFoundError("User not found")
 

@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict
 from sqlalchemy.orm import sessionmaker, joinedload
-from sqlalchemy import create_engine, or_
+from sqlalchemy import create_engine, or_, select
 from sqlalchemy.ext.automap import automap_base
 import requests
 import os
@@ -31,7 +31,7 @@ class DatabaseService(BaseService):
 
         # Reflect the existing database into a new model
         Base = automap_base()
-        Base.prepare(engine, reflect=True)
+        Base.prepare(autoload_with=engine)
 
         # Map the models
         cls.Anime = Base.classes.anime
@@ -49,15 +49,16 @@ class DatabaseService(BaseService):
         """Get anime by ID with related data."""
         session = cls.Session()
         try:
-            anime = (
-                session.query(cls.Anime)
+            stmt = (
+                select(cls.Anime)
                 .options(
                     joinedload(cls.Anime.type).load_only(cls.Type.name),
                     joinedload(cls.Anime.status).load_only(cls.Status.name),
                     joinedload(cls.Anime.franchise),
                 )
-                .get(anime_id)
+                .where(cls.Anime.id == anime_id)
             )
+            anime = session.execute(stmt).unique().scalar_one_or_none()
             return cls.serialize(anime)
         finally:
             session.close()
@@ -159,7 +160,7 @@ class DatabaseService(BaseService):
         """Get studio by ID."""
         session = cls.Session()
         try:
-            studio = session.query(cls.Fundub).get(studio_id)
+            studio = session.get(cls.Fundub, studio_id)
             return cls.serialize(studio) if studio else None
         finally:
             session.close()
