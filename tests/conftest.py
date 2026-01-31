@@ -139,7 +139,7 @@ def app(tmp_path, monkeypatch):
         {
             "TESTING": True,
             "SECRET_KEY": "test-secret",
-            "JWT_SECRET_KEY": "jwt-secret",
+            "JWT_SECRET_KEY": "test-jwt-secret-key-at-least-32-bytes-long",
             "API_KEY": "test-api-key",
             "SQLALCHEMY_DATABASE_URI": f"sqlite:///{database_path}",
             "SQLALCHEMY_TRACK_MODIFICATIONS": False,
@@ -150,7 +150,9 @@ def app(tmp_path, monkeypatch):
 
     with app.app_context():
         yield app
+        db.session.remove()
         db.drop_all()
+        db.engine.dispose()
 
 
 @pytest.fixture()

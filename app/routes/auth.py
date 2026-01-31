@@ -207,7 +207,7 @@ def refresh():
     if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
         raise UnauthorizedError("Token has been revoked")
 
-    user = User.query.get(int(current_user_id))  # Convert string ID back to int
+    user = db.session.get(User, int(current_user_id))
 
     if not user:
         raise NotFoundError("User not found")
@@ -259,7 +259,7 @@ def me():
     if token_id in token_blocklist or RevokedToken.is_token_revoked(token_id):
         raise UnauthorizedError("Token has been revoked")
 
-    user = User.query.get(int(current_user_id))  # Convert string ID back to int
+    user = db.session.get(User, int(current_user_id))
 
     if not user:
         raise NotFoundError("User not found")
@@ -284,7 +284,7 @@ def change_password():
     if not data or not data.get("current_password") or not data.get("new_password"):
         raise ValidationError("Current password and new password are required")
 
-    user = User.query.get(int(current_user_id))  # Convert string ID back to int
+    user = db.session.get(User, int(current_user_id))
     if not user:
         raise NotFoundError("User not found")
 

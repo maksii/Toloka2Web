@@ -138,6 +138,7 @@ class TokenRefresh(Resource):
         from flask_jwt_extended import get_jwt_identity, get_jwt, verify_jwt_in_request
         from app.models.user import User
         from app.models.revoked_token import RevokedToken
+        from app.models.base import db
         from app.routes.auth import token_blocklist
 
         try:
@@ -152,7 +153,7 @@ class TokenRefresh(Resource):
             if jti in token_blocklist or RevokedToken.is_token_revoked(jti):
                 return {"error": "Token has been revoked", "code": "token_revoked"}, 401
 
-            user = User.query.get(int(current_user_id))
+            user = db.session.get(User, int(current_user_id))
             if not user:
                 return {"error": "User not found", "code": "user_not_found"}, 404
 
