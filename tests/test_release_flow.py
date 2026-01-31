@@ -1,5 +1,8 @@
+import datetime
 import types
 
+from app.models.releases import Releases
+from app.services.config_service import ConfigService
 from app.services.services import TolokaService
 
 
@@ -147,3 +150,27 @@ def test_update_release_logic_force_argument(monkeypatch):
     assert result["response_code"] == "SUCCESS"
     assert captured["codename"] == "release-code"
     assert captured["force"] is True
+
+
+def test_edit_release_accepts_full_year(app):
+    form = {
+        "codename": "demo-release",
+        "episode_index": "1",
+        "season_number": "1",
+        "torrent_name": "Demo Torrent",
+        "download_dir": "/downloads",
+        "publish_date": "2026-01-28 22:21",
+        "release_group": "Group",
+        "meta": "WEBDL",
+        "hash": "deadbeef",
+        "adjusted_episode_number": "1",
+        "guid": "12345",
+        "ongoing": "true",
+    }
+
+    with app.app_context():
+        ConfigService.edit_release(form)
+        release = Releases.query.filter_by(section="demo-release").first()
+
+    assert release is not None
+    assert release.publish_date == datetime.datetime(2026, 1, 28, 22, 21)
