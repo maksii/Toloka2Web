@@ -352,4 +352,4 @@ if __name__ == "__main__":
     app = create_app()
     port = app.config['PORT']
     host = app.config['HOST']
-    app.run(host=host, port=port, debug=True)
+    app.run(host=host, port=port, debug=app.config.get("DEBUG", False))
