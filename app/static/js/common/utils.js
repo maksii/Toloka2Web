@@ -161,7 +161,13 @@ export class Utils {
     {
         Utils.applyButtonTooltips();
         const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        tooltipTriggerList.forEach((tooltipTriggerEl) => {
+            const existing = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+            if (existing) {
+                existing.dispose();
+            }
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     }
 
     static applyButtonTooltips() {
