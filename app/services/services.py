@@ -209,7 +209,9 @@ class TolokaService(BaseService):
         """Update an existing release."""
         try:
             config = cls.initiate_config()
-            request_data = RequestData(codename=request["codename"])
+            force_value = request.get("force", "false")
+            is_force = force_value in ("true", "True", True, "1", 1)
+            request_data = RequestData(codename=request["codename"], force=is_force)
             config.args = request_data
             operation_result = update_release_by_name(config)
             return cls.serialize_operation_result(operation_result)

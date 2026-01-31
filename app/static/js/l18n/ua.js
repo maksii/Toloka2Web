@@ -88,6 +88,7 @@ const translations = {
         releaseEditButton:'Редагувати',
         releaseDeleteButton:'Видалити',
         releaseUpdateButton:'Оновити',
+        releaseForceUpdateButton:'Оновити примусово',
         expandButton:'Розгорнути',
         tolokaDownloadButton:"Пряме завантаження",
         tolokaAddButton:"Додати до клієнта",

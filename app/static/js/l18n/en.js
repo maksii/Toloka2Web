@@ -88,6 +88,7 @@ const translations = {
         releaseEditButton:'Edit',
         releaseDeleteButton:'Delete',
         releaseUpdateButton:'Update',
+        releaseForceUpdateButton:'Force Update',
         expandButton:'Expand',
         tolokaDownloadButton:"Direct Download",
         tolokaAddButton:"Add to client",
