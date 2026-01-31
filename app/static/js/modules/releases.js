@@ -91,11 +91,13 @@ export default class Releases {
             {
                 text: translations.buttons.releaseAddButton,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.releaseAddButton,
                 action: () => Utils.addRelease()
             },
             {
                 text: translations.buttons.releaseUpdateAllButton,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.releaseUpdateAllButton,
                 action: (e, dt, node) => this.updateAllReleases(node)
             }
         ];
@@ -127,6 +129,7 @@ export default class Releases {
             ${Utils.renderActionButton("action-edit", "btn-outline-warning", "", "bi-pencil-square", translations.buttons.releaseEditButton)}
             ${Utils.renderActionButton("action-delete", "btn-outline-danger", "", "bi-trash", translations.buttons.releaseDeleteButton)}
             ${Utils.renderActionButton("action-update", "btn-outline-primary", "", "bi-arrow-clockwise", translations.buttons.releaseUpdateButton)}
+            ${Utils.renderActionButton("action-forceupdate", "btn-outline-info", "", "bi-arrow-repeat", translations.buttons.releaseForceUpdateButton)}
         `;
     }
 
@@ -142,7 +145,8 @@ export default class Releases {
         const actions = {
             edit: () => this.populateEditForm(row),
             delete: () => this.deleteRelease(element, row),
-            update: () => this.updateRelease(element, row)
+            update: () => this.updateRelease(element, row),
+            forceupdate: () => this.forceUpdateRelease(element, row)
         };
 
         const action = actions[actionName];
@@ -263,6 +267,25 @@ export default class Releases {
 
         } catch (error) {
             console.error('Error updating release:', error);
+        } finally {
+            UiManager.resetButton(target);
+        }
+    }
+
+    async forceUpdateRelease(target, row) {
+        try {
+            UiManager.setButtonLoading(target);
+
+            const formData = new FormData();
+            formData.append('codename', row.codename);
+            formData.append('force', 'true');
+
+            const result = await ApiService.post('/api/releases/update', formData);
+            UiManager.showOperationResults(result);
+            this.table.ajax.reload();
+
+        } catch (error) {
+            console.error('Error force updating release:', error);
         } finally {
             UiManager.resetButton(target);
         }

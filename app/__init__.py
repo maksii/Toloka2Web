@@ -8,4 +8,4 @@ with features for searching, downloading, and organizing media from various sour
 
 from .app import create_app
 
-__all__ = ['create_app']
+__all__ = ["create_app"]

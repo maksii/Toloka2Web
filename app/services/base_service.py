@@ -1,10 +1,10 @@
 from typing import Any, Dict, Optional
 from app.models.application_settings import ApplicationSettings
-from app.models.base import db
+
 
 class BaseService:
     """Base class for all services providing common functionality."""
-    
+
     @classmethod
     def get_api_key(cls, key_name: str) -> Optional[str]:
         """Get API key from application settings."""
@@ -16,12 +16,12 @@ class BaseService:
         """Serialize SQLAlchemy objects to JSON-compatible format."""
         if isinstance(data, list):
             return [cls.serialize(item) for item in data]
-        elif hasattr(data, '__dict__'):
+        elif hasattr(data, "__dict__"):
             result = {}
             for column in data.__dict__:
-                if not column.startswith('_'):
+                if not column.startswith("_"):
                     attr = getattr(data, column)
-                    if hasattr(attr, '__dict__') or isinstance(attr, list):
+                    if hasattr(attr, "__dict__") or isinstance(attr, list):
                         result[column] = cls.serialize(attr)
                     else:
                         result[column] = attr
@@ -35,4 +35,4 @@ class BaseService:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            return {'error': f"{error_msg}: {str(e)}"} 
+            return {"error": f"{error_msg}: {str(e)}"}

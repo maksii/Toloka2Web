@@ -54,6 +54,9 @@ export default class ReleasesDetails {
         };
         
         this.table = DataTableFactory.initializeTable('#filesTable', config);
+        this.table.on('draw', () => {
+            Utils.activeTooltips();
+        });
     }
 
     addEventListeners() {

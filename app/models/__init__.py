@@ -1,4 +1,5 @@
 """Models package initialization."""
+
 from .base import db
 from .user import User
 from .user_settings import UserSettings
@@ -11,14 +12,14 @@ from .registration_form import RegistrationForm
 from .revoked_token import RevokedToken
 
 __all__ = [
-    'db',
-    'User',
-    'UserSettings',
-    'ApplicationSettings',
-    'Anime',
-    'Releases',
-    'RequestData',
-    'LoginForm',
-    'RegistrationForm',
-    'RevokedToken'
+    "db",
+    "User",
+    "UserSettings",
+    "ApplicationSettings",
+    "Anime",
+    "Releases",
+    "RequestData",
+    "LoginForm",
+    "RegistrationForm",
+    "RevokedToken",
 ]
