@@ -258,7 +258,7 @@ def create_app(test_config=None):
         and the database (for persistence across restarts).
         """
         from .routes.auth import token_blocklist
-        from .models.revoked_token import RevokedToken
+        from .models.revoked_token import RevokedToken  # noqa: F401
         
         jti = jwt_payload["jti"]
         # Check in-memory first (faster), then database
@@ -289,6 +289,8 @@ def create_app(test_config=None):
         # Import models here to avoid circular imports
         from .models.releases import Releases
         from .models.application_settings import ApplicationSettings
+        from .models.revoked_token import RevokedToken  # noqa: F401
+        from .models.user_settings import UserSettings  # noqa: F401
 
         # Create database tables (including revoked_tokens for JWT blocklist)
         db.create_all()
