@@ -1,4 +1,5 @@
 """Authentication utilities for multi-method auth support."""
+
 import secrets
 from functools import wraps
 
@@ -11,33 +12,34 @@ from app.models.revoked_token import RevokedToken
 
 def _is_valid_api_key(provided_key: str) -> bool:
     """Check if the provided API key is valid using constant-time comparison.
-    
+
     Uses secrets.compare_digest to prevent timing attacks.
-    
+
     Args:
         provided_key: The API key provided in the request
-        
+
     Returns:
         True if the key is valid, False otherwise
     """
-    expected_key = current_app.config.get('API_KEY', '')
+    expected_key = current_app.config.get("API_KEY", "")
     if not provided_key or not expected_key:
         return False
-    
+
     # Use constant-time comparison to prevent timing attacks
     return secrets.compare_digest(provided_key, expected_key)
 
 
 def multi_auth_required(fn):
     """Decorator that allows multiple authentication methods.
-    
+
     Checks in order:
     1. JWT token (if valid and not revoked)
     2. Session authentication (Flask-Login)
     3. API key (X-API-Key header)
-    
+
     Returns 401 if none of the methods succeed.
     """
+
     @wraps(fn)
     def wrapper(*args, **kwargs):
         # First, check for JWT token
@@ -56,7 +58,7 @@ def multi_auth_required(fn):
             return fn(*args, **kwargs)
 
         # Finally check for API key (using constant-time comparison)
-        api_key = request.headers.get('X-API-Key')
+        api_key = request.headers.get("X-API-Key")
         if api_key and _is_valid_api_key(api_key):
             return fn(*args, **kwargs)
 
@@ -67,14 +69,15 @@ def multi_auth_required(fn):
 
 def multi_auth_admin_required(fn):
     """Decorator that requires admin privileges via multiple auth methods.
-    
+
     Checks in order:
     1. JWT token with admin role
     2. Session authentication with admin role
     3. API key (always has admin privileges)
-    
+
     Returns 401 if not authenticated, 403 if authenticated but not admin.
     """
+
     @wraps(fn)
     def wrapper(*args, **kwargs):
         # First, check for JWT token
@@ -98,7 +101,7 @@ def multi_auth_admin_required(fn):
 
         # Finally check for API key (using constant-time comparison)
         # API key always has admin privileges
-        api_key = request.headers.get('X-API-Key')
+        api_key = request.headers.get("X-API-Key")
         if api_key and _is_valid_api_key(api_key):
             return fn(*args, **kwargs)
 

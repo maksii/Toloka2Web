@@ -15,20 +15,20 @@ import os
 def main():
     """Run the Toloka2Web application."""
     # Ensure the data directory exists
-    os.makedirs('data', exist_ok=True)
-    
+    os.makedirs("data", exist_ok=True)
+
     # Import and create the app
     from app import create_app
-    
+
     app = create_app()
-    
+
     # Get host and port from config (set from environment variables)
-    host = app.config.get('HOST', '0.0.0.0')
-    port = app.config.get('PORT', 5000)
-    
+    host = app.config.get("HOST", "0.0.0.0")
+    port = app.config.get("PORT", 5000)
+
     # Run the application
     app.run(host=host, port=port)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -5,31 +5,32 @@ from flask import Blueprint, request, jsonify, make_response
 from app.utils.auth_utils import multi_auth_required
 from app.services.tmdb_service import TMDBService
 
-tmdb_bp = Blueprint('tmdb_bp', __name__)
+tmdb_bp = Blueprint("tmdb_bp", __name__)
 
-@tmdb_bp.route('/tmdb/search', methods=['GET'])
+
+@tmdb_bp.route("/tmdb/search", methods=["GET"])
 @multi_auth_required
 def search():
     try:
-        query = request.args.get('query')
+        query = request.args.get("query")
         if not query:
             return make_response(jsonify({"error": "Query parameter is required"}), 400)
         result = TMDBService.search_media(query)
         return make_response(jsonify(result), 200)
     except Exception as e:
-        error_message = {
-            "error": "Failed to search TMDB media",
-            "details": str(e)
-        }
+        error_message = {"error": "Failed to search TMDB media", "details": str(e)}
         return make_response(jsonify(error_message), 500)
 
-@tmdb_bp.route('/tmdb/detail/<int:id>', methods=['GET'])
+
+@tmdb_bp.route("/tmdb/detail/<int:id>", methods=["GET"])
 @multi_auth_required
 def get_detail(id):
     try:
-        media_type = request.args.get('type')
+        media_type = request.args.get("type")
         if not media_type:
-            return make_response(jsonify({"error": "Media type parameter is required"}), 400)
+            return make_response(
+                jsonify({"error": "Media type parameter is required"}), 400
+            )
         result = TMDBService.get_media_detail(id, media_type)
         if not result:
             return make_response(jsonify({"error": "Media not found"}), 404)
@@ -37,21 +38,21 @@ def get_detail(id):
     except Exception as e:
         error_message = {
             "error": "Failed to fetch TMDB media details",
-            "details": str(e)
+            "details": str(e),
         }
         return make_response(jsonify(error_message), 500)
 
-@tmdb_bp.route('/tmdb/trending', methods=['GET'])
+
+@tmdb_bp.route("/tmdb/trending", methods=["GET"])
 def get_trending():
     try:
-        media_type = request.args.get('type')
+        media_type = request.args.get("type")
         if not media_type:
-            return make_response(jsonify({"error": "Media type parameter is required"}), 400)
+            return make_response(
+                jsonify({"error": "Media type parameter is required"}), 400
+            )
         result = TMDBService.get_trending_by_type(media_type)
         return make_response(jsonify(result), 200)
     except Exception as e:
-        error_message = {
-            "error": "Failed to fetch trending media",
-            "details": str(e)
-        }
+        error_message = {"error": "Failed to fetch trending media", "details": str(e)}
         return make_response(jsonify(error_message), 500)

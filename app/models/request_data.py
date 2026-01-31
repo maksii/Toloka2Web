@@ -1,10 +1,12 @@
 """Request data model for handling media requests."""
+
 from dataclasses import dataclass
+
 
 @dataclass
 class RequestData:
     """Data class for handling media request parameters.
-    
+
     Attributes:
         url: Request URL
         season: Season number
@@ -18,6 +20,7 @@ class RequestData:
         release_group: Name of the release group
         meta: Additional metadata (e.g. WEBDL, resolution)
     """
+
     url: str = ""
     season: int = 0
     index: int = 0

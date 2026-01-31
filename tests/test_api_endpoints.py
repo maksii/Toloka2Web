@@ -155,7 +155,9 @@ def test_settings_endpoints(app, client, api_key_headers, monkeypatch):
 
     monkeypatch.setattr(
         "app.services.config_service.ConfigService.read_all_settings_from_db",
-        lambda: [{"section": "toloka2web", "key": "open_registration", "value": "True"}],
+        lambda: [
+            {"section": "toloka2web", "key": "open_registration", "value": "True"}
+        ],
     )
     monkeypatch.setattr(
         "app.services.config_service.ConfigService.add_new_setting",
@@ -414,7 +416,10 @@ def test_stream_mal_tmdb_toloka_endpoints(client, api_key_headers, monkeypatch):
 
     stream_response = client.get("/api/stream?query=demo", headers=api_key_headers)
     assert stream_response.status_code == 200
-    assert json.loads(stream_response.get_data(as_text=True))["results"][0]["title"] == "Stream"
+    assert (
+        json.loads(stream_response.get_data(as_text=True))["results"][0]["title"]
+        == "Stream"
+    )
 
     add_stream_response = client.post(
         "/api/stream",
@@ -472,7 +477,9 @@ def test_stream_mal_tmdb_toloka_endpoints(client, api_key_headers, monkeypatch):
     assert toloka_add_response.get_json()["added"] is True
 
 
-def test_search_auth_check_and_image_endpoints(app, client, api_key_headers, monkeypatch):
+def test_search_auth_check_and_image_endpoints(
+    app, client, api_key_headers, monkeypatch
+):
     _create_user(app, "search-user", "password123", roles="user")
     _login_session(client, "search-user", "password123")
 

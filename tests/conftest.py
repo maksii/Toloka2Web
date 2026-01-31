@@ -22,7 +22,9 @@ def _ensure_optional_dependencies():
         _stub_module("toloka2MediaServer", {}, is_package=True)
 
         def load_configurations(app_path, titles_path):
-            application_config = types.SimpleNamespace(client="qbit", default_download_dir="")
+            application_config = types.SimpleNamespace(
+                client="qbit", default_download_dir=""
+            )
             return {}, {}, application_config
 
         def get_toloka_client(application_config):
@@ -42,7 +44,10 @@ def _ensure_optional_dependencies():
             )
 
         _stub_module("toloka2MediaServer.clients", {}, is_package=True)
-        _stub_module("toloka2MediaServer.clients.dynamic", {"dynamic_client_init": dynamic_client_init})
+        _stub_module(
+            "toloka2MediaServer.clients.dynamic",
+            {"dynamic_client_init": dynamic_client_init},
+        )
 
         class Config:
             def __init__(self, **kwargs):
@@ -55,7 +60,9 @@ def _ensure_optional_dependencies():
         def setup_logging(path):
             return types.SimpleNamespace(info=lambda *args, **kwargs: None)
 
-        _stub_module("toloka2MediaServer.logger_setup", {"setup_logging": setup_logging})
+        _stub_module(
+            "toloka2MediaServer.logger_setup", {"setup_logging": setup_logging}
+        )
 
         class OperationResult:
             def __init__(self):
@@ -77,8 +84,12 @@ def _ensure_optional_dependencies():
                 "add_release_by_url": lambda *_args, **_kwargs: _operation_result(),
                 "update_release_by_name": lambda *_args, **_kwargs: _operation_result(),
                 "update_releases": lambda *_args, **_kwargs: _operation_result(),
-                "search_torrents": lambda *_args, **_kwargs: types.SimpleNamespace(response={}),
-                "get_torrent": lambda *_args, **_kwargs: types.SimpleNamespace(response={}),
+                "search_torrents": lambda *_args, **_kwargs: types.SimpleNamespace(
+                    response={}
+                ),
+                "get_torrent": lambda *_args, **_kwargs: types.SimpleNamespace(
+                    response={}
+                ),
                 "add_torrent": lambda *_args, **_kwargs: _operation_result(),
             },
         )
@@ -119,7 +130,9 @@ def app(tmp_path, monkeypatch):
     monkeypatch.setattr(
         ConfigService, "read_releases_ini_and_sync_to_db", lambda *args, **kwargs: None
     )
-    monkeypatch.setattr(DatabaseService, "initialize_database", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        DatabaseService, "initialize_database", lambda *args, **kwargs: None
+    )
 
     database_path = tmp_path / "toloka2web_test.db"
     app = create_app(

@@ -70,7 +70,23 @@ export default class Search {
 
     initializeTolokaTable(query) {
         const config = {
-            ajax: `/api/toloka?query=${query}`,
+            ajax: {
+                url: `/api/toloka?query=${query}`,
+                dataSrc: (json) => {
+                    if (json && json.error) {
+                        const message = json.message || 'Please repeat the search.';
+                        UiManager.showToast(
+                            translations.labels?.tolokaSearchErrorTitle ?? 'Toloka search',
+                            message
+                        );
+                        return [];
+                    }
+                    if (Array.isArray(json)) return json;
+                    if (json && Array.isArray(json.results)) return json.results;
+                    if (json && Array.isArray(json.data)) return json.data;
+                    return [];
+                }
+            },
             columns: [
                 {   // Responsive control column
                     className: 'control',

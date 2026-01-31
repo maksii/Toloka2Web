@@ -49,7 +49,9 @@ def admin_user(app):
 
 
 def _get_access_token(client, username, password):
-    response = client.post("/api/auth/login", json={"username": username, "password": password})
+    response = client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    )
     assert response.status_code == 200
     return response.get_json()["access_token"]
 
@@ -115,7 +117,9 @@ def test_api_access_allows_admin_role_for_jwt(app, client, admin_user):
 
     status_code = response[1] if isinstance(response, tuple) else response.status_code
     assert status_code == 200
-    payload = response[0].get_json() if isinstance(response, tuple) else response.get_json()
+    payload = (
+        response[0].get_json() if isinstance(response, tuple) else response.get_json()
+    )
     assert any(user["username"] == "admin" for user in payload)
 
 

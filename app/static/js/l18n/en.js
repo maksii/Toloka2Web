@@ -147,7 +147,8 @@ const translations = {
         releaseGroup: 'Release Group',
         meta: 'Meta',
         releaseGroupMeta: 'Release group & Meta',
-        releasePreview: 'Preview'
+        releasePreview: 'Preview',
+        tolokaSearchErrorTitle: 'Toloka search'
     },
     validation: {
         invalidTitle: 'Title contains invalid characters that could break paths or JSON (/, \\, :, *, ?, ", <, >, |)',

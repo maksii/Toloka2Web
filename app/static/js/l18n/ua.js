@@ -147,7 +147,8 @@ const translations = {
         releaseGroup: 'Група',
         meta: 'Мета',
         releaseGroupMeta: 'Теги',
-        releasePreview: 'Попередній перегляд'
+        releasePreview: 'Попередній перегляд',
+        tolokaSearchErrorTitle: 'Пошук Toloka'
     },
     validation: {
         invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',

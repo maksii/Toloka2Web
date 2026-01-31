@@ -1,11 +1,13 @@
 """Releases model for tracking media releases."""
+
 from datetime import datetime, timezone
 
 from .base import db
 
+
 class Releases(db.Model):
     """Model for tracking media releases.
-    
+
     Attributes:
         id: The primary key
         section: Unique section identifier
@@ -22,8 +24,9 @@ class Releases(db.Model):
         user_id: Foreign key to users table
         ongoing: Whether this release is ongoing (auto-update enabled)
     """
-    __tablename__ = 'releases'
-    
+
+    __tablename__ = "releases"
+
     id = db.Column(db.Integer, primary_key=True)
     section = db.Column(db.String(100), nullable=False, unique=True, index=True)
     episode_index = db.Column(db.Integer)
@@ -36,9 +39,11 @@ class Releases(db.Model):
     hash = db.Column(db.String(40))
     adjusted_episode_number = db.Column(db.Integer)
     guid = db.Column(db.String(50), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), nullable=True, index=True
+    )
     ongoing = db.Column(db.Boolean, default=True, nullable=False)
-    
+
     def __repr__(self) -> str:
         """String representation of the Release model."""
-        return f'<Release {self.section}>'
+        return f"<Release {self.section}>"
