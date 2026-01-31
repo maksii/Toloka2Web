@@ -3,8 +3,7 @@ import { DataTableFactory } from '../common/data-table-factory.js';
 import { EventDelegator } from '../common/datatable.js';
 import { ApiService } from '../common/api-service.js';
 import { UiManager } from '../common/ui-manager.js';
-import { Utils } from '../common/utils.js';
-import translations from '../l18n/en.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class Releases {
     constructor() {
@@ -45,6 +44,20 @@ export default class Releases {
                 DataTableFactory.createLinkColumn('guid', translations.tableHeaders.releases.guid, 'https://toloka.to/'),
                 { data: 'hash', title: translations.tableHeaders.releases.hash, visible: false },
                 { data: 'meta', title: translations.tableHeaders.releases.meta, visible: false },
+                { 
+                    data: 'is_partial_season', 
+                    title: translations.tableHeaders.releases.ongoing, 
+                    visible: true,
+                    render: (data, type, row) => {
+                        if (type === 'display') {
+                            const isOngoing = data === 'true' || data === true || data === 'True';
+                            return isOngoing 
+                                ? '<i class="bi bi-check-circle-fill text-success" title="Ongoing"></i>'
+                                : '<i class="bi bi-x-circle-fill text-secondary" title="Completed"></i>';
+                        }
+                        return data;
+                    }
+                },
                 DataTableFactory.createActionColumn(() => this.renderActionButtons())
             ],
             order: [[5, 'desc']],
@@ -65,8 +78,12 @@ export default class Releases {
         };
 
         this.table = DataTableFactory.initializeTable('#dataTableTitles', config);
-        window.releasesTable = this.table;
         this.tableBody = document.querySelector('#dataTableTitles tbody');
+        
+        // Listen for release added events to refresh the table
+        window.addEventListener('releaseAdded', () => {
+            this.table.ajax.reload();
+        });
     }
 
     getTableButtons() {
@@ -166,9 +183,12 @@ export default class Releases {
         let currentColumn = createColumn();
         let fieldCount = 0;
 
+        // Fields to exclude from the text inputs (handled separately or not needed)
+        const excludedFields = ['torrent_info', 'ongoing', 'is_partial_season'];
+
         // Sort keys to ensure 'codename' is first
         const keys = Object.keys(formData)
-            .filter(key => key !== 'torrent_info')
+            .filter(key => !excludedFields.includes(key))
             .sort((a, b) => {
                 if (a === 'codename') return -1;
                 if (b === 'codename') return 1;
@@ -181,7 +201,7 @@ export default class Releases {
                 currentColumn = createColumn();
             }
 
-            const value = formData[key].replace(/"/g, '&quot;');
+            const value = String(formData[key] || '').replace(/"/g, '&quot;');
             const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             const div = document.createElement('div');
@@ -197,12 +217,31 @@ export default class Releases {
         form.firstChild.appendChild(currentColumn);
         form.innerHTML += '</div>';
 
+        // Add Ongoing checkbox at the end - check is_partial_season field from API
+        const isPartialValue = formData.is_partial_season;
+        const ongoingChecked = isPartialValue === 'true' || isPartialValue === true || isPartialValue === 'True';
+        const ongoingDiv = document.createElement('div');
+        ongoingDiv.className = 'form-check form-switch mb-3 mt-3';
+        ongoingDiv.innerHTML = `
+            <input class="form-check-input" type="checkbox" role="switch" name="ongoing" id="editOngoing" ${ongoingChecked ? 'checked' : ''}>
+            <label class="form-check-label" for="editOngoing">
+                <i class="bi bi-arrow-repeat me-1"></i>${translations.labels.ongoing || 'Ongoing'}
+                <small class="text-muted d-block">${translations.labels.ongoingDescription || 'Use episode range naming (S01E01-E02) instead of season pack (S01)'}</small>
+            </label>
+        `;
+        form.appendChild(ongoingDiv);
+
         UiManager.showModal('editRelease');
     }
 
     async submitEditForm() {
         try {
             const formData = new FormData(document.getElementById('dataForm'));
+            
+            // Handle ongoing checkbox - ensure it's sent as a proper boolean value
+            const ongoingCheckbox = document.querySelector('#editOngoing');
+            formData.set('ongoing', ongoingCheckbox && ongoingCheckbox.checked ? 'true' : 'false');
+            
             await ApiService.put('/api/releases', formData);
             this.table.ajax.reload();
             UiManager.hideModal('editRelease');
@@ -233,7 +272,7 @@ export default class Releases {
         try {
             UiManager.setButtonLoading(node[0], translations.buttons.releaseUpdateAllButton);
             
-            const result = await ApiService.post('/api/releases/update');
+            const result = await ApiService.post('/api/releases/update', {});
             UiManager.showOperationResults(result);
             this.table.ajax.reload();
 

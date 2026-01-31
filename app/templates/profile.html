@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Profile Settings</h3>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username">
+                        </div>
+                        <div class="mb-3">
+                            <label for="roles" class="form-label">Roles</label>
+                            <input type="text" class="form-control" id="roles" disabled>
+                        </div>
+                        <hr>
+                        <h4>Change Password</h4>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="password" name="password">
+                            <div class="form-text">Password must be at least 8 characters long.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load profile data
+    fetch('/api/profile', {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('username').value = data.username;
+        document.getElementById('roles').value = data.roles;
+    })
+    .catch(error => {
+        showToast('error', 'Failed to load profile data');
+        console.error('Error:', error);
+    });
+
+    // Handle form submission
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            username: document.getElementById('username').value,
+        };
+        
+        const password = document.getElementById('password').value;
+        if (password) {
+            formData.password = password;
+        }
+
+        fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            showToast('success', 'Profile updated successfully');
+            document.getElementById('password').value = '';
+        })
+        .catch(error => {
+            showToast('error', error.message || 'Failed to update profile');
+            console.error('Error:', error);
+        });
+    });
+});
+</script>
+{% endblock %} 

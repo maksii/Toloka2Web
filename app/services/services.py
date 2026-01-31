@@ -14,7 +14,7 @@ from toloka2MediaServer.main_logic import (
     search_torrents, get_torrent as get_torrent_external,
     add_torrent as add_torrent_external
 )
-from stream2mediaserver.main_logic import search_releases as search_releases_stream, get_release_details as get_release_details_stream
+from stream2mediaserver.main_logic import MainLogic
 
 from app.models.request_data import RequestData
 from app.services.base_service import BaseService
@@ -83,6 +83,36 @@ class TolokaService(BaseService):
         return sections
 
     @classmethod
+    def get_titles_with_torrent_status(cls) -> Dict:
+        """Get all titles with torrent status merged in.
+        
+        Fetches titles from INI config and torrent status from the client,
+        then merges torrent state/progress/name into each title by hash.
+        """
+        titles_data = cls.get_titles_logic()
+        torrents_data = TorrentService.get_releases_torrent_status()
+        
+        torrents_dict = {}
+        if hasattr(torrents_data, 'data') and torrents_data.data:
+            for torrent in torrents_data.data:
+                if isinstance(torrent, dict) and torrent.get('hash'):
+                    torrents_dict[torrent['hash']] = torrent
+        
+        for title, data in titles_data.items():
+            if not isinstance(data, dict):
+                continue
+            hash_value = data.get('hash')
+            if hash_value in torrents_dict:
+                t = torrents_dict[hash_value]
+                data['torrent_info'] = {
+                    'state': t.get('state'),
+                    'progress': t.get('progress'),
+                    'name': t.get('name'),
+                }
+        
+        return titles_data
+
+    @classmethod
     def get_torrents_logic(cls, query: str) -> Dict:
         """Search for torrents using query."""
         if not query:
@@ -123,13 +153,21 @@ class TolokaService(BaseService):
         """Add a new release."""
         try:
             config = cls.initiate_config()
+            
+            # Handle ongoing field (UI) -> partial (CLI arg for library)
+            ongoing_value = request.get('ongoing', 'true')
+            is_partial = ongoing_value in ('true', 'True', True, '1', 1)
+            
             request_data = RequestData(
                 url=request['url'],
                 season=request['season'],
                 index=int(request['index']),
                 correction=int(request['correction']),
                 title=request['title'],
-                path=config.application_config.default_download_dir
+                path=config.application_config.default_download_dir,
+                partial=is_partial,
+                release_group=request.get('release_group', ''),
+                meta=request.get('meta', '')
             )
 
             config.args = request_data
@@ -193,14 +231,16 @@ class TolokaService(BaseService):
         }
         
         try:
-            response = requests.get(url, headers=headers, stream=True)
+            response = requests.get(url, headers=headers, stream=True, timeout=30)
             response.raise_for_status()
             return Response(
                 response.iter_content(chunk_size=1024),
-                content_type=response.headers['Content-Type']
+                content_type=response.headers.get('Content-Type', 'image/jpeg')
             )
         except requests.RequestException as e:
-            return Response(f"Failed to fetch image: {str(e)}", status=response.status_code)
+            # Get status code if available, otherwise use 502 Bad Gateway
+            status_code = getattr(e.response, 'status_code', 502) if hasattr(e, 'response') else 502
+            return Response(f"Failed to fetch image: {str(e)}", status=status_code)
 
 class StreamingService(BaseService):
     """Service for handling streaming site operations."""
@@ -210,15 +250,14 @@ class StreamingService(BaseService):
         """Search for titles on streaming sites."""
         if not query:
             return {}
-            
-        config = TolokaService.initiate_config()
-        config.args = SimpleNamespace(query=query)
-        return search_releases_stream(config)
+        main_logic = MainLogic()
+        return main_logic.search_releases(query)
 
     @classmethod
     def get_streaming_site_release_details(cls, provider_name: str, release_url: str) -> Dict:
         """Get detailed information about a streaming release."""
-        return get_release_details_stream(f'{provider_name}_provider', release_url)
+        main_logic = MainLogic()
+        return main_logic.get_release_details(provider_name, release_url)
 
 class SearchService(BaseService):
     """Service for handling multi-source search operations."""
@@ -336,20 +375,3 @@ class TorrentService(BaseService):
             sort="added_on",
             reverse=True
         )
-
-# Placeholder functions for new endpoints
-def search_voice_studio(query):
-    # Logic for searching voice studios
-    pass
-
-def list_voice_studios():
-    # Logic for listing voice studios
-    pass
-
-def list_titles_by_studio(studio_id):
-    # Logic for listing titles by a specific studio
-    pass
-
-def add_title_from_streaming_site(data):
-    # Logic for adding a title from a streaming site
-    pass

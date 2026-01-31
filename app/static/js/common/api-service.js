@@ -1,4 +1,19 @@
 // static/js/common/api-service.js
+
+/**
+ * Custom API Error class for structured error handling.
+ * Matches the backend error response format.
+ */
+export class APIError extends Error {
+    constructor(errorData) {
+        super(errorData?.message || 'An unknown error occurred');
+        this.name = 'APIError';
+        this.code = errorData?.code || 'UNKNOWN_ERROR';
+        this.status = errorData?.status || 500;
+        this.details = errorData?.details || null;
+    }
+}
+
 export class ApiService {
     static async fetch(url, options = {}) {
         try {
@@ -12,13 +27,50 @@ export class ApiService {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                // Try to parse error response from backend
+                let errorData = null;
+                try {
+                    const responseBody = await response.json();
+                    // Handle new standardized error format
+                    if (responseBody.error) {
+                        errorData = {
+                            code: responseBody.error.code || `HTTP_${response.status}`,
+                            message: responseBody.error.message || response.statusText,
+                            status: response.status,
+                            details: responseBody.error.details || null
+                        };
+                    } else if (responseBody.message) {
+                        // Handle legacy error format
+                        errorData = {
+                            code: `HTTP_${response.status}`,
+                            message: responseBody.message,
+                            status: response.status
+                        };
+                    }
+                } catch (parseError) {
+                    // If parsing fails, create error from status
+                    errorData = {
+                        code: `HTTP_${response.status}`,
+                        message: response.statusText || 'Network response was not ok',
+                        status: response.status
+                    };
+                }
+                throw new APIError(errorData);
             }
 
             return await response.json();
         } catch (error) {
-            console.error('API Error:', error);
-            throw error;
+            // Re-throw APIError as-is, wrap other errors
+            if (error instanceof APIError) {
+                console.error('API Error:', error.code, error.message);
+                throw error;
+            }
+            console.error('Network Error:', error);
+            throw new APIError({
+                code: 'NETWORK_ERROR',
+                message: error.message || 'Network request failed',
+                status: 0
+            });
         }
     }
 

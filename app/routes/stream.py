@@ -1,13 +1,15 @@
-from flask import Blueprint, jsonify, request, make_response
-from flask_login import login_required
+# Third-party imports
 import jsonpickle
+from flask import Blueprint, jsonify, request, make_response
 
+# Local imports
+from app.utils.auth_utils import multi_auth_required
 from app.services.services import StreamingService
 
 stream_bp = Blueprint('stream', __name__)
 
-@stream_bp.route('/api/stream', methods=['GET'])
-@login_required
+@stream_bp.route('/stream', methods=['GET'])
+@multi_auth_required
 def search_titles_from_streaming():
     try:
         query = request.args.get('query')
@@ -22,8 +24,8 @@ def search_titles_from_streaming():
         }
         return make_response(jsonify(error_message), 500)
 
-@stream_bp.route('/api/stream', methods=['POST'])
-@login_required
+@stream_bp.route('/stream', methods=['POST'])
+@multi_auth_required
 def add_title_from_streaming():
     try:
         data = request.get_json()
@@ -38,8 +40,8 @@ def add_title_from_streaming():
         }
         return make_response(jsonify(error_message), 500)
 
-@stream_bp.route('/api/stream/details', methods=['POST'])
-@login_required
+@stream_bp.route('/stream/details', methods=['POST'])
+@multi_auth_required
 def get_title_details():
     try:
         data = request.get_json()

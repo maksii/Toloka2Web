@@ -74,7 +74,13 @@ main > .container-fluid {
     z-index: 1500;
   }
 
-  .bd-mode-toggle .dropdown-menu .active .bi {
+  .bd-language-toggle {
+    z-index: 1500;
+    margin-right: 4rem !important;
+  }
+
+  .bd-mode-toggle .dropdown-menu .active .bi,
+  .bd-language-toggle .dropdown-menu .active .bi {
     display: block !important;
   }
 
@@ -126,6 +132,12 @@ body {
 }
 
 .bg-dark {    --bs-bg-opacity: 0.6;}
+
+/* Ensure fixed navbar has solid background to prevent content bleeding through */
+.navbar.fixed-top.bg-dark {
+  --bs-bg-opacity: 1;
+  background-color: rgba(33, 37, 41, 1) !important;
+}
 
 .bg-body-tertiary {--bs-bg-opacity: 0.6;}
 

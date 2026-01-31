@@ -1,8 +1,7 @@
 import { DataTableFactory } from '../common/data-table-factory.js';
 import { ApiService } from '../common/api-service.js';
 import { UiManager } from '../common/ui-manager.js';
-import { Utils } from '../common/utils.js';
-import translations from '../l18n/en.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class ReleasesDetails {
     constructor() {
@@ -20,9 +19,7 @@ export default class ReleasesDetails {
     }
 
     getReleaseIdFromUrl() {
-        const url = new URL(window.location.href);
-        const segments = url.pathname.split('/');
-        return segments.pop();
+        return Utils.getIdFromUrl();
     }
 
     async loadReleaseDetails() {

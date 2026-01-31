@@ -3,8 +3,7 @@ import { DataTableFactory } from '../common/data-table-factory.js';
 import { EventDelegator } from '../common/datatable.js';
 import { ApiService } from '../common/api-service.js';
 import { UiManager } from '../common/ui-manager.js';
-import { Utils } from '../common/utils.js';
-import translations from '../l18n/en.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class Search {
     constructor() {
@@ -26,12 +25,14 @@ export default class Search {
 
     addEventListeners() {
         if (this.searchForm) {
-            this.searchForm.addEventListener('submit', (e) => this.handleSearch(e));
+            this.searchForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent form submission
+                this.handleSearch();
+            });
         }
     }
 
-    async handleSearch(e) {
-        e.preventDefault();
+    async handleSearch() {
         const formData = new FormData(this.searchForm);
         const query = formData.get('query');
         
@@ -354,6 +355,9 @@ export default class Search {
             // Set the title and URL
             document.querySelector('#releaseTitle').value = data.name;
             document.querySelector('#tolokaUrl').value = `https://toloka.to/${data.url}`;
+            // Set release group from Toloka search author
+            const releaseGroupInput = document.querySelector('#releaseGroup');
+            if (releaseGroupInput) releaseGroupInput.value = data.author != null ? data.author : '';
             
             // Handle file name extraction from child data
             if (childDataToUse) {

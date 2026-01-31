@@ -1,5 +1,5 @@
 import { DataTableManager } from './datatable.js';
-import translations from '../l18n/en.js';
+import { translations } from './utils.js';
 
 export class DataTableFactory {
     static initializeGlobalSettings() {

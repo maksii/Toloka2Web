@@ -1,7 +1,6 @@
+"""TMDB (The Movie Database) API service."""
 from typing import Dict
 import requests
-from app.models.application_settings import ApplicationSettings
-from app.models.base import db
 
 from app.services.base_service import BaseService
 
@@ -25,7 +24,7 @@ class TMDBService(BaseService):
             'language': language
         }
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         return cls.handle_api_response(response, "TMDB API Error")
 
     @classmethod
@@ -42,7 +41,7 @@ class TMDBService(BaseService):
             'language': language
         }
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         return cls.handle_api_response(response, "TMDB API Error")
 
     @classmethod
@@ -58,7 +57,7 @@ class TMDBService(BaseService):
             'external_source': source
         }
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         return cls.handle_api_response(response, "TMDB API Error")
 
     @classmethod
@@ -74,9 +73,5 @@ class TMDBService(BaseService):
             'language': language
         }
         
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
         return cls.handle_api_response(response, "TMDB API Error")
-
-def get_api_key(key_name):
-    setting = ApplicationSettings.query.filter_by(key=key_name).first()
-    return setting.value if setting else None

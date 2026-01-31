@@ -1,133 +1,102 @@
+"""Release routes for managing torrent releases."""
 from flask import Blueprint, jsonify, request, make_response
-from flask_login import login_required
 import jsonpickle
 
-from app.services.route_service import RouteService
+from app.utils.auth_utils import multi_auth_required
+from app.utils.errors import handle_errors, ValidationError
 from app.services.services import TolokaService, TorrentService
 from app.services.config_service import ConfigService
 
 release_bp = Blueprint('release', __name__)
 
-@release_bp.route('/api/releases', methods=['GET'])
-@login_required
+
+@release_bp.route('/releases', methods=['GET'])
+@multi_auth_required
+@handle_errors
 def get_titles():
-    try:
-        titles_data = TolokaService.get_titles_logic()
-        torrents_data = TorrentService.get_releases_torrent_status()
+    """Get all releases with their torrent status."""
+    titles_data = TolokaService.get_titles_with_torrent_status()
+    return make_response(jsonify(titles_data), 200)
 
-        # Convert the list of torrents into a dictionary for easier access
-        torrents_dict = {torrent['hash']: torrent for torrent in torrents_data.data if isinstance(torrent, dict)}
 
-        # Extend each title with torrent info
-        for title, data in titles_data.items():
-            hash_value = data.get('hash')
-            if hash_value in torrents_dict:
-                # Only select relevant torrent info to add
-                torrent_info = {
-                    "state": torrents_dict[hash_value].get("state"),
-                    "progress": torrents_dict[hash_value].get("progress"),
-                    "name": torrents_dict[hash_value].get("name"),
-                }
-                data['torrent_info'] = torrent_info
-
-        return make_response(jsonify(titles_data), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to fetch titles",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
-
-@release_bp.route('/api/releases', methods=['POST'])
-@login_required
+@release_bp.route('/releases', methods=['POST'])
+@multi_auth_required
+@handle_errors
 def add_release():
-    try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
-            
-        response = TolokaService.add_release_logic(request.form)
-        ConfigService.sync_settings("release", "from")
-        return make_response(jsonify(response), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to add release",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+    """Add a new release."""
+    data = request.get_json() if request.is_json else request.form
+    if not data:
+        raise ValidationError("Request data is required")
+        
+    response = TolokaService.add_release_logic(data)
+    ConfigService.sync_settings("release", "from")
+    return make_response(jsonify(response), 200)
 
-@release_bp.route('/api/releases/update', methods=['POST'])
-@RouteService.login_or_api_key_required
+
+@release_bp.route('/releases/update', methods=['POST'])
+@multi_auth_required
+@handle_errors
 def update_release():
-    try:
-        if request.form:
-            response = TolokaService.update_release_logic(request.form)
-        else:
-            response = TolokaService.update_all_releases_logic()
-            
-        ConfigService.sync_settings("release", "from")
-        return make_response(jsonify(response), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to update release",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+    """Update release(s) - if no data provided, updates all releases."""
+    data = request.get_json() if request.is_json else request.form
+    if data:
+        response = TolokaService.update_release_logic(data)
+    else:
+        response = TolokaService.update_all_releases_logic()
+        
+    ConfigService.sync_settings("release", "from")
+    return make_response(jsonify(response), 200)
 
-@release_bp.route('/api/releases/torrents', methods=['GET'])
-@RouteService.login_or_api_key_required
+
+@release_bp.route('/releases/torrents', methods=['GET'])
+@multi_auth_required
+@handle_errors
 def torrent_info_all_releases():
-    try:
-        result = TorrentService.get_releases_torrent_status()
-        return make_response(jsonpickle.encode(result, unpicklable=False), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to fetch torrent info",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+    """Get torrent info for all releases."""
+    result = TorrentService.get_releases_torrent_status()
+    return make_response(jsonpickle.encode(result, unpicklable=False), 200)
 
-@release_bp.route('/api/releases/<string:hash>', methods=['GET'])
-@RouteService.login_or_api_key_required
+
+@release_bp.route('/releases/defaults', methods=['GET'])
+@multi_auth_required
+@handle_errors
+def get_release_defaults():
+    """Get default values for the Add Release form (e.g. default_meta from Toloka section)."""
+    result = ConfigService.get_release_defaults()
+    return make_response(jsonify(result), 200)
+
+
+@release_bp.route('/releases/<string:hash>', methods=['GET'])
+@multi_auth_required
+@handle_errors
 def recieve_request_from_client(hash):
-    try:
-        if not hash:
-            return make_response(jsonify({"error": "Hash parameter is required"}), 400)
-        return make_response(jsonify({"msg": f"{hash}"}), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to process client request",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+    """Get release by hash."""
+    if not hash:
+        raise ValidationError("Hash parameter is required")
+    return make_response(jsonify({"msg": f"{hash}"}), 200)
 
-@release_bp.route('/api/releases', methods=['PUT'])
-@login_required
+
+@release_bp.route('/releases', methods=['PUT'])
+@multi_auth_required
+@handle_errors
 def edit_release():
-    try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
-            
-        response = ConfigService.edit_release(request.form)
-        return make_response(jsonify({"msg": response}), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to edit release",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+    """Edit an existing release."""
+    data = request.get_json() if request.is_json else request.form
+    if not data:
+        raise ValidationError("Request data is required")
+        
+    response = ConfigService.edit_release(data)
+    return make_response(jsonify({"msg": response}), 200)
 
-@release_bp.route('/api/releases', methods=['DELETE'])
-@login_required
+
+@release_bp.route('/releases', methods=['DELETE'])
+@multi_auth_required
+@handle_errors
 def delete_release():
-    try:
-        if not request.form:
-            return make_response(jsonify({"error": "Request form data is required"}), 400)
-            
-        response = ConfigService.delete_release(request.form)
-        return make_response(jsonify({"msg": response}), 200)
-    except Exception as e:
-        error_message = {
-            "error": "Failed to delete release",
-            "details": str(e)
-        }
-        return make_response(jsonify(error_message), 500)
+    """Delete a release."""
+    data = request.get_json() if request.is_json else request.form
+    if not data:
+        raise ValidationError("Request data is required")
+        
+    response = ConfigService.delete_release(data)
+    return make_response(jsonify({"msg": response}), 200)

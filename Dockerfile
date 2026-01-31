@@ -12,7 +12,7 @@ RUN apk add --no-cache \
  && adduser -S appuser -G appgroup
 
 # Set the timezone
-ENV TZ=Europe/Kiev
+ENV TZ=Europe/Kyiv
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 WORKDIR /app

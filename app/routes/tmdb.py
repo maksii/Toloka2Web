@@ -1,11 +1,14 @@
+# Flask and extensions
 from flask import Blueprint, request, jsonify, make_response
-from flask_login import login_required
+
+# Local imports
+from app.utils.auth_utils import multi_auth_required
 from app.services.tmdb_service import TMDBService
 
 tmdb_bp = Blueprint('tmdb_bp', __name__)
 
-@tmdb_bp.route('/api/tmdb/search', methods=['GET'])
-@login_required
+@tmdb_bp.route('/tmdb/search', methods=['GET'])
+@multi_auth_required
 def search():
     try:
         query = request.args.get('query')
@@ -20,8 +23,8 @@ def search():
         }
         return make_response(jsonify(error_message), 500)
 
-@tmdb_bp.route('/api/tmdb/detail/<int:id>', methods=['GET'])
-@login_required
+@tmdb_bp.route('/tmdb/detail/<int:id>', methods=['GET'])
+@multi_auth_required
 def get_detail(id):
     try:
         media_type = request.args.get('type')
@@ -38,8 +41,7 @@ def get_detail(id):
         }
         return make_response(jsonify(error_message), 500)
 
-@tmdb_bp.route('/api/tmdb/trending', methods=['GET'])
-@login_required
+@tmdb_bp.route('/tmdb/trending', methods=['GET'])
 def get_trending():
     try:
         media_type = request.args.get('type')

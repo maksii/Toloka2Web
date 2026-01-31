@@ -1,8 +1,8 @@
 from typing import Dict, List, Tuple, Any
 import datetime
 import os
-import pkg_resources
-from flask import request, jsonify, abort, g
+from importlib.metadata import distributions
+from flask import request, jsonify, abort, g, current_app
 from flask_login import current_user
 from functools import wraps
 
@@ -18,17 +18,15 @@ class RouteService(BaseService):
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
                 api_key = request.headers.get('x-api-key')
-                valid_api_key = os.environ.get('API_KEY')
-
-                if not api_key or api_key != valid_api_key:
-                    abort(403, description="Access denied: No valid API key or login session")
+                if not api_key or api_key != current_app.config.get('API_KEY'):
+                    return jsonify({"error": "Authentication required"}), 401
             return f(*args, **kwargs)
         return decorated_function
 
     @classmethod
     def get_installed_packages(cls) -> Dict[str, str]:
         """Get list of installed Python packages and their versions."""
-        return {dist.project_name: dist.version for dist in pkg_resources.working_set}
+        return {dist.metadata["Name"]: dist.version for dist in distributions()}
 
     @classmethod
     def list_files(cls, path: str) -> Tuple[Dict[str, Any], int]:

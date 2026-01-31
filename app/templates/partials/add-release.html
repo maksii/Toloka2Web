@@ -68,9 +68,47 @@
                         </div>
                     </div>
 
+                    <!-- Release group & Meta (collapsed) -->
+                    <div class="mb-3">
+                        <button class="btn btn-outline-secondary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#releaseGroupMetaCollapse" aria-expanded="false" aria-controls="releaseGroupMetaCollapse" id="releaseGroupMetaToggle">
+                            <i class="bi bi-chevron-down me-1"></i>Release group &amp; Meta
+                        </button>
+                        <div class="collapse mt-2" id="releaseGroupMetaCollapse">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" name="release_group" class="form-control" id="releaseGroup" placeholder="Release Group">
+                                        <label for="releaseGroup">Release Group</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" name="meta" class="form-control" id="meta" placeholder="Meta">
+                                        <label for="meta">Meta</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ongoing Checkbox -->
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" role="switch" name="ongoing" id="ongoing" checked>
+                        <label class="form-check-label" for="ongoing">
+                            <i class="bi bi-arrow-repeat me-1"></i>Ongoing
+                            <small class="text-muted d-block">Use episode range naming (S01E01-E02) instead of season pack (S01)</small>
+                        </label>
+                    </div>
+
+                    <!-- Final title preview -->
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Preview</small>
+                        <p class="mb-0 form-control-plaintext border rounded px-2 py-2 bg-body-secondary" id="releasePreview" aria-live="polite">—</p>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary" id="submitButton" data-bs-dismiss="modal">
+                        <button type="submit" class="btn btn-primary" id="submitButton">
                             <i class="bi bi-check-circle me-2"></i>Submit
                         </button>
                     </div>

@@ -1,9 +1,8 @@
+"""MAL (MyAnimeList) API service."""
 from typing import Dict
 import requests
 
 from app.services.base_service import BaseService
-from app.models.application_settings import ApplicationSettings
-from app.models.base import db
 
 class MALService(BaseService):
     """Service for interacting with MyAnimeList API."""
@@ -25,7 +24,7 @@ class MALService(BaseService):
         }
         headers = {'X-MAL-CLIENT-ID': api_key}
         
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(url, params=params, headers=headers, timeout=30)
         return cls.handle_api_response(response, "MAL API Error")
 
     @classmethod
@@ -42,9 +41,5 @@ class MALService(BaseService):
         }
         headers = {'X-MAL-CLIENT-ID': api_key}
         
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(url, params=params, headers=headers, timeout=30)
         return cls.handle_api_response(response, "MAL API Error")
-
-def get_api_key(key_name):
-    setting = ApplicationSettings.query.filter_by(key=key_name).first()
-    return setting.value if setting else None

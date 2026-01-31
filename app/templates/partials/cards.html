@@ -7,15 +7,15 @@
 </div>
 {% endmacro %}
 
-{% macro detail_card(title, subtitle=None, content=None, links=None) %}
+{% macro detail_card(title, subtitle=None, content=None, links=None, title_id=None, subtitle_id=None, content_id=None) %}
 <div class="card">
     <div class="card-body">
-        <h5 class="card-title" id="{{ title|lower|replace(' ', '_') }}">{{ title }}</h5>
+        <h5 class="card-title" id="{{ title_id if title_id else title|lower|replace(' ', '_') }}">{{ title }}</h5>
         {% if subtitle %}
-        <h6 class="card-subtitle mb-2 text-muted" id="{{ subtitle|lower|replace(' ', '_') }}">{{ subtitle }}</h6>
+        <h6 class="card-subtitle mb-2 text-muted" id="{{ subtitle_id if subtitle_id else subtitle|lower|replace(' ', '_') }}">{{ subtitle }}</h6>
         {% endif %}
         {% if content %}
-        <p class="card-text">{{ content | safe }}</p>
+        <p class="card-text"{% if content_id %} id="{{ content_id }}"{% endif %}>{{ content | safe }}</p>
         {% endif %}
         {% if links %}
         <div class="external-links">

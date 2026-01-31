@@ -1,7 +1,7 @@
 // static/js/modules/anime-details.js
 import { DataTableFactory } from '../common/data-table-factory.js';
 import { ApiService } from '../common/api-service.js';
-import translations from '../l18n/en.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class AnimeDetails {
     constructor() {
@@ -28,14 +28,7 @@ export default class AnimeDetails {
     }
 
     getAnimeIdFromUrl() {
-        try {
-            const url = new URL(window.location.href);
-            const segments = url.pathname.split('/');
-            return segments.pop() || null;
-        } catch (error) {
-            console.error('Error getting anime ID from URL:', error);
-            return null;
-        }
+        return Utils.getIdFromUrl();
     }
 
     async loadAnimeDetails() {
@@ -58,19 +51,35 @@ export default class AnimeDetails {
             this.elements.title.textContent = data.titleEn || 'No title available';
         }
 
-        // Update description
+        // Update description with markdown support
         if (this.elements.description) {
-            this.elements.description.textContent = data.description || 'No description available';
+            const description = data.description || 'No description available';
+            // Check if marked library is available for markdown rendering
+            if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+                this.elements.description.innerHTML = DOMPurify.sanitize(marked.parse(description));
+            } else {
+                this.elements.description.textContent = description;
+            }
         }
 
-        // Update MAL link
-        if (this.elements.malLink && data.malId) {
-            this.elements.malLink.href = `https://myanimelist.net/anime/${data.malId}`;
+        // Update MAL link - show only if data exists
+        if (this.elements.malLink) {
+            if (data.malId) {
+                this.elements.malLink.href = `https://myanimelist.net/anime/${data.malId}`;
+                this.elements.malLink.style.display = '';
+            } else {
+                this.elements.malLink.style.display = 'none';
+            }
         }
 
-        // Update IMDB link
-        if (this.elements.imdbLink && data.ashdiId) {
-            this.elements.imdbLink.href = `https://www.imdb.com/title/${data.ashdiId}`;
+        // Update IMDB link - show only if data exists
+        if (this.elements.imdbLink) {
+            if (data.ashdiId) {
+                this.elements.imdbLink.href = `https://www.imdb.com/title/${data.ashdiId}`;
+                this.elements.imdbLink.style.display = '';
+            } else {
+                this.elements.imdbLink.style.display = 'none';
+            }
         }
     }
 

@@ -1,6 +1,65 @@
 // static/js/common/utils.js
-import translations from '../l18n/en.js';
+import enTranslations from '../l18n/en.js';
+import uaTranslations from '../l18n/ua.js';
+
 export class Utils {
+    static #translations = null;
+
+    /**
+     * Extract ID from URL path.
+     * Handles patterns like /anime/123, /studio/456, /releases/789
+     * @param {string} pattern - Optional regex pattern. Defaults to last numeric segment.
+     * @returns {string|null} - The extracted ID or null if not found.
+     */
+    static getIdFromUrl(pattern = null) {
+        const path = window.location.pathname;
+        if (pattern) {
+            const match = path.match(pattern);
+            return match ? match[1] : null;
+        }
+        // Default: extract last numeric segment from path
+        const segments = path.split('/').filter(Boolean);
+        for (let i = segments.length - 1; i >= 0; i--) {
+            if (/^\d+$/.test(segments[i])) {
+                return segments[i];
+            }
+        }
+        // Fallback: return last segment if no numeric found
+        return segments[segments.length - 1] || null;
+    }
+
+    static getTranslations() {
+        if (!this.#translations) {
+            const language = document.documentElement.getAttribute('data-bs-language') || 'en';
+            this.#translations = language === 'ua' ? uaTranslations : enTranslations;
+        }
+        return this.#translations;
+    }
+
+    static updateTranslations() {
+        const language = document.documentElement.getAttribute('data-bs-language') || 'en';
+        this.#translations = language === 'ua' ? uaTranslations : enTranslations;
+        // Update all elements with data-i18n attribute
+        this.translateElements();
+        // Dispatch an event to notify components that translations have changed
+        window.dispatchEvent(new CustomEvent('translationsChanged'));
+    }
+
+    static translateElements() {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = this.getNestedTranslation(key);
+            if (translation) {
+                element.textContent = translation;
+            }
+        });
+    }
+
+    static getNestedTranslation(key) {
+        return key.split('.').reduce((obj, i) => obj ? obj[i] : null, this.getTranslations());
+    }
+
     static async fetchData(url, options = {}) {
         try {
             const response = await fetch(url, options);
@@ -148,6 +207,56 @@ export class Utils {
 
 }
 
+// Create a proxy to make translations reactive
+const translationsHandler = {
+    get(target, prop) {
+        // Always get fresh translations
+        return Utils.getTranslations()[prop];
+    }
+};
+
+export const translations = new Proxy({}, translationsHandler);
+
+// Listen for language changes and initialize translations
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial translation of elements
+    Utils.translateElements();
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'data-bs-language') {
+                Utils.updateTranslations();
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-bs-language']
+    });
+});
+
+// Global error handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+    const error = event.reason;
+    
+    // Check if it's an APIError (from api-service.js)
+    if (error && error.name === 'APIError') {
+        console.error(`Unhandled API Error [${error.code}]:`, error.message);
+        
+        // Handle authentication errors globally
+        if (error.status === 401) {
+            // Optionally redirect to login or show notification
+            console.warn('Authentication required. User may need to log in.');
+        }
+    } else {
+        console.error('Unhandled promise rejection:', error);
+    }
+    
+    // Prevent the default browser error handling (optional)
+    // event.preventDefault();
+});
+
 export class Backdrop {
     constructor() {
         this.apiUrl = '/api/tmdb/trending?type=tv';
@@ -167,9 +276,25 @@ export class Backdrop {
         }
 
         // Fetch new data if not stored or expired
-        return fetch(this.apiUrl)
-            .then(response => response.json())
+        return fetch(this.apiUrl, {
+            credentials: 'same-origin', // This ensures cookies are sent with the request
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    throw new Error('Authentication required. Please log in.');
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                if (!data || !data.results) {
+                    throw new Error('Invalid data format received from server');
+                }
                 const dataToStore = {
                     timestamp: new Date().getTime(),
                     data: data
@@ -180,14 +305,24 @@ export class Backdrop {
     }
 
     setRandomBackdrop() {
-        this.fetchData().then(data => {
-            const results = data.results;
-            const randomIndex = Math.floor(Math.random() * results.length);
-            const backdropPath = results[randomIndex].backdrop_path;
-            const imageUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
-            //const fullUrl = `/image/?url=${encodeURIComponent(imageUrl)}`;
-
-            document.body.style.backgroundImage = `url('${imageUrl}')`;
-        }).catch(error => console.error('Error setting the background image:', error));
+        this.fetchData()
+            .then(data => {
+                if (!data.results || !data.results.length) {
+                    throw new Error('No backdrop images available');
+                }
+                const results = data.results;
+                const randomIndex = Math.floor(Math.random() * results.length);
+                const backdropPath = results[randomIndex].backdrop_path;
+                if (!backdropPath) {
+                    throw new Error('Selected item has no backdrop image');
+                }
+                const imageUrl = `https://image.tmdb.org/t/p/original${backdropPath}`;
+                document.body.style.backgroundImage = `url('${imageUrl}')`;
+            })
+            .catch(error => {
+                console.error('Error setting the background image:', error.message);
+                // Optionally set a default background if the TMDB backdrop fails
+                // document.body.style.backgroundImage = 'url("/static/images/default-backdrop.jpg")';
+            });
     }
 }

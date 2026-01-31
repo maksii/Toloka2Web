@@ -17,6 +17,13 @@ class ConfigService(BaseService):
         return cls.serialize(settings)
 
     @classmethod
+    def get_release_defaults(cls) -> Dict:
+        """Get default values for the Add Release form (e.g. default_meta from Toloka section in DB)."""
+        setting = ApplicationSettings.query.filter_by(section='Toloka', key='default_meta').first()
+        default_meta = setting.value if setting else ''
+        return {'default_meta': default_meta}
+
+    @classmethod
     def init_web_settings(cls) -> None:
         """Initialize default web settings."""
         cls.add_new_setting('toloka2web', 'open_registration', 'True')
@@ -86,6 +93,10 @@ class ConfigService(BaseService):
         release.hash = form['hash']
         release.adjusted_episode_number = int(form['adjusted_episode_number'])
         release.guid = form['guid']
+        
+        # Handle ongoing field - convert string to boolean
+        ongoing_value = form.get('ongoing', 'true')
+        release.ongoing = ongoing_value in ('true', 'True', True, '1', 1)
 
         db.session.commit()
         cls.sync_settings("release", "to")
@@ -159,6 +170,7 @@ class ConfigService(BaseService):
             config.set(section, 'hash', release.hash)
             config.set(section, 'adjusted_episode_number', str(release.adjusted_episode_number))
             config.set(section, 'guid', release.guid)
+            config.set(section, 'is_partial_season', str(release.ongoing if release.ongoing is not None else True))
 
         with open(file_path, 'w', encoding='utf-8') as configfile:
             config.write(configfile)
@@ -193,22 +205,9 @@ class ConfigService(BaseService):
             release.hash = config.get(section, 'hash', fallback='')
             release.adjusted_episode_number = int(config.get(section, 'adjusted_episode_number', fallback='1'))
             release.guid = config.get(section, 'guid', fallback='')
+            
+            # Handle is_partial_season from INI (displayed as "Ongoing" in UI) - default to True for backward compatibility
+            is_partial_str = config.get(section, 'is_partial_season', fallback='True')
+            release.ongoing = is_partial_str.lower() in ('true', '1', 'yes')
 
         db.session.commit()
-
-    @classmethod
-    def serialize(cls, data):
-        """Serialize SQLAlchemy objects to JSON-compatible format."""
-        if isinstance(data, list):
-            return [cls.serialize(item) for item in data]
-        elif hasattr(data, '__dict__'):
-            result = {}
-            for column in data.__dict__:
-                if not column.startswith('_'):
-                    attr = getattr(data, column)
-                    if hasattr(attr, '__dict__') or isinstance(attr, list):
-                        result[column] = cls.serialize(attr)
-                    else:
-                        result[column] = attr
-            return result
-        return data
