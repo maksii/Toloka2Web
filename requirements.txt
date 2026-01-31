@@ -1,4 +1,4 @@
-git+https://github.com/maksii/Toloka2MediaServer@develop
+git+https://github.com/maksii/Toloka2MediaServers
 git+https://github.com/maksii/Stream2MediaServer
 Flask
 Flask-Login
