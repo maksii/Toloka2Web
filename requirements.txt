@@ -1,5 +1,5 @@
 git+https://github.com/CakesTwix/toloka2python
-git+https://github.com/maksii/Toloka2MediaServer@new_qbit
+git+https://github.com/maksii/Toloka2MediaServer
 git+https://github.com/maksii/Stream2MediaServer
 Flask
 Flask-Login
