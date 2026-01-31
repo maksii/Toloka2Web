@@ -91,11 +91,13 @@ export default class Releases {
             {
                 text: translations.buttons.releaseAddButton,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.releaseAddButton,
                 action: () => Utils.addRelease()
             },
             {
                 text: translations.buttons.releaseUpdateAllButton,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.releaseUpdateAllButton,
                 action: (e, dt, node) => this.updateAllReleases(node)
             }
         ];

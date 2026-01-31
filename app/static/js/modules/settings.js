@@ -3,7 +3,7 @@ import { DataTableFactory } from '../common/data-table-factory.js';
 import { EventDelegator } from '../common/datatable.js';
 import { ApiService } from '../common/api-service.js';
 import { UiManager } from '../common/ui-manager.js';
-import { translations } from '../common/utils.js';
+import { Utils, translations } from '../common/utils.js';
 
 export default class Settings {
     constructor() {
@@ -63,6 +63,9 @@ export default class Settings {
         };
 
         this.table = DataTableFactory.initializeTable('#settingsTable', config);
+        this.table.on('draw', () => {
+            Utils.activeTooltips();
+        });
     }
 
     renderAsInput(data, type) {
@@ -73,8 +76,8 @@ export default class Settings {
     }
 
     renderActionButton() {
-        return `<button class="btn btn-outline-warning action-save">
-            <i class="bi bi-pencil-square"></i>
+        return `<button class="btn btn-outline-warning action-save" data-bs-toggle="tooltip" data-bs-title="${translations.buttons.settingSaveButton}" title="${translations.buttons.settingSaveButton}" aria-label="${translations.buttons.settingSaveButton}">
+            <i class="bi bi-pencil-square" aria-hidden="true"></i>
             <span class="visually-hidden">${translations.buttons.settingSaveButton}</span>
         </button>`;
     }
@@ -87,7 +90,7 @@ export default class Settings {
         });
 
         return $('<tr/>')
-            .append(`<td class="action-collapse" colspan="8">${group} (${rows.count()})</td>`)
+            .append(`<td class="action-collapse" colspan="8" role="button" data-bs-toggle="tooltip" data-bs-title="${translations.buttons.expandButton}" title="${translations.buttons.expandButton}" aria-label="${translations.buttons.expandButton}">${group} (${rows.count()})</td>`)
             .attr('data-name', group)
             .toggleClass('collapsed', collapsed);
     }
@@ -97,16 +100,19 @@ export default class Settings {
             {
                 text: translations.buttons.settingsAdd,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.settingsAdd,
                 action: () => this.addNewRow()
             },
             {
                 text: translations.buttons.settingsSyncTo,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.settingsSyncTo,
                 action: () => this.syncSettings("to", "app")
             },
             {
                 text: translations.buttons.settingsSyncFrom,
                 className: 'btn btn-primary',
+                titleAttr: translations.buttons.settingsSyncFrom,
                 action: () => this.syncSettings("from", "app")
             }
         ];

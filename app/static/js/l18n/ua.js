@@ -149,7 +149,9 @@ const translations = {
         meta: 'Мета',
         releaseGroupMeta: 'Теги',
         releasePreview: 'Попередній перегляд',
-        tolokaSearchErrorTitle: 'Пошук Toloka'
+        tolokaSearchErrorTitle: 'Пошук Toloka',
+        showMoreFiles: 'Показати більше файлів',
+        showLessFiles: 'Показати менше файлів'
     },
     validation: {
         invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',

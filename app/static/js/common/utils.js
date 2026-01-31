@@ -159,8 +159,28 @@ export class Utils {
 
     static activeTooltips()
     {
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+        Utils.applyButtonTooltips();
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
+
+    static applyButtonTooltips() {
+        const buttons = document.querySelectorAll('button.btn, a.btn');
+        buttons.forEach((button) => {
+            const label = button.getAttribute('aria-label') || button.title || button.textContent.trim();
+            if (!label) {
+                return;
+            }
+
+            button.setAttribute('data-bs-title', label);
+            button.setAttribute('title', label);
+            if (!button.getAttribute('aria-label')) {
+                button.setAttribute('aria-label', label);
+            }
+            if (!button.hasAttribute('data-bs-toggle')) {
+                button.setAttribute('data-bs-toggle', 'tooltip');
+            }
+        });
     }
 
     static downloadFile(url) {
@@ -179,7 +199,8 @@ export class Utils {
 
     static renderActionButton(action, buttonClass, buttonState, buttonIcon, buttonText)
     {
-        return `<button class="btn ${buttonClass} ${action}" ${buttonState}><span class="bi ${buttonIcon}" aria-hidden="true"></span><span class="visually-hidden" role="status">${buttonText}</span></button>`;
+        const safeText = buttonText || '';
+        return `<button class="btn ${buttonClass} ${action}" ${buttonState} data-bs-toggle="tooltip" data-bs-title="${safeText}" title="${safeText}" aria-label="${safeText}"><span class="bi ${buttonIcon}" aria-hidden="true"></span><span class="visually-hidden" role="status">${safeText}</span></button>`;
     }
 
     static hasParentWithClass(element, tillParent, classname) {
