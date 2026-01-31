@@ -1,6 +1,5 @@
 from typing import Any, Dict, Optional
 from app.models.application_settings import ApplicationSettings
-from app.models.base import db
 
 class BaseService:
     """Base class for all services providing common functionality."""

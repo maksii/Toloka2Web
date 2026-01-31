@@ -1,5 +1,4 @@
 """User model for authentication and authorization."""
-from typing import Optional
 from flask_login import UserMixin
 from .base import db
 from flask_bcrypt import Bcrypt

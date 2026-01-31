@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy import create_engine, or_
 from sqlalchemy.ext.automap import automap_base

@@ -9,7 +9,6 @@ This is an alternative to running `python run.py`.
 Both methods are equivalent - create_app() handles all initialization.
 """
 
-import os
 
 
 def main():

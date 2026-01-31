@@ -1,8 +1,8 @@
-from typing import Dict, List, Tuple, Any
+from typing import Dict, Tuple, Any
 import datetime
 import os
 from importlib.metadata import distributions
-from flask import request, jsonify, abort, g, current_app
+from flask import request, jsonify, current_app
 from flask_login import current_user
 from functools import wraps
 
