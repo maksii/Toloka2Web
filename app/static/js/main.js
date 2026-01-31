@@ -9,7 +9,7 @@ import StudiosDetails from './modules/studios-details.js';
 import Settings from './modules/settings.js';
 import UpdateChecker from './common/update-checker.js';
 import { DataTableFactory } from './common/data-table-factory.js';
-import { Backdrop } from './common/utils.js';
+import { Backdrop, Utils } from './common/utils.js';
 
 class AppController {
     constructor() {
@@ -45,6 +45,7 @@ class AppController {
 
             // Initialize page-specific module
             await this.initializePageModule();
+            Utils.activeTooltips();
 
         } catch (error) {
             console.error('Error initializing application:', error);

@@ -88,6 +88,7 @@ const translations = {
         releaseEditButton:'Edit',
         releaseDeleteButton:'Delete',
         releaseUpdateButton:'Update',
+        releaseForceUpdateButton:'Force Update',
         expandButton:'Expand',
         tolokaDownloadButton:"Direct Download",
         tolokaAddButton:"Add to client",
@@ -148,7 +149,9 @@ const translations = {
         meta: 'Meta',
         releaseGroupMeta: 'Release group & Meta',
         releasePreview: 'Preview',
-        tolokaSearchErrorTitle: 'Toloka search'
+        tolokaSearchErrorTitle: 'Toloka search',
+        showMoreFiles: 'Show more files',
+        showLessFiles: 'Show fewer files'
     },
     validation: {
         invalidTitle: 'Title contains invalid characters that could break paths or JSON (/, \\, :, *, ?, ", <, >, |)',

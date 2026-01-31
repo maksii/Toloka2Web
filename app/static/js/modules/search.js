@@ -101,7 +101,13 @@ export default class Search {
                     orderable: false,
                     data: null,
                     defaultContent: '',
-                    render: () => '<i class="bi bi-arrows-angle-expand action-expand" aria-hidden="true"></i>',
+                    render: () => Utils.renderActionButton(
+                        "action-expand",
+                        "btn-outline-secondary btn-sm",
+                        "",
+                        "bi-arrows-angle-expand",
+                        translations.buttons.expandButton
+                    ),
                     width: "15px",
                     responsivePriority: 2
                 },
@@ -139,6 +145,9 @@ export default class Search {
         };
 
         this.tolokaTable = DataTableFactory.initializeTable('#torrentTable', config);
+        this.tolokaTable.on('draw', () => {
+            Utils.activeTooltips();
+        });
     }
 
     initializeMultiTable(query) {
@@ -179,6 +188,9 @@ export default class Search {
         };
 
         this.multiTable = DataTableFactory.initializeTable('#suggested-search', config);
+        this.multiTable.on('draw', () => {
+            Utils.activeTooltips();
+        });
     }
 
     initializeStreamTable(query) {
@@ -198,7 +210,13 @@ export default class Search {
                     orderable: false,
                     data: null,
                     defaultContent: '',
-                    render: () => '<i class="bi bi-arrows-angle-expand action-expand-stream" aria-hidden="true"></i>',
+                    render: () => Utils.renderActionButton(
+                        "action-expand-stream",
+                        "btn-outline-secondary btn-sm",
+                        "",
+                        "bi-arrows-angle-expand",
+                        translations.buttons.expandButton
+                    ),
                     width: "15px",
                     responsivePriority: 2
                 },
@@ -227,6 +245,9 @@ export default class Search {
         };
 
         this.streamTable = DataTableFactory.initializeTable('#tableStream', config);
+        this.streamTable.on('draw', () => {
+            Utils.activeTooltips();
+        });
     }
 
     addDataTablesEvents() {
@@ -322,6 +343,7 @@ export default class Search {
             
             row.child(childData).show();
             tr.dataset.childData = JSON.stringify(detail);
+            Utils.activeTooltips();
         } catch (error) {
             console.error('Error expanding torrent details:', error);
             row.child('Error loading details').show();
@@ -346,6 +368,7 @@ export default class Search {
             
             row.child(childData).show();
             tr.dataset.childData = JSON.stringify(detail);
+            Utils.activeTooltips();
         } catch (error) {
             console.error('Error expanding stream details:', error);
             row.child('Error loading details').show();
@@ -451,7 +474,7 @@ export default class Search {
 
         const showMoreButton = detail.files.length > 4 ? `
             <div class="text-center mt-2">
-                <button class="btn btn-sm btn-outline-primary action-show" type="button" data-show-more="false">
+                <button class="btn btn-sm btn-outline-primary action-show" type="button" data-show-more="false" data-bs-toggle="tooltip" data-bs-title="${translations.labels.showMoreFiles}" title="${translations.labels.showMoreFiles}" aria-label="${translations.labels.showMoreFiles}">
                     <i class="bi bi-chevron-down"></i> Show More (${detail.files.length - 4} more files)
                 </button>
             </div>` : '';
@@ -605,11 +628,18 @@ export default class Search {
             remainingFiles.style.display = 'none';
             button.innerHTML = `<i class="bi bi-chevron-down"></i> Show More (${remainingFiles.children.length} more files)`;
             button.dataset.showMore = 'false';
+            button.setAttribute('data-bs-title', translations.labels.showMoreFiles);
+            button.setAttribute('title', translations.labels.showMoreFiles);
+            button.setAttribute('aria-label', translations.labels.showMoreFiles);
         } else {
             remainingFiles.style.display = 'block';
             button.innerHTML = `<i class="bi bi-chevron-up"></i> Show Less`;
             button.dataset.showMore = 'true';
+            button.setAttribute('data-bs-title', translations.labels.showLessFiles);
+            button.setAttribute('title', translations.labels.showLessFiles);
+            button.setAttribute('aria-label', translations.labels.showLessFiles);
         }
+        Utils.activeTooltips();
     }
 
     clearTables() {

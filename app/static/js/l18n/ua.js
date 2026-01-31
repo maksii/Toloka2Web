@@ -88,6 +88,7 @@ const translations = {
         releaseEditButton:'Редагувати',
         releaseDeleteButton:'Видалити',
         releaseUpdateButton:'Оновити',
+        releaseForceUpdateButton:'Оновити примусово',
         expandButton:'Розгорнути',
         tolokaDownloadButton:"Пряме завантаження",
         tolokaAddButton:"Додати до клієнта",
@@ -148,7 +149,9 @@ const translations = {
         meta: 'Мета',
         releaseGroupMeta: 'Теги',
         releasePreview: 'Попередній перегляд',
-        tolokaSearchErrorTitle: 'Пошук Toloka'
+        tolokaSearchErrorTitle: 'Пошук Toloka',
+        showMoreFiles: 'Показати більше файлів',
+        showLessFiles: 'Показати менше файлів'
     },
     validation: {
         invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',

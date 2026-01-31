@@ -6,10 +6,24 @@ from app.models.application_settings import ApplicationSettings
 from app.models.releases import Releases
 from app.models.base import db
 from app.services.base_service import BaseService
+from app.utils.errors import ValidationError
 
 
 class ConfigService(BaseService):
     """Service for managing application configuration and releases."""
+
+    @staticmethod
+    def _parse_publish_date(value: str) -> datetime.datetime:
+        """Parse publish date from supported formats."""
+        formats = ("%Y-%m-%d %H:%M", "%y-%m-%d %H:%M")
+        for date_format in formats:
+            try:
+                return datetime.datetime.strptime(value, date_format)
+            except ValueError:
+                continue
+        raise ValidationError(
+            "Publish date must be in YYYY-MM-DD HH:MM or YY-MM-DD HH:MM format."
+        )
 
     @classmethod
     def read_all_settings_from_db(cls) -> List[Dict]:
@@ -90,9 +104,7 @@ class ConfigService(BaseService):
         release.season_number = form["season_number"]
         release.torrent_name = form["torrent_name"]
         release.download_dir = form["download_dir"]
-        release.publish_date = datetime.datetime.strptime(
-            form["publish_date"], "%y-%m-%d %H:%M"
-        )
+        release.publish_date = cls._parse_publish_date(form["publish_date"])
         release.release_group = form["release_group"]
         release.meta = form["meta"]
         release.hash = form["hash"]
@@ -171,7 +183,7 @@ class ConfigService(BaseService):
             config.set(section, "torrent_name", release.torrent_name)
             config.set(section, "download_dir", release.download_dir)
             config.set(
-                section, "publish_date", release.publish_date.strftime("%y-%m-%d %H:%M")
+                section, "publish_date", release.publish_date.strftime("%Y-%m-%d %H:%M")
             )
             config.set(section, "release_group", release.release_group)
             config.set(section, "meta", release.meta)
@@ -208,11 +220,13 @@ class ConfigService(BaseService):
             release.torrent_name = config.get(section, "torrent_name", fallback="")
             release.download_dir = config.get(section, "download_dir", fallback="")
 
-            try:
-                release.publish_date = datetime.datetime.strptime(
-                    config.get(section, "publish_date"), "%y-%m-%d %H:%M"
-                )
-            except (configparser.NoOptionError, ValueError):
+            publish_value = config.get(section, "publish_date", fallback="")
+            if publish_value:
+                try:
+                    release.publish_date = cls._parse_publish_date(publish_value)
+                except ValidationError:
+                    release.publish_date = datetime.datetime.now()
+            else:
                 release.publish_date = datetime.datetime.now()
 
             release.release_group = config.get(section, "release_group", fallback="")
