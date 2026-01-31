@@ -8,7 +8,7 @@ This module provides:
 """
 
 from functools import wraps
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from flask import jsonify, current_app
 

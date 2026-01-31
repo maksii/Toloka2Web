@@ -8,16 +8,15 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_principal import (
-    Permission, UserNeed, RoleNeed, 
+    UserNeed, RoleNeed, 
     identity_changed, Identity, AnonymousIdentity, 
     identity_loaded
 )
 from flask_cors import CORS
-from flask_jwt_extended import get_jwt
 from flask_wtf.csrf import CSRFError
 
 # Local imports
-from app.routes.auth import token_blocklist, check_auth
+from app.routes.auth import check_auth
 from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
 from app.models.registration_form import RegistrationForm
@@ -178,7 +177,7 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
                 return redirect(url_for('login'))
                 
             return render_template('register.html', form=form)
-        except Exception as e:
+        except Exception:
             flash('Registration failed due to an unexpected error', 'error')
             return render_template('register.html', form=form)
 
@@ -190,7 +189,7 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
             identity_changed.send(app, identity=AnonymousIdentity()) 
             flash('You have been logged out.', 'info')
             return redirect(url_for('login'))
-        except Exception as e:
+        except Exception:
             flash('Logout failed due to an unexpected error', 'error')
             return redirect(url_for('index'))
 
@@ -231,6 +230,6 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
             """
         
             return Response(js_content, mimetype='application/javascript')
-        except Exception as e:
+        except Exception:
             error_message = "Failed to generate user script"
             return Response(f"console.error('{error_message}')", mimetype='application/javascript', status=500)

@@ -61,12 +61,10 @@ users_ns = api.namespace('users', description='User operations')
 
 # Import models (defined in models.py - single source of truth)
 # This must be done after api is created since models use api.model()
-from .models import (
-    login_model, token_response, error_response, user_info
-)
+from . import models as _models  # noqa: F401,E402
 
 # Import routes to register them with the API
-from . import routes
+from . import routes as _routes  # noqa: F401,E402
 
 
 # Add login endpoint to auth namespace
@@ -74,11 +72,11 @@ from . import routes
 class Login(Resource):
     @api.doc('login', 
         responses={
-            200: ('Success', token_response),
-            401: ('Authentication failed', error_response)
+            200: ('Success', _models.token_response),
+            401: ('Authentication failed', _models.error_response)
         }
     )
-    @api.expect(login_model)
+    @api.expect(_models.login_model)
     def post(self):
         """
         Login to get JWT tokens
@@ -129,8 +127,8 @@ class Login(Resource):
 class TokenRefresh(Resource):
     @api.doc('refresh_token',
         responses={
-            200: ('Success', token_response),
-            401: ('Authentication failed', error_response)
+            200: ('Success', _models.token_response),
+            401: ('Authentication failed', _models.error_response)
         }
     )
     def post(self):

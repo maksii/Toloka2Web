@@ -1,9 +1,8 @@
 # services.py
 
-from typing import Dict, Any, Optional, List
-from flask import Response, json, jsonify
+from typing import Dict, Any, List
+from flask import Response, json
 import requests
-from types import SimpleNamespace
 
 from toloka2MediaServer.config_parser import load_configurations, get_toloka_client
 from toloka2MediaServer.clients.dynamic import dynamic_client_init

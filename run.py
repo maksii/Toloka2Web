@@ -10,7 +10,6 @@ For module execution, use:
 """
 
 import os
-import sys
 
 
 def main():

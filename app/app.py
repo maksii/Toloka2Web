@@ -11,14 +11,13 @@ import requests
 from flask import Flask, jsonify
 from flask_login import LoginManager
 from flask_principal import Principal, Permission, RoleNeed
-from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
 # Local imports
 from app.services.config_service import ConfigService
 from app.services.services_db import DatabaseService
 from .models.base import db
-from .models.user import bcrypt, User
+from .models.user import bcrypt
 
 # Default secret values that should not be used in production
 _DEFAULT_SECRETS = {
@@ -39,7 +38,6 @@ def _initialize_data_files():
     This function is called during create_app() to ensure all required
     files exist before the Flask application is fully initialized.
     """
-    import requests
     
     # Ensure data directory exists
     os.makedirs('data', exist_ok=True)
@@ -260,7 +258,7 @@ def create_app(test_config=None):
         and the database (for persistence across restarts).
         """
         from .routes.auth import token_blocklist
-        from .models.revoked_token import RevokedToken
+        from .models.revoked_token import RevokedToken  # noqa: F401
         
         jti = jwt_payload["jti"]
         # Check in-memory first (faster), then database
@@ -272,7 +270,7 @@ def create_app(test_config=None):
     login_manager.login_message_category = 'info'
 
     # Initialize Principal for role-based access control
-    principals = Principal(app)
+    Principal(app)
     admin_permission = Permission(RoleNeed('admin'))
     user_permission = Permission(RoleNeed('user'))
 
@@ -289,11 +287,10 @@ def create_app(test_config=None):
     
     with app.app_context():
         # Import models here to avoid circular imports
-        from .models.user import User
-        from .models.user_settings import UserSettings
         from .models.releases import Releases
         from .models.application_settings import ApplicationSettings
-        from .models.revoked_token import RevokedToken
+        from .models.revoked_token import RevokedToken  # noqa: F401
+        from .models.user_settings import UserSettings  # noqa: F401
 
         # Create database tables (including revoked_tokens for JWT blocklist)
         db.create_all()
@@ -357,4 +354,4 @@ if __name__ == "__main__":
     app = create_app()
     port = app.config['PORT']
     host = app.config['HOST']
-    app.run(host=host, port=port, debug=True)
+    app.run(host=host, port=port, debug=app.config.get("DEBUG", False))

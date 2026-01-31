@@ -4,7 +4,7 @@ This module provides helper functions for creating consistent
 API responses throughout the application.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from flask import jsonify
 

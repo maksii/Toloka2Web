@@ -1,4 +1,4 @@
-# Toloka2Web [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) [![CI](https://github.com/maksii/Toloka2Web/actions/workflows/docker_hub.yml/badge.svg?branch=main)](https://github.com/maksii/Toloka2Web/actions/workflows/docker_hub.yml)
+# Toloka2Web [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/) [![Docker Hub](https://github.com/maksii/Toloka2Web/actions/workflows/docker_hub.yml/badge.svg?branch=main)](https://github.com/maksii/Toloka2Web/actions/workflows/docker_hub.yml) [![CI](https://github.com/maksii/Toloka2Web/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/maksii/Toloka2Web/actions/workflows/ci.yml)
 
 A web interface for managing Ukrainian anime content with multi-source search, torrent management, and media server integration.
 
@@ -171,4 +171,3 @@ The app syncs settings bidirectionally with INI files for [Toloka2MediaServer](h
 ## License
 
 [GPL-3.0](https://choosealicense.com/licenses/gpl-3.0/)
-

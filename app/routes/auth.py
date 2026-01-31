@@ -1,9 +1,8 @@
 # Standard library imports
-from datetime import datetime, timedelta, timezone
 import secrets
 
 # Flask and extensions
-from flask import Blueprint, jsonify, request, make_response, current_app
+from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     get_jwt_identity, jwt_required,
