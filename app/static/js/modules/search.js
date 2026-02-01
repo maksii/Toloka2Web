@@ -551,49 +551,168 @@ export default class Search {
         `;
     }
 
-    groupByStudio(data) {
-        return data.reduce((acc, item) => {
-            if (!acc[item.studio_id]) {
-                acc[item.studio_id] = {
-                    studio_name: item.studio_name,
-                    series: {}
-                };
+    /**
+     * Group episodes by series name within a studio's episodes array.
+     * Handles various formats: array of episodes, array of URLs, or mixed.
+     * @param {Array} episodes - Array of episode objects or URLs
+     * @returns {Object} Object with series names as keys and arrays of episodes as values
+     */
+    groupEpisodesBySeries(episodes) {
+        if (!Array.isArray(episodes)) {
+            console.log('[Stream Details] groupEpisodesBySeries: not an array:', episodes);
+            return {};
+        }
+        
+        console.log('[Stream Details] groupEpisodesBySeries input:', episodes);
+        
+        return episodes.reduce((acc, ep, idx) => {
+            // Handle case where episode is just a string (URL)
+            if (typeof ep === 'string') {
+                const seriesName = translations.labels?.episode || 'Episode';
+                if (!acc[seriesName]) {
+                    acc[seriesName] = [];
+                }
+                acc[seriesName].push({ 
+                    series: `${seriesName} ${idx + 1}`, 
+                    url: ep 
+                });
+                return acc;
             }
-            if (!acc[item.studio_id].series[item.series]) {
-                acc[item.studio_id].series[item.series] = [];
+            
+            // Normal object case
+            const seriesName = ep.series || ep.name || ep.title || `${translations.labels?.episode || 'Episode'} ${idx + 1}`;
+            if (!acc[seriesName]) {
+                acc[seriesName] = [];
             }
-            acc[item.studio_id].series[item.series].push(item);
+            acc[seriesName].push(ep);
             return acc;
         }, {});
     }
 
+    /**
+     * Normalize the API response to a consistent array of studio groups format.
+     * Handles various response structures from different providers.
+     * @param {any} data - Raw API response
+     * @returns {Array} Normalized array of studio groups
+     */
+    normalizeStreamResponse(data) {
+        console.log('[Stream Details] Normalizing response, input type:', typeof data);
+        
+        // If already an array of groups with episodes, return as-is
+        if (Array.isArray(data)) {
+            // Check if it's an array of groups (has studio_name/studio_id and episodes)
+            if (data.length > 0 && (data[0].episodes || data[0].studio_name || data[0].studio_id)) {
+                console.log('[Stream Details] Response is already in group format');
+                return data;
+            }
+            // It might be a flat array of episodes - wrap in a single group
+            console.log('[Stream Details] Response is flat array, wrapping in group');
+            return [{
+                studio_id: 0,
+                studio_name: translations.labels?.episodes || 'Episodes',
+                episodes: data
+            }];
+        }
+        
+        // If it's an object, try to extract the data
+        if (data && typeof data === 'object') {
+            // Check for common wrapper properties
+            const possibleArrayProps = ['groups', 'studios', 'data', 'episodes', 'series', 'items', 'results'];
+            for (const prop of possibleArrayProps) {
+                if (Array.isArray(data[prop])) {
+                    console.log(`[Stream Details] Found array in property '${prop}'`);
+                    return this.normalizeStreamResponse(data[prop]);
+                }
+            }
+            
+            // Check if it's an object with studio names as keys
+            // e.g., { "UAFlix": [...], "UAFlix Сезон 2": [...] }
+            const keys = Object.keys(data);
+            if (keys.length > 0 && !keys.includes('error')) {
+                const firstValue = data[keys[0]];
+                if (Array.isArray(firstValue)) {
+                    console.log('[Stream Details] Response is object with studio keys, converting to groups');
+                    return keys.map((key, idx) => ({
+                        studio_id: idx,
+                        studio_name: key,
+                        episodes: data[key]
+                    }));
+                }
+            }
+        }
+        
+        console.log('[Stream Details] Could not normalize response, returning empty array');
+        return [];
+    }
+
+    /**
+     * Generate HTML for stream details accordion.
+     * Handles the new grouped response format where data is an array of studio groups.
+     * Each group: { studio_id, studio_name, episodes: [...] }
+     * @param {any} data - Response from API (will be normalized)
+     * @returns {string} HTML string for the accordion
+     */
     generateSeriesExpandHTML(data) {
-        const groupedData = this.groupByStudio(data);
-        return Object.entries(groupedData).map(([studioId, studio], idx) => `
-            <div class="accordion" id="accordionStudio${idx}">
+        // Normalize the response to consistent format
+        const normalizedData = this.normalizeStreamResponse(data);
+        
+        console.log('[Stream Details] Normalized data:', normalizedData);
+        
+        // Handle empty or invalid data
+        if (!Array.isArray(normalizedData) || normalizedData.length === 0) {
+            return `<div class="alert alert-info">${translations.labels?.noEpisodesFound || 'No episodes found'}</div>`;
+        }
+
+        return normalizedData.map((group, idx) => {
+            console.log(`[Stream Details] Processing group ${idx}:`, group);
+            
+            // Group episodes by series within this studio
+            const seriesByName = this.groupEpisodesBySeries(group.episodes || []);
+            const episodeCount = (group.episodes || []).length;
+            const studioName = group.studio_name || `${translations.labels?.studio || 'Studio'} ${group.studio_id || idx + 1}`;
+            
+            console.log(`[Stream Details] Group ${idx} - name: ${studioName}, episodeCount: ${episodeCount}, seriesByName:`, seriesByName);
+            
+            return `
+            <div class="accordion mb-2" id="accordionStudio${idx}">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="heading${idx}">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#collapse${idx}" aria-expanded="true" 
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapse${idx}" aria-expanded="false" 
                                 aria-controls="collapse${idx}">
-                            ${studio.studio_name}
+                            <span class="me-2">${studioName}</span>
+                            <span class="badge bg-secondary">${episodeCount} ${translations.labels?.episodes || 'episodes'}</span>
                         </button>
                     </h2>
-                    <div id="collapse${idx}" class="accordion-collapse collapse show" 
+                    <div id="collapse${idx}" class="accordion-collapse collapse" 
                          aria-labelledby="heading${idx}" data-bs-parent="#accordionStudio${idx}">
                         <div class="accordion-body">
-                            ${this.generateSeriesHTML(studio.series, idx)}
+                            ${this.generateSeriesHTML(seriesByName, idx)}
                         </div>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     generateSeriesHTML(series, studioIdx) {
+        const seriesEntries = Object.entries(series);
+        
+        // If only one series, show episodes directly without nested accordion
+        if (seriesEntries.length === 1) {
+            const [seriesName, items] = seriesEntries[0];
+            return `
+                <div class="series-episodes">
+                    <h6 class="mb-3">${seriesName}</h6>
+                    ${this.generateEpisodesList(items)}
+                </div>
+            `;
+        }
+
         return `
             <div class="accordion" id="accordionSeries${studioIdx}">
-                ${Object.entries(series).map(([seriesName, items], idx) => `
+                ${seriesEntries.map(([seriesName, items], idx) => `
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="seriesHeading${studioIdx}_${idx}">
                             <button class="accordion-button collapsed" type="button" 
@@ -601,7 +720,8 @@ export default class Search {
                                     data-bs-target="#seriesCollapse${studioIdx}_${idx}" 
                                     aria-expanded="false" 
                                     aria-controls="seriesCollapse${studioIdx}_${idx}">
-                                ${seriesName}
+                                <span class="me-2">${seriesName}</span>
+                                <span class="badge bg-primary">${items.length}</span>
                             </button>
                         </h2>
                         <div id="seriesCollapse${studioIdx}_${idx}" 
@@ -609,13 +729,155 @@ export default class Search {
                              aria-labelledby="seriesHeading${studioIdx}_${idx}" 
                              data-bs-parent="#accordionSeries${studioIdx}">
                             <div class="accordion-body">
-                                ${items.map(item => 
-                                    `<a href="${item.url}" target="_blank">${item.url}</a><br>`
-                                ).join('')}
+                                ${this.generateEpisodesList(items)}
                             </div>
                         </div>
                     </div>
                 `).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * Normalize URL to fix common issues like duplicate protocols and transform API URLs.
+     * @param {string} url - The URL to normalize
+     * @returns {string} Normalized URL
+     */
+    normalizeUrl(url) {
+        if (!url) return '#';
+        
+        // Remove duplicate protocols (e.g., "https:https://..." -> "https://...")
+        let normalized = url.replace(/^(https?:)+(https?:\/\/)/, '$2');
+        
+        // Also handle cases like "https:http://..." 
+        normalized = normalized.replace(/^https?:(https?:\/\/)/, '$1');
+        
+        // Ensure URL starts with a protocol
+        if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
+            // If it starts with "//", add https:
+            if (normalized.startsWith('//')) {
+                normalized = 'https:' + normalized;
+            } else if (!normalized.startsWith('#')) {
+                // Assume https for bare domains
+                normalized = 'https://' + normalized;
+            }
+        }
+        
+        // Transform animeon.club API URLs to user-facing URLs
+        // e.g., https://animeon.club/api/anime/176 -> https://animeon.club/anime/176
+        normalized = normalized.replace(/animeon\.club\/api\//, 'animeon.club/');
+        
+        return normalized;
+    }
+
+    /**
+     * Extract provider name from URL for display purposes.
+     * @param {string} url - The URL to extract provider from
+     * @returns {string} Provider name or empty string
+     */
+    extractProviderFromUrl(url) {
+        if (!url) return '';
+        
+        try {
+            const hostname = new URL(url).hostname.toLowerCase();
+            
+            // Map hostnames to friendly provider names
+            const providerMap = {
+                'animeon.club': 'AnimeON',
+                'uakino.club': 'UAKino',
+                'uakino.me': 'UAKino',
+                'ashdi.vip': 'Ashdi',
+                'uaflix.net': 'UAFlix',
+                'uaserials.pro': 'UASerials',
+                'uafilms.tv': 'UAFilms',
+                'eneyida.tv': 'Eneyida'
+            };
+            
+            // Check for exact match first
+            if (providerMap[hostname]) {
+                return providerMap[hostname];
+            }
+            
+            // Check for partial matches
+            for (const [domain, name] of Object.entries(providerMap)) {
+                if (hostname.includes(domain.split('.')[0])) {
+                    return name;
+                }
+            }
+            
+            // Return hostname without www and TLD as fallback
+            return hostname.replace(/^www\./, '').split('.')[0];
+        } catch {
+            return '';
+        }
+    }
+
+    /**
+     * Generate HTML for a list of episodes within a series.
+     * Handles both old format (episode.url) and new format (episode.urls array).
+     * @param {Array} episodes - Array of episode objects
+     * @returns {string} HTML string for the episodes list
+     */
+    generateEpisodesList(episodes) {
+        console.log('[Stream Details] generateEpisodesList input:', episodes);
+        
+        if (!episodes || episodes.length === 0) {
+            return `<div class="text-muted">${translations.labels?.noEpisodesAvailable || 'No episodes available'}</div>`;
+        }
+
+        return `
+            <div class="list-group list-group-flush">
+                ${episodes.map((ep, idx) => {
+                    const episodeTitle = ep.title || ep.name || ep.series || `${translations.labels?.episode || 'Episode'} ${idx + 1}`;
+                    
+                    // Handle new format: series has urls array
+                    if (ep.urls && Array.isArray(ep.urls) && ep.urls.length > 0) {
+                        return this.generateMultiUrlEpisode(episodeTitle, ep.urls, ep.provider);
+                    }
+                    
+                    // Handle old format: single url
+                    const provider = ep.provider || this.extractProviderFromUrl(ep.url);
+                    const providerBadge = provider ? `<span class="badge bg-info text-dark">${provider}</span>` : '';
+                    const normalizedUrl = this.normalizeUrl(ep.url);
+                    
+                    return `
+                        <a href="${normalizedUrl}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span>${episodeTitle}</span>
+                            <span>
+                                ${providerBadge}
+                                <i class="bi bi-box-arrow-up-right ms-2"></i>
+                            </span>
+                        </a>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * Generate HTML for an episode with multiple URL options.
+     * @param {string} title - Episode title
+     * @param {Array} urls - Array of URL strings
+     * @param {string} defaultProvider - Default provider name if any
+     * @returns {string} HTML string for the episode with multiple links
+     */
+    generateMultiUrlEpisode(title, urls, defaultProvider) {
+        const urlLinks = urls.map(url => {
+            const normalizedUrl = this.normalizeUrl(url);
+            const provider = this.extractProviderFromUrl(normalizedUrl) || defaultProvider || '';
+            const providerBadge = provider ? `<span class="badge bg-info text-dark me-1">${provider}</span>` : '';
+            
+            return `<a href="${normalizedUrl}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1" title="${normalizedUrl}">
+                ${providerBadge}<i class="bi bi-box-arrow-up-right"></i>
+            </a>`;
+        }).join('');
+
+        return `
+            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                <span class="me-2 mb-1">${title}</span>
+                <div class="episode-urls">
+                    ${urlLinks}
+                </div>
             </div>
         `;
     }

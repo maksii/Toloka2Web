@@ -1,5 +1,6 @@
 # services.py
 
+import asyncio
 from typing import Dict, Any, List
 from flask import Response, json
 import requests
@@ -17,6 +18,7 @@ from toloka2MediaServer.main_logic import (
     add_torrent as add_torrent_external,
 )
 from stream2mediaserver.main_logic import MainLogic
+from stream2mediaserver.models.search_result import SearchResult
 
 from app.models.request_data import RequestData
 from app.services.base_service import BaseService
@@ -289,24 +291,55 @@ class TolokaService(BaseService):
             return Response(f"Failed to fetch image: {str(e)}", status=status_code)
 
 
+def _normalize_stream_provider(provider_name: str) -> str:
+    """Normalize provider name to Stream2MediaServer PROVIDER_MAPPING key.
+
+    Search results use short names (uakino, uaflix); MainLogic expects keys
+    like uakino_provider, uaflix_provider. Pass through if already normalized.
+    """
+    if not provider_name:
+        return provider_name
+    if provider_name.endswith("_provider"):
+        return provider_name
+    return f"{provider_name}_provider"
+
+
 class StreamingService(BaseService):
     """Service for handling streaming site operations."""
 
     @classmethod
-    def search_titles_from_streaming_site(cls, query: str) -> Dict:
+    def search_titles_from_streaming_site(cls, query: str) -> List:
         """Search for titles on streaming sites."""
         if not query:
-            return {}
+            return []
         main_logic = MainLogic()
-        return main_logic.search_releases(query)
+        return asyncio.run(main_logic.search_releases(query))
+
+    @classmethod
+    def add_title_from_streaming_site(cls, data: Dict) -> Dict:
+        """Add a title from streaming site using MainLogic.process_item."""
+        provider = data.get("provider")
+        link = data.get("link") or data.get("url")
+        if not provider or not link:
+            return {"error": "provider and link are required", "added": False}
+        provider_key = _normalize_stream_provider(provider)
+        item = SearchResult(
+            title="",
+            link=link,
+            provider=provider_key,
+        )
+        main_logic = MainLogic()
+        success = asyncio.run(main_logic.process_item(item))
+        return {"added": success}
 
     @classmethod
     def get_streaming_site_release_details(
         cls, provider_name: str, release_url: str
     ) -> Dict:
         """Get detailed information about a streaming release."""
+        provider_key = _normalize_stream_provider(provider_name)
         main_logic = MainLogic()
-        return main_logic.get_release_details(provider_name, release_url)
+        return main_logic.get_release_details(provider_key, release_url)
 
 
 class SearchService(BaseService):

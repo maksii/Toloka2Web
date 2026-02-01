@@ -99,12 +99,29 @@ def _ensure_optional_dependencies():
     except ImportError:
         _stub_module("stream2mediaserver", {}, is_package=True)
 
+        class SearchResult:
+            def __init__(self, title="", link="", provider=None, **kwargs):
+                self.title = title
+                self.link = link
+                self.provider = provider
+                for k, v in kwargs.items():
+                    setattr(self, k, v)
+
+        _stub_module("stream2mediaserver.models", {}, is_package=True)
+        _stub_module(
+            "stream2mediaserver.models.search_result",
+            {"SearchResult": SearchResult},
+        )
+
         class MainLogic:
-            def search_releases(self, query):
-                return {}
+            async def search_releases(self, query):
+                return []
 
             def get_release_details(self, provider_name, release_url):
                 return {}
+
+            async def process_item(self, item):
+                return True
 
         _stub_module("stream2mediaserver.main_logic", {"MainLogic": MainLogic})
 

@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Any
+from typing import Dict, List, Tuple, Any
 import datetime
 import os
 from importlib.metadata import distributions
@@ -26,10 +26,32 @@ class RouteService(BaseService):
 
         return decorated_function
 
+    # Custom libs shown first in "Show Versions" (lowercase for matching)
+    CUSTOM_LIB_ORDER = ["toloka2mediaserver", "toloka2python", "stream2mediaserver"]
+
     @classmethod
-    def get_installed_packages(cls) -> Dict[str, str]:
-        """Get list of installed Python packages and their versions."""
-        return {dist.metadata["Name"]: dist.version for dist in distributions()}
+    def get_installed_packages(cls) -> List[Dict[str, str]]:
+        """Get list of installed Python packages and their versions.
+        Custom libs are listed first, then the rest alphabetically.
+        Returns a list of {name, version} to preserve order in JSON.
+        """
+        all_packages = {dist.metadata["Name"]: dist.version for dist in distributions()}
+        custom_libs = {}
+        rest = {}
+        for name, version in all_packages.items():
+            if name.lower() in cls.CUSTOM_LIB_ORDER:
+                custom_libs[name] = version
+            else:
+                rest[name] = version
+        result: List[Dict[str, str]] = []
+        for preferred in cls.CUSTOM_LIB_ORDER:
+            for name, version in custom_libs.items():
+                if name.lower() == preferred:
+                    result.append({"name": name, "version": version})
+                    break
+        for name in sorted(rest.keys(), key=str.lower):
+            result.append({"name": name, "version": rest[name]})
+        return result
 
     @classmethod
     def list_files(cls, path: str) -> Tuple[Dict[str, Any], int]:

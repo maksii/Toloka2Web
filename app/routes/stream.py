@@ -52,7 +52,9 @@ def get_title_details():
         result = StreamingService.get_streaming_site_release_details(
             data["provider"], data["link"]
         )
-        return make_response(jsonpickle.encode(result, unpicklable=False), 200)
+        encoded = jsonpickle.encode(result, unpicklable=False)
+
+        return make_response(encoded, 200)
     except Exception as e:
         error_message = {
             "error": "Failed to fetch streaming title details",
