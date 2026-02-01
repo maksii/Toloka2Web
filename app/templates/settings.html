@@ -79,7 +79,10 @@
             <!-- Configuration Tab -->
             <div class="tab-pane fade" id="configuration-tab-pane" role="tabpanel" aria-labelledby="configuration-tab" tabindex="0">
                 {{ alerts.info_alert('The page in development and in the current state is only able to display the data already saved in the database. You can change open_registration. Other properties will not make any affect, as there no sync in\to app.ini') }}
-                {{ tables.data_table('settingsTable') }}
+                {{ tables.data_table_with_header(
+                    table_id='settingsTable',
+                    title='Configuration'
+                ) }}
             </div>
 
             <!-- Users Tab -->
