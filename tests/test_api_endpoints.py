@@ -200,11 +200,12 @@ def test_settings_endpoints(app, client, api_key_headers, monkeypatch):
 
     monkeypatch.setattr(
         "app.services.route_service.RouteService.get_installed_packages",
-        lambda: {"flask": "3.0.0"},
+        lambda: [{"name": "flask", "version": "3.0.0"}],
     )
     versions_response = client.get("/api/settings/versions")
     assert versions_response.status_code == 200
-    assert versions_response.get_json()["flask"] == "3.0.0"
+    data = versions_response.get_json()
+    assert data[0]["name"] == "flask" and data[0]["version"] == "3.0.0"
 
     monkeypatch.setattr(
         "app.services.route_service.RouteService.list_files",
@@ -370,7 +371,7 @@ def test_release_endpoints(client, api_key_headers, monkeypatch):
 def test_stream_mal_tmdb_toloka_endpoints(client, api_key_headers, monkeypatch):
     monkeypatch.setattr(
         "app.services.services.StreamingService.search_titles_from_streaming_site",
-        lambda _query: {"results": [{"title": "Stream"}]},
+        lambda _query: [{"title": "Stream", "provider": "demo", "link": ""}],
     )
     monkeypatch.setattr(
         "app.services.services.StreamingService.add_title_from_streaming_site",
@@ -416,10 +417,8 @@ def test_stream_mal_tmdb_toloka_endpoints(client, api_key_headers, monkeypatch):
 
     stream_response = client.get("/api/stream?query=demo", headers=api_key_headers)
     assert stream_response.status_code == 200
-    assert (
-        json.loads(stream_response.get_data(as_text=True))["results"][0]["title"]
-        == "Stream"
-    )
+    stream_data = json.loads(stream_response.get_data(as_text=True))
+    assert stream_data[0]["title"] == "Stream"
 
     add_stream_response = client.post(
         "/api/stream",

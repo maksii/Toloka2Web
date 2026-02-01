@@ -151,7 +151,13 @@ const translations = {
         releasePreview: 'Preview',
         tolokaSearchErrorTitle: 'Toloka search',
         showMoreFiles: 'Show more files',
-        showLessFiles: 'Show fewer files'
+        showLessFiles: 'Show fewer files',
+        noEpisodesFound: 'No episodes found',
+        studio: 'Studio',
+        episodes: 'episodes',
+        unknownSeries: 'Unknown Series',
+        noEpisodesAvailable: 'No episodes available',
+        episode: 'Episode'
     },
     validation: {
         invalidTitle: 'Title contains invalid characters that could break paths or JSON (/, \\, :, *, ?, ", <, >, |)',

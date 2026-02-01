@@ -1,3 +1,6 @@
+# Standard library imports
+import time
+
 # Third-party imports
 import jsonpickle
 from flask import Blueprint, jsonify, request, make_response
@@ -8,6 +11,27 @@ from app.services.services import StreamingService
 
 stream_bp = Blueprint("stream", __name__)
 
+# In-memory cache for stream responses: key -> (encoded_response, expiry_time)
+_STREAM_CACHE = {}
+_STREAM_CACHE_TTL = 300  # seconds
+
+
+def _cache_get(key):
+    """Return cached value if present and not expired."""
+    entry = _STREAM_CACHE.get(key)
+    if not entry:
+        return None
+    body, expiry = entry
+    if time.monotonic() > expiry:
+        del _STREAM_CACHE[key]
+        return None
+    return body
+
+
+def _cache_set(key, body):
+    """Store response in cache with TTL."""
+    _STREAM_CACHE[key] = (body, time.monotonic() + _STREAM_CACHE_TTL)
+
 
 @stream_bp.route("/stream", methods=["GET"])
 @multi_auth_required
@@ -16,8 +40,14 @@ def search_titles_from_streaming():
         query = request.args.get("query")
         if not query:
             return make_response(jsonify({"error": "Query parameter is required"}), 400)
+        cache_key = ("search", query.strip())
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return make_response(cached, 200)
         result = StreamingService.search_titles_from_streaming_site(query)
-        return make_response(jsonpickle.encode(result, unpicklable=False), 200)
+        encoded = jsonpickle.encode(result, unpicklable=False)
+        _cache_set(cache_key, encoded)
+        return make_response(encoded, 200)
     except Exception as e:
         error_message = {
             "error": "Failed to search streaming titles",
@@ -49,10 +79,18 @@ def get_title_details():
             return make_response(
                 jsonify({"error": "Provider and link are required"}), 400
             )
+        provider = data["provider"]
+        link = data.get("link") or data.get("url", "")
+        cache_key = ("details", provider, link)
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return make_response(cached, 200)
         result = StreamingService.get_streaming_site_release_details(
-            data["provider"], data["link"]
+            provider, link
         )
-        return make_response(jsonpickle.encode(result, unpicklable=False), 200)
+        encoded = jsonpickle.encode(result, unpicklable=False)
+        _cache_set(cache_key, encoded)
+        return make_response(encoded, 200)
     except Exception as e:
         error_message = {
             "error": "Failed to fetch streaming title details",
