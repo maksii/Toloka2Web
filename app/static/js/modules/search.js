@@ -230,7 +230,12 @@ export default class Search {
                 },
                 { data: "title", title: translations.tableHeaders.stream.title, visible: true },
                 { data: "title_eng", title: translations.tableHeaders.stream.title_eng, visible: true },
-                DataTableFactory.createLinkColumn('link', translations.tableHeaders.stream.link, '')
+                {
+                    data: 'link',
+                    title: translations.tableHeaders.stream.link,
+                    render: (data) => data ? `<a href="${this.normalizeUrl(data)}" target="_blank" rel="noopener">${this.normalizeUrl(data)}</a>` : '',
+                    visible: true
+                }
             ],
             order: [[2, 'desc']],
             columnDefs: [
@@ -524,25 +529,91 @@ export default class Search {
         `;
     }
 
+    /**
+     * Format description text for Stream expand: linkify URLs and optional markdown.
+     * @param {string} text - Raw description
+     * @returns {string} Safe HTML
+     */
+    formatStreamDescription(text) {
+        if (!text) return '';
+        // Turn raw URLs into markdown links so they render as clickable
+        const linkified = String(text).replace(
+            /(https?:\/\/[^\s)\]'"]+)/g,
+            '[$1]($1)'
+        );
+        if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+            const html = marked.parse(linkified);
+            return DOMPurify.sanitize(html, { ADD_ATTR: ['target', 'rel'] });
+        }
+        // Fallback: plain linkify
+        return linkified.replace(
+            /(https?:\/\/[^\s)\]'"]+)/g,
+            '<a href="$1" target="_blank" rel="noopener">$1</a>'
+        );
+    }
+
+    /**
+     * Build optional metadata HTML for Stream expand (year, rating, type, etc.) when available.
+     * @param {Object} parentData - Row data from stream search
+     * @param {Object} detail - Response from stream/details
+     * @returns {string} HTML fragment or empty string
+     */
+    formatStreamMetadata(parentData, detail) {
+        const meta = [];
+        const add = (label, value) => {
+            if (value != null && value !== '') meta.push({ label, value });
+        };
+        add(translations.tableHeaders?.multi?.releaseDate || 'Year', parentData.year ?? parentData.releaseDate ?? detail?.year);
+        add(translations.labels?.rating || 'Rating', parentData.rating ?? detail?.rating);
+        add(translations.tableHeaders?.anime?.type || 'Type', parentData.type ?? detail?.type);
+        add(translations.tableHeaders?.multi?.status || 'Status', parentData.status ?? detail?.status);
+        if (!meta.length) return '';
+        return `
+            <ul class="list-unstyled small text-body-secondary mb-2">
+                ${meta.map(({ label, value }) => `<li><strong>${label}:</strong> ${value}</li>`).join('')}
+            </ul>
+        `;
+    }
+
+    /**
+     * Generate a safe, unique HTML id prefix for one expanded stream row (so accordions don't clash).
+     * @param {Object} parentData - Row data (provider, link, title, etc.)
+     * @returns {string} Safe string for use in id attributes
+     */
+    getStreamRowId(parentData) {
+        const provider = (parentData.provider || 'p').replace(/[^a-zA-Z0-9]/g, '');
+        const link = parentData.link || parentData.url || '';
+        let hash = 0;
+        for (let i = 0; i < link.length; i++) {
+            hash = ((hash << 5) - hash) + link.charCodeAt(i) | 0;
+        }
+        const linkPart = (hash >>> 0).toString(36);
+        return `stream_${provider}_${linkPart}`.slice(0, 60);
+    }
+
     formatStreamDetail(detail, parentData) {
+        const descriptionHtml = this.formatStreamDescription(parentData.description || '');
+        const metadataHtml = this.formatStreamMetadata(parentData, detail);
+        const rowId = this.getStreamRowId(parentData);
         return `
             <div class="row">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="row g-0">
                             <div class="col-md-2">
-                                <img src="image/?url=${parentData.image_url}" class="card-img-top" alt="...">
+                                <img src="image/?url=${parentData.image_url || ''}" class="card-img-top" alt="">
                             </div>
                             <div class="col-md-4">
                                 <div class="card-body">
-                                    <h5 class="card-title">${parentData.title}</h5>
-                                    <p class="card-text">${parentData.title_eng}</p>
-                                    <p class="card-text">${parentData.description}</p>
-                                    <p class="card-text"><small class="text-body-secondary">${parentData.provider}</small></p>
+                                    <h5 class="card-title">${parentData.title || ''}</h5>
+                                    <p class="card-text">${parentData.title_eng || ''}</p>
+                                    ${metadataHtml}
+                                    <div class="card-text stream-description">${descriptionHtml}</div>
+                                    <p class="card-text mt-2"><small class="text-body-secondary">${parentData.provider || ''}</small></p>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                ${this.generateSeriesExpandHTML(detail)}
+                                ${this.generateSeriesExpandHTML(detail, rowId)}
                             </div>
                         </div>
                     </div>
@@ -650,44 +721,40 @@ export default class Search {
      * Handles the new grouped response format where data is an array of studio groups.
      * Each group: { studio_id, studio_name, episodes: [...] }
      * @param {any} data - Response from API (will be normalized)
+     * @param {string} rowId - Unique prefix for this expanded row (from getStreamRowId) so IDs don't clash
      * @returns {string} HTML string for the accordion
      */
-    generateSeriesExpandHTML(data) {
-        // Normalize the response to consistent format
+    generateSeriesExpandHTML(data, rowId) {
+        const prefix = rowId || 'stream';
         const normalizedData = this.normalizeStreamResponse(data);
         
         console.log('[Stream Details] Normalized data:', normalizedData);
         
-        // Handle empty or invalid data
         if (!Array.isArray(normalizedData) || normalizedData.length === 0) {
             return `<div class="alert alert-info">${translations.labels?.noEpisodesFound || 'No episodes found'}</div>`;
         }
 
         return normalizedData.map((group, idx) => {
-            console.log(`[Stream Details] Processing group ${idx}:`, group);
-            
-            // Group episodes by series within this studio
+            const studioPrefix = `${prefix}_st${idx}`;
             const seriesByName = this.groupEpisodesBySeries(group.episodes || []);
             const episodeCount = (group.episodes || []).length;
             const studioName = group.studio_name || `${translations.labels?.studio || 'Studio'} ${group.studio_id || idx + 1}`;
             
-            console.log(`[Stream Details] Group ${idx} - name: ${studioName}, episodeCount: ${episodeCount}, seriesByName:`, seriesByName);
-            
             return `
-            <div class="accordion mb-2" id="accordionStudio${idx}">
+            <div class="accordion mb-2" id="accordionStudio_${studioPrefix}">
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading${idx}">
+                    <h2 class="accordion-header" id="heading_${studioPrefix}">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#collapse${idx}" aria-expanded="false" 
-                                aria-controls="collapse${idx}">
+                                data-bs-target="#collapse_${studioPrefix}" aria-expanded="false" 
+                                aria-controls="collapse_${studioPrefix}">
                             <span class="me-2">${studioName}</span>
                             <span class="badge bg-secondary">${episodeCount} ${translations.labels?.episodes || 'episodes'}</span>
                         </button>
                     </h2>
-                    <div id="collapse${idx}" class="accordion-collapse collapse" 
-                         aria-labelledby="heading${idx}" data-bs-parent="#accordionStudio${idx}">
+                    <div id="collapse_${studioPrefix}" class="accordion-collapse collapse" 
+                         aria-labelledby="heading_${studioPrefix}" data-bs-parent="#accordionStudio_${studioPrefix}">
                         <div class="accordion-body">
-                            ${this.generateSeriesHTML(seriesByName, idx)}
+                            ${this.generateSeriesHTML(seriesByName, studioPrefix)}
                         </div>
                     </div>
                 </div>
@@ -696,10 +763,9 @@ export default class Search {
         }).join('');
     }
 
-    generateSeriesHTML(series, studioIdx) {
+    generateSeriesHTML(series, studioPrefix) {
         const seriesEntries = Object.entries(series);
         
-        // If only one series, show episodes directly without nested accordion
         if (seriesEntries.length === 1) {
             const [seriesName, items] = seriesEntries[0];
             return `
@@ -711,29 +777,32 @@ export default class Search {
         }
 
         return `
-            <div class="accordion" id="accordionSeries${studioIdx}">
-                ${seriesEntries.map(([seriesName, items], idx) => `
+            <div class="accordion" id="accordionSeries_${studioPrefix}">
+                ${seriesEntries.map(([seriesName, items], idx) => {
+                    const seriesId = `${studioPrefix}_s${idx}`;
+                    return `
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="seriesHeading${studioIdx}_${idx}">
+                        <h2 class="accordion-header" id="seriesHeading_${seriesId}">
                             <button class="accordion-button collapsed" type="button" 
                                     data-bs-toggle="collapse" 
-                                    data-bs-target="#seriesCollapse${studioIdx}_${idx}" 
+                                    data-bs-target="#seriesCollapse_${seriesId}" 
                                     aria-expanded="false" 
-                                    aria-controls="seriesCollapse${studioIdx}_${idx}">
+                                    aria-controls="seriesCollapse_${seriesId}">
                                 <span class="me-2">${seriesName}</span>
                                 <span class="badge bg-primary">${items.length}</span>
                             </button>
                         </h2>
-                        <div id="seriesCollapse${studioIdx}_${idx}" 
+                        <div id="seriesCollapse_${seriesId}" 
                              class="accordion-collapse collapse" 
-                             aria-labelledby="seriesHeading${studioIdx}_${idx}" 
-                             data-bs-parent="#accordionSeries${studioIdx}">
+                             aria-labelledby="seriesHeading_${seriesId}" 
+                             data-bs-parent="#accordionSeries_${studioPrefix}">
                             <div class="accordion-body">
                                 ${this.generateEpisodesList(items)}
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                `;
+                }).join('')}
             </div>
         `;
     }
