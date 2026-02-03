@@ -361,8 +361,8 @@ Minimum keys needed for Toloka + torrent operations are shown in the **First Run
 
 | Project | Description |
 |---------|-------------|
-| [Toloka2Python](https://github.com/CakesTwix/toloka2python) | Toloka API wrapper |
-| [Toloka2MediaServer](https://github.com/CakesTwix/Toloka2MediaServer) | Media server integration |
+| [Toloka2Python](https://github.com/maksii/toloka2python) | Toloka API wrapper |
+| [Toloka2MediaServer](https://github.com/maksii/Toloka2MediaServer) | Media server integration |
 | [Stream2MediaServer](https://github.com/maksii/Stream2MediaServer) | Streaming site support |
 
 ## Contributing
