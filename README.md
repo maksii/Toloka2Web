@@ -131,6 +131,7 @@ If `data/app.ini` exists but is empty, the app still starts:
 
 #### 5) Configure settings from the UI (full path actions)
 Use **Settings** (admin only). All `data/app.ini` entries are editable from the UI. The Configuration table maps directly to `data/app.ini`:
+<img width="1636" height="116" alt="image" src="https://github.com/user-attachments/assets/f7b52719-d255-4013-bdf8-1798c534ff7d" />
 
 - **Path:** `Settings → Configuration`
   - Table columns are **Section / Key / Value**.
@@ -145,6 +146,7 @@ Use **Settings** (admin only). All `data/app.ini` entries are editable from the 
     - **Add** = create a new row (fill Section/Key/Value, then **Save**).
     - **Sync to app.ini** = write DB settings → `data/app.ini`.
     - **Sync from app.ini** = read `data/app.ini` → DB.
+<img width="403" height="88" alt="image" src="https://github.com/user-attachments/assets/47dd46b1-bf3b-4178-9373-5b1b92d52f11" />
 
 - **Path:** `Settings → System`
   - **Sync titles.ini from DB** = write DB releases → `data/titles.ini`.
@@ -208,28 +210,30 @@ logging = INFO
 ```
 
 #### 7) Validate from the UI
-1. Use the top navigation **Search** field, enter a query, and submit.
+1. Use the top navigation **Search** field, enter a query, and submit.<img width="446" height="99" alt="image" src="https://github.com/user-attachments/assets/d7495aa4-16ce-462f-8aff-fa1f88bae04e" />
    - Search results open in an offcanvas panel titled **Search Results**.
    - **Toloka** tab shows torrent rows with actions:
      - **Direct Download** (downloads the `.torrent`).
      - **Add to client** (adds torrent to configured client).
-     - **Copy Values** (opens **Add Release** and pre-fills fields).
-2. From the **Toloka** tab, click **Copy Values** on a row:
+     - **Copy Values** (opens **Add Release** and pre-fills fields).<img width="301" height="109" alt="image" src="https://github.com/user-attachments/assets/61fae043-f1d4-4f53-93ac-b0838d7cc296" />
+3. From the **Toloka** tab, click **Copy Values** on a row:
    - The **Add Release** modal opens with the Toloka URL, title, and release group prefilled.
    - If file details are available, the **Index Extractor** panel opens and you can click a detected number to set **Episode Index**.
-3. Complete the **Add Release** form:
+4. Complete the **Add Release** form:
    - **Toloka URL** must start with `https://toloka.to/`.
    - **Title** can be cleaned with **Cut Title** (scissors icon).
-   - **Season** and **Episode Index** are required.
+   - **Season** and **Episode Index** are required.<img width="766" height="295" alt="image" src="https://github.com/user-attachments/assets/5156f8f2-d8eb-4066-a2e6-6b24aa8d4da7" /><img width="255" height="84" alt="image" src="https://github.com/user-attachments/assets/e6e73bb4-1a2f-48e0-bda1-870224aed555" />
+
+
    - **Index Correction** is optional; use it if the source numbering needs adjustment.
    - **Release Group & Meta** is optional (meta defaults from `Toloka.default_meta` if set).
    - **Ongoing** toggles episode range naming (S01E01-E## vs S01).
-4. Click **Submit**. The **Operation Results** offcanvas opens:
+5. Click **Submit**. The **Operation Results** offcanvas opens:
    - **Response Code** shows status: `SUCCESS`, `FAILURE`, or another status.
    - **Operation Logs** show step-by-step processing output.
    - **Titles References** and **Torrent References** show affected items.
-5. First add can take time depending on torrent size and client responsiveness. Wait for the results panel.
-6. If anything fails, re-check:
+6. First add can take time depending on torrent size and client responsiveness. Wait for the results panel.
+7. If anything fails, re-check:
    - `Settings → Configuration` rows.
    - Sync direction (from/to `app.ini`).
    - Torrent client connectivity.
