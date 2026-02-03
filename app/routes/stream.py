@@ -85,9 +85,7 @@ def get_title_details():
         cached = _cache_get(cache_key)
         if cached is not None:
             return make_response(cached, 200)
-        result = StreamingService.get_streaming_site_release_details(
-            provider, link
-        )
+        result = StreamingService.get_streaming_site_release_details(provider, link)
         encoded = jsonpickle.encode(result, unpicklable=False)
         _cache_set(cache_key, encoded)
         return make_response(encoded, 200)
