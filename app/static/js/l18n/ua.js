@@ -151,7 +151,13 @@ const translations = {
         releasePreview: 'Попередній перегляд',
         tolokaSearchErrorTitle: 'Пошук Toloka',
         showMoreFiles: 'Показати більше файлів',
-        showLessFiles: 'Показати менше файлів'
+        showLessFiles: 'Показати менше файлів',
+        noEpisodesFound: 'Епізоди не знайдено',
+        studio: 'Студія',
+        episodes: 'епізодів',
+        unknownSeries: 'Невідома серія',
+        noEpisodesAvailable: 'Епізоди недоступні',
+        episode: 'Епізод'
     },
     validation: {
         invalidTitle: 'Назва містить недопустимі символи, які можуть порушити шляхи або JSON (/, \\, :, *, ?, ", <, >, |)',

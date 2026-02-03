@@ -214,14 +214,17 @@ export default class Settings {
 
     formatVersionContent(data) {
         let contentHTML = '<ol class="list-group list-group-numbered">';
-        for (const [key, value] of Object.entries(data)) {
+        const entries = Array.isArray(data) ? data : Object.entries(data).map(([name, version]) => ({ name, version }));
+        for (const entry of entries) {
+            const name = entry.name ?? entry[0];
+            const version = entry.version ?? entry[1];
             contentHTML += `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
-                        <div class="fw-bold">${key}</div>
-                        ${key}
+                        <div class="fw-bold">${name}</div>
+                        ${name}
                     </div>
-                    <span class="badge text-bg-primary rounded-pill">${value}</span>
+                    <span class="badge text-bg-primary rounded-pill">${version}</span>
                 </li>
             `;
         }

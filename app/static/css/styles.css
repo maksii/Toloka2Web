@@ -31,7 +31,6 @@ main > .container-fluid {
   }
 
   .bi {
-    vertical-align: -.125em;
     fill: currentColor;
   }
 
@@ -116,27 +115,30 @@ main > .container-fluid {
 tr[data-name] td {color: var(--bs-warning);padding-left: 5%;}
 
 body {
-  background: url('') no-repeat center center fixed; 
-  background-size: cover;
+
+  background: radial-gradient(circle at top, rgba(45, 80, 120, 0.35), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(20, 40, 70, 0.45), transparent 45%),
+    linear-gradient(135deg, #0b0f16, #101827 45%, #0b111a 100%) ;
+    background-repeat: no-repeat;          /* applies to all layers */
+    background-position: center;           /* applies to all layers */
+    background-size: cover;                /* applies to all layers */
+  background-attachment: fixed;
+  color: #e6ebf5;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   position: relative;
 }
 
 .backdrop {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8); /* Adjust the alpha value for required transparency */
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 15, 25, 0.2), rgba(5, 8, 16, 0.75));
   z-index: -1;
 }
 
 .bg-dark {    --bs-bg-opacity: 0.6;}
 
-/* Ensure fixed navbar has solid background to prevent content bleeding through */
 .navbar.fixed-top.bg-dark {
-  --bs-bg-opacity: 1;
-  background-color: rgba(33, 37, 41, 1) !important;
+  background-color: rgb(33 37 41 / 57%) !important
 }
 
 .bg-body-tertiary {--bs-bg-opacity: 0.6;}
@@ -147,5 +149,214 @@ body {
 }
 
 [data-bs-theme=dark] {
-  --bs-body-bg: #212529bd;
+--bs-body-bg: #0f1522;
+--bs-border-color: rgba(255, 255, 255, 0.08);
+--bs-primary: #2f7cf6;
+--bs-secondary: #1a2233;
+--bs-success: #31c48d;
+--bs-info: #38bdf8;
+--bs-warning: #fbbf24;
+--bs-danger: #ef4444;
+--bs-body-color: #e6ebf5;
+--bs-body-color-rgb: 230, 235, 245;
+}
+
+main > .container-fluid {
+padding: 96px 28px 24px;
+}
+
+.navbar {
+background: rgba(14, 20, 32, 0.9) !important;
+border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+backdrop-filter: blur(18px);
+box-shadow: 0 10px 30px rgba(4, 6, 10, 0.45);
+}
+
+.navbar-brand {
+font-weight: 600;
+letter-spacing: 0.02em;
+}
+
+.navbar .nav-link {
+color: rgba(231, 236, 245, 0.7);
+font-weight: 500;
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link:hover {
+color: #ffffff;
+}
+
+.navbar .input-group .form-control {
+background: rgba(13, 19, 31, 0.8);
+border-color: rgba(255, 255, 255, 0.12);
+color: #f5f8ff;
+}
+
+.navbar .input-group .btn {
+border-color: rgba(255, 255, 255, 0.12);
+}
+
+.card,
+.modal-content {
+background: rgba(18, 26, 40, 0.78);
+border: 1px solid rgba(255, 255, 255, 0.08);
+border-radius: 18px;
+box-shadow: 0 24px 60px rgba(7, 9, 15, 0.45);
+backdrop-filter: blur(16px);
+}
+
+.card-header,
+.modal-header,
+.modal-footer {
+background: rgba(13, 20, 33, 0.65);
+border-color: rgba(255, 255, 255, 0.08);
+}
+
+.card-title {
+font-weight: 600;
+letter-spacing: 0.01em;
+}
+
+.table {
+--bs-table-bg: transparent;
+--bs-table-striped-bg: rgba(255, 255, 255, 0.03);
+--bs-table-striped-color: #e6ebf5;
+--bs-table-hover-bg: rgba(56, 189, 248, 0.12);
+--bs-table-hover-color: #ffffff;
+color: #e6ebf5;
+}
+
+.table thead th {
+color: rgba(226, 234, 248, 0.85);
+border-bottom-color: rgba(255, 255, 255, 0.1);
+text-transform: uppercase;
+font-size: 0.75rem;
+letter-spacing: 0.08em;
+}
+
+.table td,
+.table th {
+border-color: rgba(255, 255, 255, 0.08);
+}
+
+.table-responsive {
+border-radius: 12px;
+overflow: hidden;
+}
+
+.btn-primary {
+background: linear-gradient(135deg, #2f7cf6ba, #1f5fbf);
+border: none;
+box-shadow: 0 12px 24px rgba(32, 99, 202, 0.35);
+}
+.btn-secondary {background: linear-gradient(135deg, #2f7cf6ba, #1f5fbf);border: none;box-shadow: 0 12px 24px rgba(32, 99, 202, 0.35);}
+
+
+.btn-primary:hover,
+.btn-primary:focus {
+background: linear-gradient(135deg, #3a86ff, #1f6ce0);
+}
+
+.btn-outline-success {
+color: #9ad7f7;
+border-color: rgba(154, 215, 247, 0.4);
+}
+
+.btn-outline-success:hover {
+background: rgba(56, 189, 248, 0.18);
+color: #e8f5ff;
+}
+
+.form-control,
+.form-select,
+.input-group-text,
+.form-floating > .form-control {
+background: rgba(13, 20, 33, 0.85);
+border: 1px solid rgba(255, 255, 255, 0.1);
+color: #e6ebf5;
+border-radius: 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+border-color: rgba(58, 134, 255, 0.6);
+box-shadow: 0 0 0 0.2rem rgba(58, 134, 255, 0.2);
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+background: rgba(13, 20, 33, 0.85);
+border: 1px solid rgba(255, 255, 255, 0.12);
+color: #e6ebf5;
+border-radius: 10px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+color: #dbe7ff !important;
+border-radius: 10px !important;
+border: 1px solid rgba(255, 255, 255, 0.08) !important;
+background: rgba(10, 15, 25, 0.6) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+background: rgba(47, 124, 246, 0.3) !important;
+border-color: rgba(47, 124, 246, 0.5) !important;
+color: #ffffff !important;
+}
+
+.badge {
+border-radius: 999px;
+}
+
+.modal-title {
+font-weight: 600;
+}
+
+.toast {
+background: rgba(10, 15, 25, 0.9);
+border: 1px solid rgba(255, 255, 255, 0.08);
+color: #e6ebf5;
+}
+
+/* make sure links can host an absolute child */
+.navbar .nav-link{
+  position: relative;
+}
+
+.navbar .nav-link.active::after,
+.navbar .nav-link:hover::after{
+  content: "";
+  position: absolute;            
+  background: #fff;        
+  border-radius: 999px;     
+  opacity: 1;
+  content: "";
+  position: absolute;
+  bottom: calc(-1 * var(--bs-navbar-padding-y, .5rem));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100%);   
+  height: 2px;
+}
+
+.navbar .nav-link:hover::after{
+  opacity: .7;
+}
+
+/* optional: smooth transition when switching tabs */
+.navbar .nav-link::after{
+  transition: opacity .2s ease, width .2s ease;
+}
+ul#myTab {
+  background: rgb(18 26 40 / 61%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(7, 9, 15, 0.45);
+  backdrop-filter: blur(16px);
+}
+
+.alert.alert-info {
+  --bs-alert-bg: #032830c2;
 }

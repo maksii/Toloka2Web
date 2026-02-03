@@ -9,7 +9,10 @@
 <main class="flex-shrink-0">
     <div class="container-fluid">
         {{ alerts.info_alert('The information provided is a backup of the public API from AnimeOn site.') }}
-        {{ tables.data_table('animeTable') }}
+        {{ tables.data_table_with_header(
+            table_id='animeTable',
+            title='Titles'
+        ) }}
     </div>
 </main>
 {% endblock %}
