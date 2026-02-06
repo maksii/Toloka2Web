@@ -73,18 +73,18 @@ export class Utils {
 
     static generateOperationResponseOffCanvas(response) {
         if (!response) return; // Exit if no response data
-    
+
         // Determine alert and badge classes based on the response code
         const alertClass = response.response_code === 'SUCCESS' ? 'alert-success' :
-                           response.response_code === 'FAILURE' ? 'alert-danger' : 'alert-warning';
+            response.response_code === 'FAILURE' ? 'alert-danger' : 'alert-warning';
         const badgeClass = response.response_code === 'SUCCESS' ? 'bg-success' :
-                           response.response_code === 'FAILURE' ? 'bg-danger' : 'bg-warning';
-    
+            response.response_code === 'FAILURE' ? 'bg-danger' : 'bg-warning';
+
         // Helper function to generate list items for accordion
         function generateListItems(items) {
             return items.map(item => `<li class="list-group-item">${item}</li>`).join('');
         }
-    
+
         // Generate accordion HTML
         function generateAccordion(id, headingText, items) {
             return `
@@ -106,7 +106,7 @@ export class Utils {
                 </div>
             `;
         }
-    
+
         // Generate the entire card with accordions
         const cardHTML = `
             <div class="card alert ${alertClass}">
@@ -123,7 +123,7 @@ export class Utils {
                 </div>
             </div>
         `;
-    
+
         // Insert the generated HTML into a predefined container in your HTML
         document.getElementById('offcanvasBody').innerHTML = cardHTML;
     }
@@ -135,7 +135,7 @@ export class Utils {
 
     static getColorForProgress(progress) {
         let r, g, b;
-    
+
         if (progress >= 100) {
             r = 25; g = 135; b = 84; // Greenish color for progress >= 100
         } else if (progress >= 40) {
@@ -153,33 +153,98 @@ export class Utils {
         } else {
             r = 255; g = 193; b = 7; // Yellowish color for negative progress (fallback)
         }
-    
+
         return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
     }
 
-    static activeTooltips()
-    {
+    static activeTooltips() {
         Utils.applyButtonTooltips();
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
+        // Select elements that have data-bs-title (our custom attribute) AND are not yet marked by Bootstrap as initialized
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-title]:not([data-bs-original-title])');
+
         tooltipTriggerList.forEach((tooltipTriggerEl) => {
-            const existing = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-            if (existing) {
-                existing.dispose();
+            try {
+                // Use getOrCreateInstance to check for existing instance first, preventing collisions
+                const tooltipProxy = bootstrap.Tooltip.getOrCreateInstance(tooltipTriggerEl, {
+                    trigger: 'hover'
+                });
+
+                // Ensure tooltip hides when element is clicked (useful for dropdown toggles)
+                // Remove previous listener first to be safe (though anonymous func can't be removed easily, 
+                // idempotent getOrCreateInstance means the instance is stable).
+                // We'll rely on the fact that adding multiple 'hide' listeners is harmless 
+                // but checking if we just created it effectively (or just leave it)
+                tooltipTriggerEl.addEventListener('click', () => {
+                    tooltipProxy.hide();
+                });
+            } catch (e) {
+                console.debug('Tooltip initialization skipped', e);
             }
-            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    static setupDropdownBehavior() {
+        // Use click listener for more reliable mutex behavior and ensure outside clicks close menus
+        document.addEventListener('click', (event) => {
+            const clickedToggle = event.target.closest('.dropdown-toggle');
+            const clickedMenu = event.target.closest('.dropdown-menu');
+
+            if (clickedToggle) {
+                // User clicked a dropdown toggle: Close ALL OTHER open toggles
+                const openToggles = document.querySelectorAll('.dropdown-toggle.show');
+                openToggles.forEach(openToggle => {
+                    if (openToggle !== clickedToggle) {
+                        const dropdown = bootstrap.Dropdown.getOrCreateInstance(openToggle);
+                        dropdown.hide();
+                    }
+                });
+            } else if (!clickedMenu) {
+                // User clicked OUTSIDE any toggle and OUTSIDE any menu: Close ALL open toggles
+                // This acts as a fallback if Bootstrap's default behavior is blocked
+                const openToggles = document.querySelectorAll('.dropdown-toggle.show');
+                openToggles.forEach(openToggle => {
+                    const dropdown = bootstrap.Dropdown.getOrCreateInstance(openToggle);
+                    dropdown.hide();
+                });
+            }
+        });
+
+        // Close dropdowns on focus loss (accessibility improvement)
+        document.addEventListener('focusin', (event) => {
+            const openDropdowns = document.querySelectorAll('.dropdown-toggle.show');
+            openDropdowns.forEach(toggle => {
+                const parent = toggle.closest('.dropdown, .dropup, .dropend, .dropstart');
+                // If focus moved to something that is NOT inside the current dropdown menu or toggle
+                if (parent && !parent.contains(event.target)) {
+                    const dropdown = bootstrap.Dropdown.getOrCreateInstance(toggle);
+                    dropdown.hide();
+                }
+            });
         });
     }
 
     static applyButtonTooltips() {
         const buttons = document.querySelectorAll('button.btn, a.btn');
         buttons.forEach((button) => {
+            // Skip if already initialized by Bootstrap (has data-bs-original-title)
+            if (button.hasAttribute('data-bs-original-title')) {
+                return;
+            }
+
+            // Skip if it is a dropdown toggle to avoid plugin conflicts unless explicitly requested
+            if (button.getAttribute('data-bs-toggle') === 'dropdown') {
+                return;
+            }
+
             const label = button.getAttribute('aria-label') || button.title || button.textContent.trim();
             if (!label) {
                 return;
             }
 
             button.setAttribute('data-bs-title', label);
-            button.setAttribute('title', label);
+            // Don't set 'title' if we are setting 'data-bs-title', let Bootstrap handle it
+            // button.setAttribute('title', label); 
+
             if (!button.getAttribute('aria-label')) {
                 button.setAttribute('aria-label', label);
             }
@@ -198,13 +263,11 @@ export class Utils {
         document.body.removeChild(link);
     }
 
-    static renderButtonSpinner()
-    {
+    static renderButtonSpinner() {
         return `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${translations.labels.buttonsLoadingText}`;
     }
 
-    static renderActionButton(action, buttonClass, buttonState, buttonIcon, buttonText)
-    {
+    static renderActionButton(action, buttonClass, buttonState, buttonIcon, buttonText) {
         const safeText = buttonText || '';
         return `<button class="btn ${buttonClass} ${action}" ${buttonState} data-bs-toggle="tooltip" data-bs-title="${safeText}" title="${safeText}" aria-label="${safeText}"><span class="bi ${buttonIcon}" aria-hidden="true"></span><span class="visually-hidden" role="status">${safeText}</span></button>`;
     }
@@ -219,16 +282,15 @@ export class Utils {
         return false;
     }
 
-    static addRelease()
-    {
+    static addRelease() {
         const addReleaseModal = new bootstrap.Modal(document.querySelector('#addReleaseModal'), {
             keyboard: false
         });
-        
+
         // Set default values for season and correction
         document.querySelector('#season').value = '1';
         document.querySelector('#correction').value = '0';
-        
+
         addReleaseModal.show();
     }
 
@@ -266,11 +328,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Global error handler for unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
     const error = event.reason;
-    
+
     // Check if it's an APIError (from api-service.js)
     if (error && error.name === 'APIError') {
         console.error(`Unhandled API Error [${error.code}]:`, error.message);
-        
+
         // Handle authentication errors globally
         if (error.status === 401) {
             // Optionally redirect to login or show notification
@@ -279,7 +341,7 @@ window.addEventListener('unhandledrejection', (event) => {
     } else {
         console.error('Unhandled promise rejection:', error);
     }
-    
+
     // Prevent the default browser error handling (optional)
     // event.preventDefault();
 });
