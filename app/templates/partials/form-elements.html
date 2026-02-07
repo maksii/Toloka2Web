@@ -1,6 +1,7 @@
 {% macro floating_input(field, type="text", placeholder="", required=false) %}
 <div class="form-floating mb-3">
-    {{ field(class_="form-control", id="floating" + field.name|capitalize, type=type, placeholder=placeholder, required=required) }}
+    {{ field(class_="form-control", id="floating" + field.name|capitalize, type=type, placeholder=placeholder,
+    required=required) }}
     {{ field.label(class_="form-label", for="floating" + field.name|capitalize) }}
     {% for error in field.errors %}
     <div class="invalid-feedback">
@@ -13,19 +14,19 @@
 {% macro form_messages() %}
 {% for message in get_flashed_messages(category_filter=["error"]) %}
 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ message }}
+    {{ message | safe }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {% endfor %}
 {% for message in get_flashed_messages(category_filter=["info"]) %}
 <div class="alert alert-info alert-dismissible fade show" role="alert">
-    {{ message }}
+    {{ message | safe }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {% endfor %}
 {% for message in get_flashed_messages(category_filter=["success"]) %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
-    {{ message }}
+    {{ message | safe }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {% endfor %}
@@ -36,7 +37,7 @@
     {{ field(class_="form-check-input", id="check" + field.name|capitalize) }}
     {{ field.label(class_="form-check-label", for="check" + field.name|capitalize) }}
     {% if label_text %}
-        {{ label_text }}
+    {{ label_text }}
     {% endif %}
 </div>
 {% endmacro %}
@@ -46,6 +47,6 @@
     {% if icon_class %}
     <i class="{{ icon_class }} me-2"></i>
     {% endif %}
-    {{ text }}
+    {{ text | safe }}
 </button>
-{% endmacro %} 
+{% endmacro %}

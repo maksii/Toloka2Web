@@ -35,9 +35,9 @@ export default class Search {
     async handleSearch() {
         const formData = new FormData(this.searchForm);
         const query = formData.get('query');
-        
+
         document.querySelector("#searchResultsQuery").textContent = query;
-        
+
         // Initialize or clear tables
         if (this.tolokaTable) {
             this.refreshTables(query);
@@ -112,12 +112,12 @@ export default class Search {
                     responsivePriority: 2
                 },
                 { data: "forum", title: translations.tableHeaders.toloka.forum, visible: true },
-                { 
-                    data: "name", 
-                    type: 'html', 
-                    title: translations.tableHeaders.toloka.name, 
-                    render: (data, type, row) => this.renderTorrentTitle(data, type, row), 
-                    visible: true 
+                {
+                    data: "name",
+                    type: 'html',
+                    title: translations.tableHeaders.toloka.name,
+                    render: (data, type, row) => this.renderTorrentTitle(data, type, row),
+                    visible: true
                 },
                 { data: "author", title: translations.tableHeaders.toloka.author, visible: true },
                 DataTableFactory.createDateColumn('date', translations.tableHeaders.toloka.date),
@@ -155,16 +155,16 @@ export default class Search {
             ajax: `/api/search?query=${query}`,
             columns: [
                 { data: 'source', title: translations.tableHeaders.multi.source },
-                { 
-                    data: 'image', 
+                {
+                    data: 'image',
                     title: translations.tableHeaders.multi.image,
-                    render: (data) => data ? 
-                        `<img src="image/?url=${data}" alt="Image" height="100">` : 
+                    render: (data) => data ?
+                        `<img src="image/?url=${data}" alt="Image" height="100">` :
                         translations.labels.noImageAvailable
                 },
                 { data: 'title', title: translations.tableHeaders.multi.title },
                 { data: 'alternative', title: translations.tableHeaders.multi.alternative },
-                { 
+                {
                     data: 'id',
                     title: translations.tableHeaders.multi.id,
                     type: 'html',
@@ -221,11 +221,11 @@ export default class Search {
                     responsivePriority: 2
                 },
                 { data: "provider", title: translations.tableHeaders.stream.provider, visible: true },
-                { 
+                {
                     data: 'image_url',
                     title: translations.tableHeaders.stream.image_url,
-                    render: (data) => data ? 
-                        `<img src="image/?url=${data}" alt="Image" height="100">` : 
+                    render: (data) => data ?
+                        `<img src="image/?url=${data}" alt="Image" height="100">` :
                         translations.labels.noImageAvailable
                 },
                 { data: "title", title: translations.tableHeaders.stream.title, visible: true },
@@ -264,16 +264,16 @@ export default class Search {
         if (type === 'sort' || type === 'filter' || type === 'search') {
             return data;
         }
-        return type === 'display' ? 
-            `<a href="https://toloka.to/${row.url}" target="_blank">${data}</a>` : 
+        return type === 'display' ?
+            `<a href="https://toloka.to/${row.url}" target="_blank">${data}</a>` :
             data;
     }
 
     renderMultiSourceLink(data, row) {
         const sourceUrls = {
             'MAL': `https://myanimelist.net/anime/${data}`,
-            'TMDB': row.mediaType === 'tv' ? 
-                `https://www.themoviedb.org/tv/${data}` : 
+            'TMDB': row.mediaType === 'tv' ?
+                `https://www.themoviedb.org/tv/${data}` :
                 `https://www.themoviedb.org/movie/${data}`,
             'localdb': `/anime/${data}`
         };
@@ -331,7 +331,7 @@ export default class Search {
 
     async expandTolokaDetails(tr) {
         const row = this.tolokaTable.row(tr);
-        
+
         if (row.child.isShown()) {
             row.child.hide();
             tr.classList.remove('shown');
@@ -345,7 +345,7 @@ export default class Search {
             const data = row.data();
             const detail = await ApiService.get(`/api/toloka/${data.url}`);
             const childData = this.formatTolokaDetail(detail, data);
-            
+
             row.child(childData).show();
             tr.dataset.childData = JSON.stringify(detail);
             Utils.activeTooltips();
@@ -357,7 +357,7 @@ export default class Search {
 
     async expandStreamDetails(tr, data) {
         const row = this.streamTable.row(tr);
-        
+
         if (row.child.isShown()) {
             row.child.hide();
             tr.classList.remove('shown');
@@ -370,7 +370,7 @@ export default class Search {
 
             const detail = await ApiService.post('/api/stream/details', data);
             const childData = this.formatStreamDetail(detail, data);
-            
+
             row.child(childData).show();
             tr.dataset.childData = JSON.stringify(detail);
             Utils.activeTooltips();
@@ -395,14 +395,14 @@ export default class Search {
     async copyToReleaseForm(data, childData, tr) {
         const handleCopy = (childDataToUse) => {
             Utils.addRelease();
-            
+
             // Set the title and URL
             document.querySelector('#releaseTitle').value = data.name;
             document.querySelector('#tolokaUrl').value = `https://toloka.to/${data.url}`;
             // Set release group from Toloka search author
             const releaseGroupInput = document.querySelector('#releaseGroup');
             if (releaseGroupInput) releaseGroupInput.value = data.author != null ? data.author : '';
-            
+
             // Handle file name extraction from child data
             if (childDataToUse) {
                 try {
@@ -410,14 +410,14 @@ export default class Search {
                     if (parsedData.files && parsedData.files.length > 0) {
                         const file = parsedData.files[0];
                         const filePath = file.folder_name ? `${file.folder_name}/${file.file_name}` : file.file_name;
-                        
+
                         // Show the filename index group and set the value
                         const indexGroup = document.querySelector('#filenameIndexGroup');
                         const input = document.querySelector('#filenameIndex');
-                        
+
                         indexGroup.classList.remove('d-none');
                         input.value = filePath;
-                        
+
                         // Trigger the input event to process the filename
                         input.dispatchEvent(new Event('input', { bubbles: true }));
                     }
@@ -425,7 +425,7 @@ export default class Search {
                     console.error('Error parsing child data:', error);
                 }
             }
-            
+
             // Hide the search results
             this.searchOffcanvas.hide();
         };
@@ -462,7 +462,7 @@ export default class Search {
         `;
 
         const initialFiles = detail.files.slice(0, 4).map(generateFileItem).join('');
-        const remainingFiles = detail.files.length > 4 ? 
+        const remainingFiles = detail.files.length > 4 ?
             detail.files.slice(4).map(generateFileItem).join('') : '';
 
         // Format the date to match parent table format
@@ -479,7 +479,7 @@ export default class Search {
 
         const showMoreButton = detail.files.length > 4 ? `
             <div class="text-center mt-2">
-                <button class="btn btn-sm btn-outline-primary action-show" type="button" data-show-more="false" data-bs-toggle="tooltip" data-bs-title="${translations.labels.showMoreFiles}" title="${translations.labels.showMoreFiles}" aria-label="${translations.labels.showMoreFiles}">
+                <button class="btn btn-sm btn-outline-primary action-show btn-wide" type="button" data-show-more="false" data-bs-toggle="tooltip" data-bs-title="${translations.labels.showMoreFiles}" title="${translations.labels.showMoreFiles}" aria-label="${translations.labels.showMoreFiles}">
                     <i class="bi bi-chevron-down"></i> Show More (${detail.files.length - 4} more files)
                 </button>
             </div>` : '';
@@ -492,7 +492,7 @@ export default class Search {
                             <div class="col-md-2">
                                 <img src="image/?url=${detail.img}" class="card-img-top" alt="...">
                                 <div class="d-grid gap-2">
-                                    <button type="button" class="btn btn-primary position-relative" disabled>
+                                    <button type="button" class="btn btn-primary position-relative btn-wide" disabled>
                                         ${detail.size}
                                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
                                             ${parentData.leechers}
@@ -633,9 +633,9 @@ export default class Search {
             console.log('[Stream Details] groupEpisodesBySeries: not an array:', episodes);
             return {};
         }
-        
+
         console.log('[Stream Details] groupEpisodesBySeries input:', episodes);
-        
+
         return episodes.reduce((acc, ep, idx) => {
             // Handle case where episode is just a string (URL)
             if (typeof ep === 'string') {
@@ -643,13 +643,13 @@ export default class Search {
                 if (!acc[seriesName]) {
                     acc[seriesName] = [];
                 }
-                acc[seriesName].push({ 
-                    series: `${seriesName} ${idx + 1}`, 
-                    url: ep 
+                acc[seriesName].push({
+                    series: `${seriesName} ${idx + 1}`,
+                    url: ep
                 });
                 return acc;
             }
-            
+
             // Normal object case
             const seriesName = ep.series || ep.name || ep.title || `${translations.labels?.episode || 'Episode'} ${idx + 1}`;
             if (!acc[seriesName]) {
@@ -668,7 +668,7 @@ export default class Search {
      */
     normalizeStreamResponse(data) {
         console.log('[Stream Details] Normalizing response, input type:', typeof data);
-        
+
         // If already an array of groups with episodes, return as-is
         if (Array.isArray(data)) {
             // Check if it's an array of groups (has studio_name/studio_id and episodes)
@@ -684,7 +684,7 @@ export default class Search {
                 episodes: data
             }];
         }
-        
+
         // If it's an object, try to extract the data
         if (data && typeof data === 'object') {
             // Check for common wrapper properties
@@ -695,7 +695,7 @@ export default class Search {
                     return this.normalizeStreamResponse(data[prop]);
                 }
             }
-            
+
             // Check if it's an object with studio names as keys
             // e.g., { "UAFlix": [...], "UAFlix Сезон 2": [...] }
             const keys = Object.keys(data);
@@ -711,7 +711,7 @@ export default class Search {
                 }
             }
         }
-        
+
         console.log('[Stream Details] Could not normalize response, returning empty array');
         return [];
     }
@@ -727,9 +727,9 @@ export default class Search {
     generateSeriesExpandHTML(data, rowId) {
         const prefix = rowId || 'stream';
         const normalizedData = this.normalizeStreamResponse(data);
-        
+
         console.log('[Stream Details] Normalized data:', normalizedData);
-        
+
         if (!Array.isArray(normalizedData) || normalizedData.length === 0) {
             return `<div class="alert alert-info">${translations.labels?.noEpisodesFound || 'No episodes found'}</div>`;
         }
@@ -739,7 +739,7 @@ export default class Search {
             const seriesByName = this.groupEpisodesBySeries(group.episodes || []);
             const episodeCount = (group.episodes || []).length;
             const studioName = group.studio_name || `${translations.labels?.studio || 'Studio'} ${group.studio_id || idx + 1}`;
-            
+
             return `
             <div class="accordion mb-2" id="accordionStudio_${studioPrefix}">
                 <div class="accordion-item">
@@ -765,7 +765,7 @@ export default class Search {
 
     generateSeriesHTML(series, studioPrefix) {
         const seriesEntries = Object.entries(series);
-        
+
         if (seriesEntries.length === 1) {
             const [seriesName, items] = seriesEntries[0];
             return `
@@ -779,8 +779,8 @@ export default class Search {
         return `
             <div class="accordion" id="accordionSeries_${studioPrefix}">
                 ${seriesEntries.map(([seriesName, items], idx) => {
-                    const seriesId = `${studioPrefix}_s${idx}`;
-                    return `
+            const seriesId = `${studioPrefix}_s${idx}`;
+            return `
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="seriesHeading_${seriesId}">
                             <button class="accordion-button collapsed" type="button" 
@@ -802,7 +802,7 @@ export default class Search {
                         </div>
                     </div>
                 `;
-                }).join('')}
+        }).join('')}
             </div>
         `;
     }
@@ -814,13 +814,13 @@ export default class Search {
      */
     normalizeUrl(url) {
         if (!url) return '#';
-        
+
         // Remove duplicate protocols (e.g., "https:https://..." -> "https://...")
         let normalized = url.replace(/^(https?:)+(https?:\/\/)/, '$2');
-        
+
         // Also handle cases like "https:http://..." 
         normalized = normalized.replace(/^https?:(https?:\/\/)/, '$1');
-        
+
         // Ensure URL starts with a protocol
         if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {
             // If it starts with "//", add https:
@@ -831,11 +831,11 @@ export default class Search {
                 normalized = 'https://' + normalized;
             }
         }
-        
+
         // Transform animeon.club API URLs to user-facing URLs
         // e.g., https://animeon.club/api/anime/176 -> https://animeon.club/anime/176
         normalized = normalized.replace(/animeon\.club\/api\//, 'animeon.club/');
-        
+
         return normalized;
     }
 
@@ -846,10 +846,10 @@ export default class Search {
      */
     extractProviderFromUrl(url) {
         if (!url) return '';
-        
+
         try {
             const hostname = new URL(url).hostname.toLowerCase();
-            
+
             // Map hostnames to friendly provider names
             const providerMap = {
                 'animeon.club': 'AnimeON',
@@ -861,19 +861,19 @@ export default class Search {
                 'uafilms.tv': 'UAFilms',
                 'eneyida.tv': 'Eneyida'
             };
-            
+
             // Check for exact match first
             if (providerMap[hostname]) {
                 return providerMap[hostname];
             }
-            
+
             // Check for partial matches
             for (const [domain, name] of Object.entries(providerMap)) {
                 if (hostname.includes(domain.split('.')[0])) {
                     return name;
                 }
             }
-            
+
             // Return hostname without www and TLD as fallback
             return hostname.replace(/^www\./, '').split('.')[0];
         } catch {
@@ -889,7 +889,7 @@ export default class Search {
      */
     generateEpisodesList(episodes) {
         console.log('[Stream Details] generateEpisodesList input:', episodes);
-        
+
         if (!episodes || episodes.length === 0) {
             return `<div class="text-muted">${translations.labels?.noEpisodesAvailable || 'No episodes available'}</div>`;
         }
@@ -897,19 +897,19 @@ export default class Search {
         return `
             <div class="list-group list-group-flush">
                 ${episodes.map((ep, idx) => {
-                    const episodeTitle = ep.title || ep.name || ep.series || `${translations.labels?.episode || 'Episode'} ${idx + 1}`;
-                    
-                    // Handle new format: series has urls array
-                    if (ep.urls && Array.isArray(ep.urls) && ep.urls.length > 0) {
-                        return this.generateMultiUrlEpisode(episodeTitle, ep.urls, ep.provider);
-                    }
-                    
-                    // Handle old format: single url
-                    const provider = ep.provider || this.extractProviderFromUrl(ep.url);
-                    const providerBadge = provider ? `<span class="badge bg-info text-dark">${provider}</span>` : '';
-                    const normalizedUrl = this.normalizeUrl(ep.url);
-                    
-                    return `
+            const episodeTitle = ep.title || ep.name || ep.series || `${translations.labels?.episode || 'Episode'} ${idx + 1}`;
+
+            // Handle new format: series has urls array
+            if (ep.urls && Array.isArray(ep.urls) && ep.urls.length > 0) {
+                return this.generateMultiUrlEpisode(episodeTitle, ep.urls, ep.provider);
+            }
+
+            // Handle old format: single url
+            const provider = ep.provider || this.extractProviderFromUrl(ep.url);
+            const providerBadge = provider ? `<span class="badge bg-info text-dark">${provider}</span>` : '';
+            const normalizedUrl = this.normalizeUrl(ep.url);
+
+            return `
                         <a href="${normalizedUrl}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                             <span>${episodeTitle}</span>
                             <span>
@@ -918,7 +918,7 @@ export default class Search {
                             </span>
                         </a>
                     `;
-                }).join('')}
+        }).join('')}
             </div>
         `;
     }
@@ -935,8 +935,8 @@ export default class Search {
             const normalizedUrl = this.normalizeUrl(url);
             const provider = this.extractProviderFromUrl(normalizedUrl) || defaultProvider || '';
             const providerBadge = provider ? `<span class="badge bg-info text-dark me-1">${provider}</span>` : '';
-            
-            return `<a href="${normalizedUrl}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1" title="${normalizedUrl}">
+
+            return `<a href="${normalizedUrl}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1 btn-wide" title="${normalizedUrl}">
                 ${providerBadge}<i class="bi bi-box-arrow-up-right"></i>
             </a>`;
         }).join('');
@@ -954,7 +954,7 @@ export default class Search {
     toggleRemainingFiles(button) {
         const isShowing = button.dataset.showMore === 'true';
         const remainingFiles = button.closest('.col-md-6').querySelector('.remaining-files');
-        
+
         if (isShowing) {
             remainingFiles.style.display = 'none';
             button.innerHTML = `<i class="bi bi-chevron-down"></i> Show More (${remainingFiles.children.length} more files)`;

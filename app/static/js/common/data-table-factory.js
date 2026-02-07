@@ -1,7 +1,25 @@
 import { DataTableManager } from './datatable.js';
 import { translations } from './utils.js';
+import datatablesEn from '../l18n/datatables-en.js';
+import datatablesUa from '../l18n/datatables-ua.js';
 
 export class DataTableFactory {
+    /**
+     * Get DataTables language configuration based on current locale.
+     * @returns {Object} DataTables language configuration object
+     */
+    static getDataTablesLanguage() {
+        const language = document.documentElement.getAttribute('data-bs-language') || 'en';
+        const datatablesLang = language === 'ua' ? datatablesUa : datatablesEn;
+
+        // Merge with custom app translations for search placeholder and loading
+        return {
+            ...datatablesLang,
+            search: "_INPUT_",
+            searchPlaceholder: translations.labels.dataTableSearchInput,
+            loadingRecords: this.formatLoading()
+        };
+    }
     static initializeGlobalSettings() {
         // Disable default error alerts
         $.fn.dataTable.ext.errMode = 'none';
@@ -27,11 +45,7 @@ export class DataTableFactory {
     static initializeTable(selector, config) {
         const defaultConfig = {
             responsive: true,
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: translations.labels.dataTableSearchInput,
-                loadingRecords: this.formatLoading()
-            }
+            language: this.getDataTablesLanguage()
         };
 
         // Handle AJAX configuration
@@ -42,7 +56,7 @@ export class DataTableFactory {
                     dataSrc: (json) => {
                         if (json.error) return [];
                         if (Array.isArray(json)) return json;
-                        
+
                         // Handle object responses
                         const result = [];
                         Object.entries(json).forEach(([key, item]) => {
@@ -82,7 +96,7 @@ export class DataTableFactory {
                         cascadePanes: true
                     }
                 },
-                { 
+                {
                     action: (e, dt) => dt.ajax.reload(),
                     text: '<i class="bi bi-arrow-clockwise"></i>',
                     titleAttr: translations.buttons.dataTableRefreshButton
@@ -179,17 +193,17 @@ export class DataTableFactory {
         // Function to format the date based on available parts
         function formatDate(dateParts) {
             if (!dateParts) return 'Invalid date';
-            
+
             // If only year is available
             if (!dateParts.month && !dateParts.day) {
                 return `${dateParts.year}`;
             }
-            
+
             // If only year and month are available
             if (!dateParts.day) {
                 return `${dateParts.month}/${dateParts.year}`;
             }
-            
+
             // Full date
             let formattedDate = `${dateParts.day}/${dateParts.month}/${dateParts.year}`;
             if (dateParts.time && dateParts.time !== '00:00') {
@@ -234,9 +248,7 @@ export class DataTableFactory {
         // Return different data based on the type of data request
         if (type === 'sort') {
             // Return an ISO format date for correct sorting
-            const isoDate = `${parsedDate.year}${
-                parsedDate.month ? `-${parsedDate.month.toString().padStart(2, '0')}` : '-01'}${
-                parsedDate.day ? `-${parsedDate.day.toString().padStart(2, '0')}` : '-01'}`;
+            const isoDate = `${parsedDate.year}${parsedDate.month ? `-${parsedDate.month.toString().padStart(2, '0')}` : '-01'}${parsedDate.day ? `-${parsedDate.day.toString().padStart(2, '0')}` : '-01'}`;
             return parsedDate.time ? isoDate + 'T' + parsedDate.time : isoDate;
         } else if (type === 'display') {
             // For display, show relative time only for full dates with time

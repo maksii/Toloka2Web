@@ -1,21 +1,24 @@
 {% macro basic_card(title, content) %}
 <div class="card">
     <div class="card-body">
-        <h5 class="card-title">{{ title }}</h5>
+        <h5 class="card-title">{{ title | safe }}</h5>
         <div class="card-text">{{ content | safe }}</div>
     </div>
 </div>
 {% endmacro %}
 
-{% macro detail_card(title, subtitle=None, content=None, links=None, title_id=None, subtitle_id=None, content_id=None) %}
+{% macro detail_card(title, subtitle=None, content=None, links=None, title_id=None, subtitle_id=None, content_id=None)
+%}
 <div class="card">
     <div class="card-body">
-        <h5 class="card-title" id="{{ title_id if title_id else title|lower|replace(' ', '_') }}">{{ title }}</h5>
+        <h5 class="card-title" id="{{ title_id if title_id else title|lower|replace(' ', '_') }}">{{ title | safe }}
+        </h5>
         {% if subtitle %}
-        <h6 class="card-subtitle mb-2 text-muted" id="{{ subtitle_id if subtitle_id else subtitle|lower|replace(' ', '_') }}">{{ subtitle }}</h6>
+        <h6 class="card-subtitle mb-2 text-muted"
+            id="{{ subtitle_id if subtitle_id else subtitle|lower|replace(' ', '_') }}">{{ subtitle | safe }}</h6>
         {% endif %}
         {% if content %}
-        <p class="card-text"{% if content_id %} id="{{ content_id }}"{% endif %}>{{ content | safe }}</p>
+        <p class="card-text" {% if content_id %} id="{{ content_id }}" {% endif %}>{{ content | safe }}</p>
         {% endif %}
         {% if links %}
         <div class="external-links">
@@ -29,7 +32,7 @@
 {% macro action_card(title, content=None, buttons=None) %}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">{{ title }}</h5>
+        <h5 class="card-title mb-0">{{ title | safe }}</h5>
         {% if buttons %}
         <div class="btn-group">
             {{ buttons | safe }}
@@ -51,9 +54,9 @@
             {% if icon_class %}
             <i class="{{ icon_class }} me-2"></i>
             {% endif %}
-            {{ title }}
+            {{ title | safe }}
         </h5>
         <p class="card-text">{{ content | safe }}</p>
     </div>
 </div>
-{% endmacro %} 
+{% endmacro %}

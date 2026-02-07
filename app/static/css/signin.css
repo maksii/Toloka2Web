@@ -4,22 +4,75 @@ body {
 }
 
 .form-signin {
-  max-width: 330px;
-  padding: 1rem;
+  max-width: 400px;
+  padding: 2.5rem;
+  background: rgba(18, 26, 40, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  margin-top: 5vh;
+}
+
+[data-bs-theme=light] .form-signin {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  color: #1a2233;
 }
 
 .form-signin .form-floating:focus-within {
   z-index: 2;
 }
 
-.form-signin input[type="email"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
+.form-signin input[type="text"],
+.form-signin input[type="password"] {
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  background: rgba(13, 20, 33, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
-.form-signin input[type="password"] {
-  margin-bottom: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+[data-bs-theme=light] .form-signin input[type="text"],
+[data-bs-theme=light] .form-signin input[type="password"] {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1a2233;
+}
+
+.form-signin input[type="text"]:focus,
+.form-signin input[type="password"]:focus {
+  background: rgba(13, 20, 33, 0.9);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 4px rgba(47, 124, 246, 0.15);
+}
+
+[data-bs-theme=light] .form-signin input[type="text"]:focus,
+[data-bs-theme=light] .form-signin input[type="password"]:focus {
+  background: #fff;
+}
+
+.form-signin img {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  margin-bottom: 1.5rem;
+}
+
+.form-signin h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem !important;
+}
+
+.form-signin .btn-primary {
+  padding: 0.75rem;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.form-signin .btn-outline-primary {
+  border-radius: 12px;
+  border-width: 1px;
 }

@@ -46,6 +46,7 @@ class AppController {
             // Initialize page-specific module
             await this.initializePageModule();
             Utils.activeTooltips();
+            Utils.setupDropdownBehavior();
 
         } catch (error) {
             console.error('Error initializing application:', error);
