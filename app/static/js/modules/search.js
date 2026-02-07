@@ -936,7 +936,7 @@ export default class Search {
             const provider = this.extractProviderFromUrl(normalizedUrl) || defaultProvider || '';
             const providerBadge = provider ? `<span class="badge bg-info text-dark me-1">${provider}</span>` : '';
 
-            return `<a href="${normalizedUrl}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1" title="${normalizedUrl}">
+            return `<a href="${normalizedUrl}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1 btn-wide" title="${normalizedUrl}">
                 ${providerBadge}<i class="bi bi-box-arrow-up-right"></i>
             </a>`;
         }).join('');
