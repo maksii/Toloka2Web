@@ -46,12 +46,43 @@ export class Utils {
     }
 
     static translateElements() {
+        // Translate text content
         const elements = document.querySelectorAll('[data-i18n]');
         elements.forEach(element => {
             const key = element.getAttribute('data-i18n');
             const translation = this.getNestedTranslation(key);
             if (translation) {
                 element.textContent = translation;
+            }
+        });
+
+        // Translate placeholders
+        const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+        placeholderElements.forEach(element => {
+            const key = element.getAttribute('data-i18n-placeholder');
+            const translation = this.getNestedTranslation(key);
+            if (translation) {
+                element.placeholder = translation;
+            }
+        });
+
+        // Translate aria-labels
+        const ariaElements = document.querySelectorAll('[data-i18n-aria-label]');
+        ariaElements.forEach(element => {
+            const key = element.getAttribute('data-i18n-aria-label');
+            const translation = this.getNestedTranslation(key);
+            if (translation) {
+                element.setAttribute('aria-label', translation);
+            }
+        });
+
+        // Translate title attributes
+        const titleElements = document.querySelectorAll('[data-i18n-title]');
+        titleElements.forEach(element => {
+            const key = element.getAttribute('data-i18n-title');
+            const translation = this.getNestedTranslation(key);
+            if (translation) {
+                element.title = translation;
             }
         });
     }
@@ -159,21 +190,20 @@ export class Utils {
 
     static activeTooltips() {
         Utils.applyButtonTooltips();
-        // Select elements that have data-bs-title (our custom attribute) AND are not yet marked by Bootstrap as initialized
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-title]:not([data-bs-original-title])');
+        // Select elements that have data-bs-title AND are not yet initialized by us
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-title]:not([data-tooltip-initialized])');
 
         tooltipTriggerList.forEach((tooltipTriggerEl) => {
             try {
+                // Mark as initialized BEFORE adding listener to prevent duplicates
+                tooltipTriggerEl.setAttribute('data-tooltip-initialized', 'true');
+
                 // Use getOrCreateInstance to check for existing instance first, preventing collisions
                 const tooltipProxy = bootstrap.Tooltip.getOrCreateInstance(tooltipTriggerEl, {
                     trigger: 'hover'
                 });
 
                 // Ensure tooltip hides when element is clicked (useful for dropdown toggles)
-                // Remove previous listener first to be safe (though anonymous func can't be removed easily, 
-                // idempotent getOrCreateInstance means the instance is stable).
-                // We'll rely on the fact that adding multiple 'hide' listeners is harmless 
-                // but checking if we just created it effectively (or just leave it)
                 tooltipTriggerEl.addEventListener('click', () => {
                     tooltipProxy.hide();
                 });
@@ -226,8 +256,8 @@ export class Utils {
     static applyButtonTooltips() {
         const buttons = document.querySelectorAll('button.btn, a.btn');
         buttons.forEach((button) => {
-            // Skip if already initialized by Bootstrap (has data-bs-original-title)
-            if (button.hasAttribute('data-bs-original-title')) {
+            // Skip if already initialized with tooltip
+            if (button.hasAttribute('data-tooltip-initialized')) {
                 return;
             }
 

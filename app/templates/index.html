@@ -19,38 +19,41 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Right Side content -->
             <div class="col-md-12" id="rightSideTitles">
                 {{ tables.data_table_with_header(
-                    table_id='dataTableTitles',
-                    title='Added Titles',
-                    buttons='<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReleaseModal">
-                        <i class="bi bi-plus-circle me-2"></i>Add Release
-                    </button>'
+                table_id='dataTableTitles',
+                title='<span data-i18n="labels.addedTitles">Added Titles</span>',
+                buttons='<button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addReleaseModal">
+                    <i class="bi bi-plus-circle me-2"></i><span data-i18n="labels.addRelease">Add Release</span>
+                </button>'
                 ) }}
             </div>
         </div>
     </div>
-         <!-- Edit Release Modal -->
-         <div class="modal fade" id="editRelease" tabindex="-1" aria-labelledby="editReleaseLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editReleaseLabel">Edit Release</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="dataForm">
-                            <!-- Form fields will be populated here -->
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="editReleaseSubmitForm">Submit</button>
-                    </div>
+    <!-- Edit Release Modal -->
+    <div class="modal fade" id="editRelease" tabindex="-1" aria-labelledby="editReleaseLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editReleaseLabel" data-i18n="labels.editRelease">Edit Release</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataForm">
+                        <!-- Form fields will be populated here -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        data-i18n="buttons.cancelButton">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="editReleaseSubmitForm"
+                        data-i18n="buttons.releaseAddSubmit">Submit</button>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 {% endblock %}

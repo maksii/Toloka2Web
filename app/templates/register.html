@@ -11,24 +11,25 @@
         {{ form.hidden_tag() }}
         <div class="text-center mb-4">
             <img src="{{ url_for('static', filename='img/full-logo.png') }}" alt="Logo" width="250" height="250">
-            <h1 class="h3 mb-3 fw-normal">Create Account</h1>
+            <h1 class="h3 mb-3 fw-normal" data-i18n="labels.createAccount">Create Account</h1>
         </div>
 
         {{ forms.form_messages() }}
-        
+
         {{ forms.floating_input(form.username, type="text", placeholder="Username", required=true) }}
         {{ forms.floating_input(form.password, type="password", placeholder="Password", required=true) }}
-        {{ forms.floating_input(form.confirm_password, type="password", placeholder="Confirm Password", required=true) }}
+        {{ forms.floating_input(form.confirm_password, type="password", placeholder="Confirm Password", required=true)
+        }}
 
         {{ forms.submit_button(
-            text="Register",
-            icon_class="bi bi-person-plus",
-            additional_classes="mb-3"
+        text="Register",
+        icon_class="bi bi-person-plus",
+        additional_classes="mb-3"
         ) }}
 
         <div class="text-center">
             <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                <i class="bi bi-box-arrow-in-right me-2"></i><span data-i18n="buttons.signInButton">Sign In</span>
             </a>
         </div>
     </form>

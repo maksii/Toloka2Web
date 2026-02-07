@@ -613,6 +613,10 @@ ul#myTab {
   transition: all 0.2s ease-in-out;
 }
 
+.table button.btn-wide {
+  width: inherit;
+}
+
 .table .btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

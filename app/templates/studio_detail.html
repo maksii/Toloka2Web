@@ -12,20 +12,20 @@
             <!-- Studio Details Column -->
             <div class="col-md-3">
                 {{ cards.detail_card(
-                    title='Studio Name',
-                    subtitle='telegram',
-                    content=None,
-                    links=None,
-                    title_id='studioName',
-                    subtitle_id='studioTelegram'
+                title='<span data-i18n="labels.studioName">Studio Name</span>',
+                subtitle='telegram',
+                content=None,
+                links=None,
+                title_id='studioName',
+                subtitle_id='studioTelegram'
                 ) }}
             </div>
-            
+
             <!-- Anime Titles Column -->
             <div class="col-md-9">
                 {{ tables.data_table_with_header(
-                    table_id='titlesTable',
-                    title='Anime Titles'
+                table_id='titlesTable',
+                title='<span data-i18n="labels.animeTitles">Anime Titles</span>'
                 ) }}
             </div>
         </div>
