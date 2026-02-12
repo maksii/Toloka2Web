@@ -31,7 +31,7 @@
                             <i class="bi bi-collection-play"></i> <span data-i18n="labels.anime">Anime</span>
                         </a>
                     </li>
-                    {% if 'admin' in current_user.roles %}
+                    {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}"
                             href="{{ url_for('settings') }}">

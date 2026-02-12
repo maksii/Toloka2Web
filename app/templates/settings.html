@@ -23,6 +23,7 @@
                     <i class="bi bi-person me-2"></i><span data-i18n="labels.profile">Profile</span>
                 </button>
             </li>
+            {% if is_admin %}
             <li class="nav-item" role="presentation">
                 <button class="nav-link d-flex align-items-center" id="configuration-tab" data-bs-toggle="tab"
                     data-bs-target="#configuration-tab-pane" type="button" role="tab"
@@ -37,6 +38,7 @@
                     <i class="bi bi-people me-2"></i><span data-i18n="labels.users">Users</span>
                 </button>
             </li>
+            {% endif %}
         </ul>
 
         <!-- Tab Content -->
@@ -54,6 +56,7 @@
                                 <i class="bi bi-info-circle me-2"></i><span data-i18n="labels.showVersions">Show
                                     Versions</span>
                             </button>
+                            {% if is_admin %}
                             <button type="button" class="btn btn-primary" id="syncTorrentReleaseTo">
                                 <i class="bi bi-arrow-down-circle me-2"></i><span
                                     data-i18n="labels.syncTitlesFromDb">Sync titles.ini from DB</span>
@@ -62,6 +65,7 @@
                                 <i class="bi bi-arrow-up-circle me-2"></i><span data-i18n="labels.syncTitlesToDb">Sync
                                     titles.ini to DB</span>
                             </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -99,6 +103,7 @@
                 </div>
             </div>
 
+            {% if is_admin %}
             <!-- Configuration Tab -->
             <div class="tab-pane fade" id="configuration-tab-pane" role="tabpanel" aria-labelledby="configuration-tab"
                 tabindex="0">
@@ -136,6 +141,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </main>

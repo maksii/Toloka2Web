@@ -83,7 +83,6 @@ def sync():
 
 @setting_bp.route("/settings/versions", methods=["GET"])
 @login_required
-@admin_permission.require(http_exception=403)
 @handle_errors
 def versions():
     """Get installed package versions."""

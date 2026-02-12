@@ -98,9 +98,10 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         return render_template("index.html")
 
     @app.route("/settings")
-    @admin_permission.require(http_exception=403)
+    @login_required
     def settings():
-        return render_template("settings.html")
+        is_admin = current_user.roles == "admin"
+        return render_template("settings.html", is_admin=is_admin)
 
     @app.route("/image/")
     def proxy_image_route():
