@@ -4,7 +4,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addReleaseModalLabel">
-                    <i class="bi bi-plus-circle me-2"></i>Add Release
+                    <i class="bi bi-plus-circle me-2"></i><span data-i18n="labels.addRelease">Add Release</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -13,11 +13,14 @@
                     <!-- URL Input Group -->
                     <div class="input-group mb-3">
                         <div class="form-floating flex-grow-1">
-                            <input type="url" name="url" class="form-control" id="tolokaUrl" placeholder="https://toloka.to/t678205" required>
-                            <label for="tolokaUrl">Toloka URL</label>
-                            <div class="invalid-feedback">Please provide a valid URL.</div>
+                            <input type="url" name="url" class="form-control" id="tolokaUrl"
+                                placeholder="https://toloka.to/t678205" required>
+                            <label for="tolokaUrl" data-i18n="labels.tolokaUrl">Toloka URL</label>
+                            <div class="invalid-feedback" data-i18n="labels.provideValidUrl">Please provide a valid URL.
+                            </div>
                         </div>
-                        <button class="btn btn-outline-secondary" id="urlButton" type="button" title="Parse Binary">
+                        <button class="btn btn-outline-secondary" id="urlButton" type="button" data-bs-title=""
+                            aria-label="Parse Binary">
                             <i class="bi bi-file-binary"></i>
                         </button>
                     </div>
@@ -25,9 +28,11 @@
                     <!-- Filename Index Group -->
                     <div class="input-group mb-3 d-none" id="filenameIndexGroup">
                         <div class="form-floating flex-grow-1">
-                            <input type="text" class="form-control" id="filenameIndex" placeholder="[Inari Dub] Arknights Touin Kiro S01 E09 (1080) (UA).mkv" pattern=".*\..+">
-                            <label for="filenameIndex">Index Extractor</label>
-                            <div class="invalid-feedback">Please provide a valid filename.</div>
+                            <input type="text" class="form-control" id="filenameIndex"
+                                placeholder="[Inari Dub] Arknights Touin Kiro S01 E09 (1080) (UA).mkv" pattern=".*\..+">
+                            <label for="filenameIndex" data-i18n="labels.indexExtractor">Index Extractor</label>
+                            <div class="invalid-feedback" data-i18n="labels.provideValidFilename">Please provide a valid
+                                filename.</div>
                             <div id="numberList" class="list-group mt-2"></div>
                         </div>
                     </div>
@@ -35,11 +40,13 @@
                     <!-- Title Input Group -->
                     <div class="input-group mb-3">
                         <div class="form-floating flex-grow-1">
-                            <input type="text" name="title" class="form-control" id="releaseTitle" placeholder="Arknights (2022)" required>
-                            <label for="releaseTitle">Title</label>
-                            <div class="invalid-feedback">Please provide a title.</div>
+                            <input type="text" name="title" class="form-control" id="releaseTitle"
+                                placeholder="Arknights (2022)" required>
+                            <label for="releaseTitle" data-i18n="labels.title">Title</label>
+                            <div class="invalid-feedback" data-i18n="labels.provideTitle">Please provide a title.</div>
                         </div>
-                        <button class="btn btn-outline-secondary" id="cutButton" type="button" title="Cut Title">
+                        <button class="btn btn-outline-secondary" id="cutButton" type="button" data-bs-title=""
+                            aria-label="Cut Title">
                             <i class="bi bi-scissors"></i>
                         </button>
                     </div>
@@ -48,43 +55,53 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-4">
                             <div class="form-floating">
-                                <input type="number" name="season" class="form-control" id="season" placeholder="2" min="0" required>
-                                <label for="season">Season</label>
-                                <div class="invalid-feedback">Please provide a valid season number (min: 0).</div>
+                                <input type="number" name="season" class="form-control" id="season" placeholder="2"
+                                    min="0" required>
+                                <label for="season" data-i18n="labels.season">Season</label>
+                                <div class="invalid-feedback" data-i18n="labels.provideValidSeason">Please provide a
+                                    valid season number (min: 0).</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating">
-                                <input type="number" name="index" class="form-control" id="index" placeholder="2" min="1" required>
-                                <label for="index">Episode Index</label>
-                                <div class="invalid-feedback">Please provide a valid episode index (min: 1).</div>
+                                <input type="number" name="index" class="form-control" id="index" placeholder="2"
+                                    min="1" required>
+                                <label for="index" data-i18n="labels.episodeIndex">Episode Index</label>
+                                <div class="invalid-feedback" data-i18n="labels.provideValidEpisodeIndex">Please provide
+                                    a valid episode index (min: 1).</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-floating">
-                                <input type="number" name="correction" class="form-control" id="correction" placeholder="-8">
-                                <label for="correction">Index Correction</label>
+                                <input type="number" name="correction" class="form-control" id="correction"
+                                    placeholder="-8">
+                                <label for="correction" data-i18n="labels.indexCorrection">Index Correction</label>
                             </div>
                         </div>
                     </div>
 
                     <!-- Release group & Meta (collapsed) -->
                     <div class="mb-3">
-                        <button class="btn btn-outline-secondary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#releaseGroupMetaCollapse" aria-expanded="false" aria-controls="releaseGroupMetaCollapse" id="releaseGroupMetaToggle">
-                            <i class="bi bi-chevron-down me-1"></i>Release group &amp; Meta
+                        <button class="btn btn-outline-secondary btn-sm collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#releaseGroupMetaCollapse" aria-expanded="false"
+                            aria-controls="releaseGroupMetaCollapse" id="releaseGroupMetaToggle">
+                            <i class="bi bi-chevron-down me-1"></i><span data-i18n="labels.releaseGroupMeta">Release
+                                group &amp; Meta</span>
                         </button>
                         <div class="collapse mt-2" id="releaseGroupMetaCollapse">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="form-floating">
-                                        <input type="text" name="release_group" class="form-control" id="releaseGroup" placeholder="Release Group">
-                                        <label for="releaseGroup">Release Group</label>
+                                        <input type="text" name="release_group" class="form-control" id="releaseGroup"
+                                            placeholder="Release Group">
+                                        <label for="releaseGroup" data-i18n="labels.releaseGroup">Release Group</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-floating">
-                                        <input type="text" name="meta" class="form-control" id="meta" placeholder="Meta">
-                                        <label for="meta">Meta</label>
+                                        <input type="text" name="meta" class="form-control" id="meta"
+                                            placeholder="Meta">
+                                        <label for="meta" data-i18n="labels.meta">Meta</label>
                                     </div>
                                 </div>
                             </div>
@@ -93,30 +110,34 @@
 
                     <!-- Ongoing Checkbox -->
                     <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" role="switch" name="ongoing" id="ongoing" checked>
+                        <input class="form-check-input" type="checkbox" role="switch" name="ongoing" id="ongoing"
+                            checked>
                         <label class="form-check-label" for="ongoing">
-                            <i class="bi bi-arrow-repeat me-1"></i>Ongoing
-                            <small class="text-muted d-block">Use episode range naming (S01E01-E02) instead of season pack (S01)</small>
+                            <i class="bi bi-arrow-repeat me-1"></i><span data-i18n="labels.ongoing">Ongoing</span>
+                            <small class="text-muted d-block" data-i18n="labels.ongoingDescription">Use episode range
+                                naming (S01E01-E02) instead of season pack (S01)</small>
                         </label>
                     </div>
 
                     <!-- Final title preview -->
                     <div class="mb-3">
-                        <small class="text-muted d-block mb-1">Preview</small>
-                        <p class="mb-0 form-control-plaintext border rounded px-2 py-2 bg-body-secondary" id="releasePreview" aria-live="polite">—</p>
+                        <small class="text-muted d-block mb-1" data-i18n="labels.releasePreview">Preview</small>
+                        <p class="mb-0 form-control-plaintext border rounded px-2 py-2 bg-body-secondary"
+                            id="releasePreview" aria-live="polite">—</p>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary" id="submitButton">
-                            <i class="bi bi-check-circle me-2"></i>Submit
+                            <i class="bi bi-check-circle me-2"></i><span
+                                data-i18n="buttons.releaseAddSubmit">Submit</span>
                         </button>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-2"></i>Close
+                    <i class="bi bi-x-circle me-2"></i><span data-i18n="buttons.closeButton">Close</span>
                 </button>
             </div>
         </div>

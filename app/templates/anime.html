@@ -8,10 +8,11 @@
 <!-- Begin page content -->
 <main class="flex-shrink-0">
     <div class="container-fluid">
-        {{ alerts.info_alert('The information provided is a backup of the public API from AnimeOn site.') }}
+        {{ alerts.info_alert('<span data-i18n="labels.publicApiBackup">The information provided is a backup of the
+            public API from AnimeOn site.</span>') }}
         {{ tables.data_table_with_header(
-            table_id='animeTable',
-            title='Titles'
+        table_id='animeTable',
+        title='<span data-i18n="labels.titles">Titles</span>'
         ) }}
     </div>
 </main>

@@ -10,101 +10,138 @@
         <!-- Settings Navigation Tabs -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active d-flex align-items-center" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-tab-pane" type="button" role="tab" aria-controls="system-tab-pane" aria-selected="true">
-                    <i class="bi bi-gear me-2"></i>System
+                <button class="nav-link active d-flex align-items-center" id="system-tab" data-bs-toggle="tab"
+                    data-bs-target="#system-tab-pane" type="button" role="tab" aria-controls="system-tab-pane"
+                    aria-selected="true">
+                    <i class="bi bi-gear me-2"></i><span data-i18n="labels.system">System</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link d-flex align-items-center" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">
-                    <i class="bi bi-person me-2"></i>Profile
+                <button class="nav-link d-flex align-items-center" id="profile-tab" data-bs-toggle="tab"
+                    data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane"
+                    aria-selected="false">
+                    <i class="bi bi-person me-2"></i><span data-i18n="labels.profile">Profile</span>
+                </button>
+            </li>
+            {% if is_admin %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link d-flex align-items-center" id="configuration-tab" data-bs-toggle="tab"
+                    data-bs-target="#configuration-tab-pane" type="button" role="tab"
+                    aria-controls="configuration-tab-pane" aria-selected="false">
+                    <i class="bi bi-sliders me-2"></i><span data-i18n="labels.configuration">Configuration</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link d-flex align-items-center" id="configuration-tab" data-bs-toggle="tab" data-bs-target="#configuration-tab-pane" type="button" role="tab" aria-controls="configuration-tab-pane" aria-selected="false">
-                    <i class="bi bi-sliders me-2"></i>Configuration
+                <button class="nav-link d-flex align-items-center" id="users-tab" data-bs-toggle="tab"
+                    data-bs-target="#users-tab-pane" type="button" role="tab" aria-controls="users-tab-pane"
+                    aria-selected="false">
+                    <i class="bi bi-people me-2"></i><span data-i18n="labels.users">Users</span>
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link d-flex align-items-center" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-tab-pane" type="button" role="tab" aria-controls="users-tab-pane" aria-selected="false">
-                    <i class="bi bi-people me-2"></i>Users
-                </button>
-            </li>
+            {% endif %}
         </ul>
 
         <!-- Tab Content -->
         <div class="tab-content mt-4" id="myTabContent">
             <!-- System Tab -->
-            <div class="tab-pane fade show active" id="system-tab-pane" role="tabpanel" aria-labelledby="system-tab" tabindex="0">
-                {{ cards.action_card(
-                    title='System Actions',
-                    content='<div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary" id="showToast">
-                            <i class="bi bi-info-circle me-2"></i>Show Versions
-                        </button>
-                        <button type="button" class="btn btn-primary" id="syncTorrentReleaseTo">
-                            <i class="bi bi-arrow-down-circle me-2"></i>Sync titles.ini from DB
-                        </button>
-                        <button type="button" class="btn btn-primary" id="syncTorrentReleaseFrom">
-                            <i class="bi bi-arrow-up-circle me-2"></i>Sync titles.ini to DB
-                        </button>
-                    </div>'
-                ) }}
+            <div class="tab-pane fade show active" id="system-tab-pane" role="tabpanel" aria-labelledby="system-tab"
+                tabindex="0">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" data-i18n="labels.systemActions">System Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" id="showToast">
+                                <i class="bi bi-info-circle me-2"></i><span data-i18n="labels.showVersions">Show
+                                    Versions</span>
+                            </button>
+                            {% if is_admin %}
+                            <button type="button" class="btn btn-primary" id="syncTorrentReleaseTo">
+                                <i class="bi bi-arrow-down-circle me-2"></i><span
+                                    data-i18n="labels.syncTitlesFromDb">Sync titles.ini from DB</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" id="syncTorrentReleaseFrom">
+                                <i class="bi bi-arrow-up-circle me-2"></i><span data-i18n="labels.syncTitlesToDb">Sync
+                                    titles.ini to DB</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Profile Tab -->
             <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                {{ cards.action_card(
-                    title='Profile Settings',
-                    content='<form id="profileForm">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username">
-                        </div>
-                        <div class="mb-3">
-                            <label for="roles" class="form-label">Roles</label>
-                            <input type="text" class="form-control" id="roles" disabled>
-                        </div>
-                        <hr>
-                        <h5>Change Password</h5>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="password" name="password">
-                            <div class="form-text">Password must be at least 8 characters long.</div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </form>'
-                ) }}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" data-i18n="labels.profileSettings">Profile Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label" data-i18n="labels.username">Username</label>
+                                <input type="text" class="form-control" id="username" name="username">
+                            </div>
+                            <div class="mb-3">
+                                <label for="roles" class="form-label" data-i18n="labels.roles">Roles</label>
+                                <input type="text" class="form-control" id="roles" disabled>
+                            </div>
+                            <hr>
+                            <h5 data-i18n="labels.changePassword">Change Password</h5>
+                            <div class="mb-3">
+                                <label for="password" class="form-label" data-i18n="labels.newPassword">New
+                                    Password</label>
+                                <input type="password" class="form-control" id="password" name="password">
+                                <div class="form-text" data-i18n="labels.passwordRequirement">Password must be at least
+                                    8 characters long.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" data-i18n="buttons.saveChanges">Save
+                                Changes</button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
+            {% if is_admin %}
             <!-- Configuration Tab -->
-            <div class="tab-pane fade" id="configuration-tab-pane" role="tabpanel" aria-labelledby="configuration-tab" tabindex="0">
-                {{ alerts.info_alert('The page in development and in the current state is only able to display the data already saved in the database. You can change open_registration. Other properties will not make any affect, as there no sync in\to app.ini') }}
+            <div class="tab-pane fade" id="configuration-tab-pane" role="tabpanel" aria-labelledby="configuration-tab"
+                tabindex="0">
+                {{ alerts.info_alert('<span data-i18n="labels.settingsDevNotice">The page in development and in the
+                    current state is only able to display the data already saved in the database. You can change
+                    open_registration. Other properties will not make any affect, as there no sync in\\to
+                    app.ini</span>') }}
                 {{ tables.data_table_with_header(
-                    table_id='settingsTable',
-                    title='Configuration'
+                table_id='settingsTable',
+                title='<span data-i18n="labels.configuration">Configuration</span>'
                 ) }}
             </div>
 
             <!-- Users Tab -->
             <div class="tab-pane fade" id="users-tab-pane" role="tabpanel" aria-labelledby="users-tab" tabindex="0">
-                {{ cards.action_card(
-                    title='User Management',
-                    content='<div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Username</th>
-                                    <th>Roles</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                            </tbody>
-                        </table>
-                    </div>'
-                ) }}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" data-i18n="labels.userManagement">User Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="tableHeaders.users.id">ID</th>
+                                        <th data-i18n="tableHeaders.users.username">Username</th>
+                                        <th data-i18n="tableHeaders.users.roles">Roles</th>
+                                        <th data-i18n="tableHeaders.users.actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </main>
@@ -114,33 +151,36 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Edit User</h5>
+                <h5 class="modal-title" data-i18n="labels.editUser">Edit User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="editUserForm">
                     <input type="hidden" id="editUserId">
                     <div class="mb-3">
-                        <label for="editUsername" class="form-label">Username</label>
+                        <label for="editUsername" class="form-label" data-i18n="labels.username">Username</label>
                         <input type="text" class="form-control" id="editUsername" disabled>
                     </div>
                     <div class="mb-3">
-                        <label for="editRoles" class="form-label">Role</label>
+                        <label for="editRoles" class="form-label" data-i18n="labels.role">Role</label>
                         <select class="form-select" id="editRoles">
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
+                            <option value="user" data-i18n="labels.user">User</option>
+                            <option value="admin" data-i18n="labels.admin">Admin</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="editPassword" class="form-label">New Password</label>
+                        <label for="editPassword" class="form-label" data-i18n="labels.newPassword">New Password</label>
                         <input type="password" class="form-control" id="editPassword">
-                        <div class="form-text">Leave blank to keep current password. New password must be at least 8 characters long.</div>
+                        <div class="form-text" data-i18n="labels.passwordKeepBlank">Leave blank to keep current
+                            password. New password must be at least 8 characters long.</div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveUserBtn">Save Changes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    data-i18n="buttons.closeButton">Close</button>
+                <button type="button" class="btn btn-primary" id="saveUserBtn" data-i18n="buttons.saveChanges">Save
+                    Changes</button>
             </div>
         </div>
     </div>
@@ -151,16 +191,19 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Delete User</h5>
+                <h5 class="modal-title" data-i18n="labels.deleteUser">Delete User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+                <p data-i18n="labels.deleteUserConfirm">Are you sure you want to delete this user? This action cannot be
+                    undone.</p>
                 <input type="hidden" id="deleteUserId">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    data-i18n="buttons.cancelButton">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn"
+                    data-i18n="buttons.deleteButton">Delete</button>
             </div>
         </div>
     </div>
@@ -169,77 +212,77 @@
 
 {% block additional_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Profile Management
-    function loadProfile() {
-        fetch('/api/profile', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('username').value = data.username;
-            document.getElementById('roles').value = data.roles;
-        })
-        .catch(error => {
-            showToast('error', 'Failed to load profile data');
-            console.error('Error:', error);
-        });
-    }
-
-    document.getElementById('profileForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = {
-            username: document.getElementById('username').value,
-        };
-        
-        const password = document.getElementById('password').value;
-        if (password) {
-            formData.password = password;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Profile Management
+        function loadProfile() {
+            fetch('/api/profile', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('username').value = data.username;
+                    document.getElementById('roles').value = data.roles;
+                })
+                .catch(error => {
+                    showToast('error', 'Failed to load profile data');
+                    console.error('Error:', error);
+                });
         }
 
-        fetch('/api/profile', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            showToast('success', 'Profile updated successfully');
-            document.getElementById('password').value = '';
-        })
-        .catch(error => {
-            showToast('error', error.message || 'Failed to update profile');
-            console.error('Error:', error);
-        });
-    });
+        document.getElementById('profileForm')?.addEventListener('submit', function (e) {
+            e.preventDefault();
 
-    // User Management
-    const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
-    const deleteUserModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
-    
-    function loadUsers() {
-        fetch('/api/users', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            const formData = {
+                username: document.getElementById('username').value,
+            };
+
+            const password = document.getElementById('password').value;
+            if (password) {
+                formData.password = password;
             }
-        })
-        .then(response => response.json())
-        .then(users => {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-            
-            users.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+
+            fetch('/api/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    showToast('success', 'Profile updated successfully');
+                    document.getElementById('password').value = '';
+                })
+                .catch(error => {
+                    showToast('error', error.message || 'Failed to update profile');
+                    console.error('Error:', error);
+                });
+        });
+
+        // User Management
+        const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        const deleteUserModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+
+        function loadUsers() {
+            fetch('/api/users', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            })
+                .then(response => response.json())
+                .then(users => {
+                    const tbody = document.getElementById('usersTableBody');
+                    tbody.innerHTML = '';
+
+                    users.forEach(user => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
                     <td>${user.id}</td>
                     <td>${user.username}</td>
                     <td>${user.roles}</td>
@@ -248,119 +291,119 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Delete</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
-            });
-            
-            // Add event listeners to new buttons
-            document.querySelectorAll('.edit-user').forEach(btn => {
-                btn.addEventListener('click', handleEditUser);
-            });
-            document.querySelectorAll('.delete-user').forEach(btn => {
-                btn.addEventListener('click', handleDeleteUser);
-            });
-        })
-        .catch(error => {
-            showToast('error', 'Failed to load users');
-            console.error('Error:', error);
-        });
-    }
+                        tbody.appendChild(tr);
+                    });
 
-    function handleEditUser(e) {
-        const userId = e.target.dataset.id;
-        const userRow = e.target.closest('tr');
-        const username = userRow.cells[1].textContent;
-        const roles = userRow.cells[2].textContent;
-        
-        document.getElementById('editUserId').value = userId;
-        document.getElementById('editUsername').value = username;
-        document.getElementById('editRoles').value = roles;
-        document.getElementById('editPassword').value = '';
-        
-        editUserModal.show();
-    }
-
-    document.getElementById('saveUserBtn')?.addEventListener('click', function() {
-        const userId = document.getElementById('editUserId').value;
-        const formData = {
-            roles: document.getElementById('editRoles').value
-        };
-        
-        const password = document.getElementById('editPassword').value;
-        if (password) {
-            formData.password = password;
+                    // Add event listeners to new buttons
+                    document.querySelectorAll('.edit-user').forEach(btn => {
+                        btn.addEventListener('click', handleEditUser);
+                    });
+                    document.querySelectorAll('.delete-user').forEach(btn => {
+                        btn.addEventListener('click', handleDeleteUser);
+                    });
+                })
+                .catch(error => {
+                    showToast('error', 'Failed to load users');
+                    console.error('Error:', error);
+                });
         }
 
-        fetch(`/api/users/${userId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
+        function handleEditUser(e) {
+            const userId = e.target.dataset.id;
+            const userRow = e.target.closest('tr');
+            const username = userRow.cells[1].textContent;
+            const roles = userRow.cells[2].textContent;
+
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editRoles').value = roles;
+            document.getElementById('editPassword').value = '';
+
+            editUserModal.show();
+        }
+
+        document.getElementById('saveUserBtn')?.addEventListener('click', function () {
+            const userId = document.getElementById('editUserId').value;
+            const formData = {
+                roles: document.getElementById('editRoles').value
+            };
+
+            const password = document.getElementById('editPassword').value;
+            if (password) {
+                formData.password = password;
             }
-            showToast('success', 'User updated successfully');
-            editUserModal.hide();
-            loadUsers();
-        })
-        .catch(error => {
-            showToast('error', error.message || 'Failed to update user');
-            console.error('Error:', error);
+
+            fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    showToast('success', 'User updated successfully');
+                    editUserModal.hide();
+                    loadUsers();
+                })
+                .catch(error => {
+                    showToast('error', error.message || 'Failed to update user');
+                    console.error('Error:', error);
+                });
         });
-    });
 
-    function handleDeleteUser(e) {
-        const userId = e.target.dataset.id;
-        document.getElementById('deleteUserId').value = userId;
-        deleteUserModal.show();
-    }
+        function handleDeleteUser(e) {
+            const userId = e.target.dataset.id;
+            document.getElementById('deleteUserId').value = userId;
+            deleteUserModal.show();
+        }
 
-    document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
-        const userId = document.getElementById('deleteUserId').value;
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', function () {
+            const userId = document.getElementById('deleteUserId').value;
 
-        fetch(`/api/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            showToast('success', 'User deleted successfully');
-            // Hide the modal using the instance
-            const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteUserModal'));
-            deleteModal.hide();
-            loadUsers();
-        })
-        .catch(error => {
-            showToast('error', error.message || 'Failed to delete user');
-            console.error('Error:', error);
+            fetch(`/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    showToast('success', 'User deleted successfully');
+                    // Hide the modal using the instance
+                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteUserModal'));
+                    deleteModal.hide();
+                    loadUsers();
+                })
+                .catch(error => {
+                    showToast('error', error.message || 'Failed to delete user');
+                    console.error('Error:', error);
+                });
         });
-    });
 
-    // Load data when tabs are shown
-    document.getElementById('profile-tab')?.addEventListener('shown.bs.tab', function (e) {
-        loadProfile();
-    });
+        // Load data when tabs are shown
+        document.getElementById('profile-tab')?.addEventListener('shown.bs.tab', function (e) {
+            loadProfile();
+        });
 
-    document.getElementById('users-tab')?.addEventListener('shown.bs.tab', function (e) {
-        loadUsers();
-    });
+        document.getElementById('users-tab')?.addEventListener('shown.bs.tab', function (e) {
+            loadUsers();
+        });
 
-    // Initial load if tab is active
-    if (document.querySelector('#profile-tab-pane.active')) {
-        loadProfile();
-    }
-    if (document.querySelector('#users-tab-pane.active')) {
-        loadUsers();
-    }
-});
+        // Initial load if tab is active
+        if (document.querySelector('#profile-tab-pane.active')) {
+            loadProfile();
+        }
+        if (document.querySelector('#users-tab-pane.active')) {
+            loadUsers();
+        }
+    });
 </script>
 {% endblock %}

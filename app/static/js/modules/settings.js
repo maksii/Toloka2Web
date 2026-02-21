@@ -12,10 +12,21 @@ export default class Settings {
     }
 
     init() {
-        this.initializeDataTable();
-        this.addEventListeners();
+        const settingsTable = document.querySelector('#settingsTable');
+        if (settingsTable) {
+            this.initializeDataTable();
+            this.addEventListeners();
+            const settingsNotification = document.querySelector("#configuration-tab-pane > div:nth-child(1) > div > div");
+            if (settingsNotification) {
+                settingsNotification.innerText = translations.labels.settingsNotification;
+            }
+        }
+        const syncToBtn = document.querySelector('#syncTorrentReleaseTo');
+        const syncFromBtn = document.querySelector('#syncTorrentReleaseFrom');
+        if (syncToBtn && syncFromBtn) {
+            this.addSyncEventListeners();
+        }
         this.checkVersions();
-        document.querySelector("#configuration-tab-pane > div:nth-child(1) > div > div").innerText = translations.labels.settingsNotification;
     }
 
     initializeDataTable() {
@@ -120,6 +131,9 @@ export default class Settings {
 
     addEventListeners() {
         new EventDelegator('#settingsTable tbody', this.handleAction.bind(this));
+    }
+
+    addSyncEventListeners() {
         document.querySelector('#syncTorrentReleaseTo').addEventListener('click', () => this.syncSettings('to', 'release'));
         document.querySelector('#syncTorrentReleaseFrom').addEventListener('click', () => this.syncSettings('from', 'release'));
     }

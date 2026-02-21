@@ -8,13 +8,14 @@
 <!-- Begin page content -->
 <main class="flex-shrink-0">
     <div class="container-fluid">
-        {{ alerts.info_alert('The information provided is a backup of the public API from AnimeOn site.') }}
+        {{ alerts.info_alert('<span data-i18n="labels.publicApiBackup">The information provided is a backup of the
+            public API from AnimeOn site.</span>') }}
         {{ tables.data_table_with_header(
-            table_id='studiosTable',
-            title='Voiceover Studios',
-            buttons='<button type="button" class="btn btn-outline-secondary" id="refreshStudios">
-                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
-            </button>'
+        table_id='studiosTable',
+        title='<span data-i18n="labels.voiceoverStudios">Voiceover Studios</span>',
+        buttons='<button type="button" class="btn btn-outline-secondary" id="refreshStudios">
+            <i class="bi bi-arrow-clockwise me-2"></i><span data-i18n="buttons.dataTableRefreshButton">Refresh</span>
+        </button>'
         ) }}
     </div>
 </main>

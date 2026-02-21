@@ -13,43 +13,48 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
-                            <i class="bi bi-house-door"></i> Home
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}"
+                            href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door"></i> <span data-i18n="labels.home">Home</span>
                         </a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'studio.studios' %}active{% endif %}" href="{{ url_for('studio.studios') }}">
-                            <i class="bi bi-camera-reels"></i> Studios
+                        <a class="nav-link {% if request.endpoint == 'studio.studios' %}active{% endif %}"
+                            href="{{ url_for('studio.studios') }}">
+                            <i class="bi bi-camera-reels"></i> <span data-i18n="labels.studios">Studios</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'anime.anime' %}active{% endif %}" href="{{ url_for('anime.anime') }}">
-                            <i class="bi bi-collection-play"></i> Anime
+                        <a class="nav-link {% if request.endpoint == 'anime.anime' %}active{% endif %}"
+                            href="{{ url_for('anime.anime') }}">
+                            <i class="bi bi-collection-play"></i> <span data-i18n="labels.anime">Anime</span>
                         </a>
                     </li>
-                    {% if 'admin' in current_user.roles %}
+                    {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">
-                            <i class="bi bi-gear"></i> Settings
+                        <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}"
+                            href="{{ url_for('settings') }}">
+                            <i class="bi bi-gear"></i> <span data-i18n="labels.settings">Settings</span>
                         </a>
                     </li>
                     {% endif %}
                 </ul>
                 {% if current_user.is_authenticated %}
-                    <form id="searchForm" class="d-flex me-3" role="search">
-                        <div class="input-group">
-                            <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="query" id="searchInput" required>
-                            <button class="btn btn-outline-success" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                    <div class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
+                <form id="searchForm" class="d-flex me-3" role="search">
+                    <div class="input-group">
+                        <input class="form-control" type="search" placeholder="Search" aria-label="Search" name="query"
+                            id="searchInput" required data-i18n-placeholder="labels.search">
+                        <button class="btn btn-outline-success" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
                     </div>
+                </form>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">
+                        <i class="bi bi-box-arrow-right"></i> <span data-i18n="labels.logout">Logout</span>
+                    </a>
+                </div>
                 {% endif %}
             </div>
         </div>
