@@ -95,6 +95,17 @@ export class DataTableFactory {
         };
     }
 
+    // Catalog data comes from an external repo — escape before building HTML
+    static escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    static safeUrl(url) {
+        return /^https?:\/\//i.test(url || '') ? url : null;
+    }
+
     static createLinkColumn(field, title, baseUrl) {
         return {
             data: field,

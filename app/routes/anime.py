@@ -20,7 +20,7 @@ def anime():
     return render_template("anime.html")
 
 
-@anime_bp.route("/anime/<int:anime_id>")
+@anime_bp.route("/anime/<anime_id>")
 @login_required
 def anime_detail(anime_id):
     """Render the anime detail page."""
@@ -41,7 +41,7 @@ def list_anime():
     return make_response(jsonify(result), 200)
 
 
-@anime_api_bp.route("/anime/<int:anime_id>", methods=["GET"])
+@anime_api_bp.route("/anime/<anime_id>", methods=["GET"])
 @multi_auth_required
 @handle_errors
 def get_anime_byid(anime_id):
@@ -52,7 +52,7 @@ def get_anime_byid(anime_id):
     return make_response(jsonify(result), 200)
 
 
-@anime_api_bp.route("/anime/<int:anime_id>/related", methods=["GET"])
+@anime_api_bp.route("/anime/<anime_id>/related", methods=["GET"])
 @login_required
 @handle_errors
 def get_anime_related(anime_id):
@@ -61,10 +61,19 @@ def get_anime_related(anime_id):
     return make_response(jsonify(result), 200)
 
 
-@anime_api_bp.route("/anime/<int:anime_id>/studios", methods=["GET"])
+@anime_api_bp.route("/anime/<anime_id>/studios", methods=["GET"])
 @login_required
 @handle_errors
 def get_anime_studios(anime_id):
     """Get studios for a given anime ID."""
     result = DatabaseService.get_studios_by_anime_id(anime_id)
+    return make_response(jsonify(result), 200)
+
+
+@anime_api_bp.route("/anime/<anime_id>/releases", methods=["GET"])
+@multi_auth_required
+@handle_errors
+def get_anime_releases(anime_id):
+    """Get fandub releases (with torrent links) for a given anime ID."""
+    result = DatabaseService.get_releases_by_anime_id(anime_id)
     return make_response(jsonify(result), 200)

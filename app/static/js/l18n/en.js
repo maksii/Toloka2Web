@@ -17,7 +17,16 @@ const translations = {
             type:'Type',
             status:'Status',
             releaseDate:'releaseDate',
-        },        
+        },
+        animeReleases:
+        {
+            teams:'Teams',
+            status:'Status',
+            episodes:'Episodes',
+            dub:'Dub',
+            sub:'Sub',
+            links:'Links',
+        },
         releases:
         {
             codename:'Codename',

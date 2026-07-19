@@ -92,7 +92,7 @@ class AnimeList(Resource):
         return list_anime()
 
 
-@anime_ns.route("/<int:anime_id>")
+@anime_ns.route("/<string:anime_id>")
 class AnimeDetail(Resource):
     @api.doc(
         "get_anime",
@@ -131,7 +131,7 @@ class StudioList(Resource):
         return search_studio()
 
 
-@studio_ns.route("/<int:studio_id>")
+@studio_ns.route("/<string:studio_id>")
 class StudioDetail(Resource):
     @api.doc(
         "get_studio",
@@ -150,7 +150,7 @@ class StudioDetail(Resource):
         return get_studio_details(studio_id)
 
 
-@studio_ns.route("/<int:studio_id>/anime")
+@studio_ns.route("/<string:studio_id>/anime")
 class StudioAnime(Resource):
     @api.doc(
         "list_studio_anime",
@@ -653,10 +653,12 @@ class ImageProxy(Resource):
         responses={
             200: ("Success", image_proxy_response),
             400: ("Bad Request", error_response),
+            401: ("Unauthorized", error_response),
             500: ("Server Error", error_response),
         },
     )
     @api.param("url", "Image URL to proxy", required=True)
+    @multi_auth_required
     def get(self):
         """Proxy an image through the server"""
         from app.routes.routes import proxy_image

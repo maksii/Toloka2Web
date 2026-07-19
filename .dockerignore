@@ -1,0 +1,13 @@
+.git
+.github
+__pycache__
+*.pyc
+venv
+.venv
+instance
+data
+tests
+cookie.txt
+*.md
+.gitignore
+.dockerignore

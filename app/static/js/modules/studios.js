@@ -21,7 +21,9 @@ export default class Studios {
                 { 
                     data: 'telegram',
                     title: translations.tableHeaders.studioDetails.telegram,
-                    render: (data) => `<a href="${data}">${data}</a>`,
+                    render: (data) => DataTableFactory.safeUrl(data)
+                        ? `<a href="${DataTableFactory.escapeHtml(data)}">${DataTableFactory.escapeHtml(data)}</a>`
+                        : '',
                     visible: true 
                 }
             ],

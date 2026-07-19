@@ -455,7 +455,12 @@ def test_stream_mal_tmdb_toloka_endpoints(client, api_key_headers, monkeypatch):
     assert tmdb_detail_response.status_code == 200
     assert tmdb_detail_response.get_json()["title"] == "TMDB"
 
-    trending_response = client.get("/api/tmdb/trending?type=movie")
+    unauthenticated_trending = client.get("/api/tmdb/trending?type=movie")
+    assert unauthenticated_trending.status_code in (302, 401)
+
+    trending_response = client.get(
+        "/api/tmdb/trending?type=movie", headers=api_key_headers
+    )
     assert trending_response.status_code == 200
     assert trending_response.get_json()["results"][0]["title"] == "Trend"
 

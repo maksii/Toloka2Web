@@ -32,7 +32,7 @@ On first launch, the application bootstraps these files (all in the repo `data/`
 
 | File | Purpose | Source |
 |------|---------|--------|
-| `data/anime_data.db` | Ukrainian anime database | Downloaded from Stream2MediaServer repo |
+| `data/AnimeTitlesDB.json`, `data/AnimeReleasesDB.json`, `data/TeamsDB.json` | Ukrainian anime catalog (titles, fandub releases, teams) | Downloaded from [CPRcatalog](https://github.com/DrBryanMan/CPRcatalog) |
 | `data/app.ini` | Toloka2MediaServer configuration template | Downloaded from Toloka2MediaServer repo |
 | `data/titles.ini` | Release tracking | Created empty if missing |
 | `data/toloka2web.db` | Application database (users, settings) | Created by SQLAlchemy |
@@ -112,7 +112,7 @@ python -m app
 
 #### 2) Confirm bootstrap files and sources
 After the first start, check the `data/` directory:
-- `data/anime_data.db` (downloaded from Stream2MediaServer: `https://github.com/maksii/Stream2MediaServer/raw/main/data/anime_data.db`).
+- `data/AnimeTitlesDB.json`, `data/AnimeReleasesDB.json`, `data/TeamsDB.json` (downloaded from CPRcatalog: `https://raw.githubusercontent.com/DrBryanMan/CPRcatalog/main/json/`).
 - `data/app.ini` (downloaded from Toloka2MediaServer: `https://raw.githubusercontent.com/CakesTwix/Toloka2MediaServer/main/data/app-example.ini`).
 - `data/titles.ini` (created empty if missing).
 - `data/toloka2web.db` (created by SQLAlchemy).

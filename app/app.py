@@ -15,7 +15,7 @@ from flask_jwt_extended import JWTManager
 
 # Local imports
 from app.services.config_service import ConfigService
-from app.services.services_db import DatabaseService
+from app.services.services_db import DatabaseService, CATALOG_FILES
 from .models.base import db
 from .models.user import bcrypt
 
@@ -31,7 +31,8 @@ def _initialize_data_files():
     """Initialize required data files before app startup.
 
     Creates necessary directories and downloads required files if they don't exist:
-    - data/anime_data.db: Anime database (downloaded if missing)
+    - data/AnimeTitlesDB.json, AnimeReleasesDB.json, TeamsDB.json:
+      anime catalog from CPRcatalog (downloaded if missing)
     - data/app.ini: Application configuration (downloaded if missing)
     - data/titles.ini: Release tracking (created empty if missing)
 
@@ -42,14 +43,12 @@ def _initialize_data_files():
     # Ensure data directory exists
     os.makedirs("data", exist_ok=True)
 
-    # Check and download anime database if not exists
-    local_db_path = "data/anime_data.db"
-    if not os.path.exists(local_db_path):
-        logging.info("Database not found. Downloading the database...")
-        try:
-            DatabaseService.update_database()
-        except Exception as e:
-            logging.warning(f"Failed to download anime database: {e}")
+    # Check and download the anime catalog if any file is missing
+    if any(not os.path.exists(os.path.join("data", f)) for f in CATALOG_FILES.values()):
+        logging.info("Anime catalog not found. Downloading...")
+        result = DatabaseService.update_database()
+        if result.get("status") != "success":
+            logging.warning(result.get("message"))
 
     # Check and download app.ini if not exists
     app_ini_path = "data/app.ini"

@@ -159,7 +159,7 @@ export default class Search {
                     data: 'image', 
                     title: translations.tableHeaders.multi.image,
                     render: (data) => data ? 
-                        `<img src="image/?url=${data}" alt="Image" height="100">` : 
+                        `<img src="/image/?url=${encodeURIComponent(data)}" alt="Image" height="100">` : 
                         translations.labels.noImageAvailable
                 },
                 { data: 'title', title: translations.tableHeaders.multi.title },
@@ -225,7 +225,7 @@ export default class Search {
                     data: 'image_url',
                     title: translations.tableHeaders.stream.image_url,
                     render: (data) => data ? 
-                        `<img src="image/?url=${data}" alt="Image" height="100">` : 
+                        `<img src="/image/?url=${encodeURIComponent(data)}" alt="Image" height="100">` : 
                         translations.labels.noImageAvailable
                 },
                 { data: "title", title: translations.tableHeaders.stream.title, visible: true },
@@ -490,7 +490,7 @@ export default class Search {
                     <div class="card">
                         <div class="row g-0">
                             <div class="col-md-2">
-                                <img src="image/?url=${detail.img}" class="card-img-top" alt="...">
+                                <img src="/image/?url=${encodeURIComponent(detail.img || '')}" class="card-img-top" alt="...">
                                 <div class="d-grid gap-2">
                                     <button type="button" class="btn btn-primary position-relative" disabled>
                                         ${detail.size}
@@ -601,7 +601,7 @@ export default class Search {
                     <div class="card">
                         <div class="row g-0">
                             <div class="col-md-2">
-                                <img src="image/?url=${parentData.image_url || ''}" class="card-img-top" alt="">
+                                <img src="/image/?url=${encodeURIComponent(parentData.image_url || '')}" class="card-img-top" alt="">
                             </div>
                             <div class="col-md-4">
                                 <div class="card-body">

@@ -52,15 +52,23 @@ token_response = api.model(
 )
 
 # Anime Models
+anime_name_model = api.model("NamedValue", {"name": fields.String})
+
 anime_model = api.model(
     "Anime",
     {
-        "id": fields.Integer(description="Anime ID"),
-        "name": fields.String(description="Anime name"),
-        "description": fields.String(description="Anime description"),
-        "studio_id": fields.Integer(description="Studio ID"),
-        "mal_id": fields.Integer(description="MyAnimeList ID"),
-        "tmdb_id": fields.Integer(description="TMDB ID"),
+        "id": fields.String(description="Catalog ID (CPRcatalog UUID)"),
+        "titleUa": fields.String(description="Ukrainian title"),
+        "titleEn": fields.String(description="Romaji title"),
+        "synonyms": fields.List(fields.String, description="Alternative titles"),
+        "releaseDate": fields.String(description="Release year"),
+        "season": fields.String(description="Season (winter/spring/summer/fall)"),
+        "episodes": fields.String(description="Episode count"),
+        "malId": fields.Integer(description="MyAnimeList ID"),
+        "poster": fields.String(description="Poster URL"),
+        "hikkaUrl": fields.String(description="Hikka.io URL"),
+        "type": fields.Nested(anime_name_model, description="Format (TV/OVA/...)"),
+        "status": fields.Nested(anime_name_model, description="Airing status"),
     },
 )
 
@@ -68,9 +76,13 @@ anime_model = api.model(
 studio_model = api.model(
     "Studio",
     {
-        "id": fields.Integer(description="Studio ID"),
-        "name": fields.String(description="Studio name"),
-        "description": fields.String(description="Studio description"),
+        "id": fields.String(description="Catalog ID (CPRcatalog UUID)"),
+        "name": fields.String(description="Team name"),
+        "altname": fields.List(fields.String, description="Alternative names"),
+        "telegram": fields.String(description="Telegram URL"),
+        "site": fields.String(description="Website URL"),
+        "logo": fields.String(description="Logo URL"),
+        "status": fields.String(description="Team activity status"),
     },
 )
 

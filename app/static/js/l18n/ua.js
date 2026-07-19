@@ -17,7 +17,16 @@ const translations = {
             type:'Тип',
             status:'Статус',
             releaseDate:'дата випуску',
-        },        
+        },
+        animeReleases:
+        {
+            teams:'Команди',
+            status:'Статус',
+            episodes:'Епізоди',
+            dub:'Озвучення',
+            sub:'Субтитри',
+            links:'Посилання',
+        },
         releases:
         {
             codename:"Кодове ім'я",

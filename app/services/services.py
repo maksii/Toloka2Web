@@ -449,14 +449,18 @@ class SearchService(BaseService):
                     "source": "localdb",
                     "title": safe_fetch(item, ["titleUa"]),
                     "id": item["id"],
-                    "status": "Currently Airing"
-                    if item.get("status_id") == 2
-                    else "Finished Airing",
-                    "mediaType": "Anime",
-                    "image": "",
-                    "description": safe_fetch(item, ["description"]),
+                    "status": safe_fetch(item, ["status", "name"]) or "Unknown",
+                    "mediaType": safe_fetch(item, ["type", "name"]) or "Anime",
+                    "image": safe_fetch(item, ["poster"]),
+                    "description": safe_fetch(item, ["titleUa"]),
                     "releaseDate": safe_fetch(item, ["releaseDate"]),
-                    "alternative": safe_fetch(item, ["titleEn"]),
+                    "alternative": " | ".join(
+                        filter(
+                            None,
+                            [safe_fetch(item, ["titleEn"])]
+                            + safe_fetch(item, ["synonyms"], []),
+                        )
+                    ),
                 }
             )
 

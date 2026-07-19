@@ -34,9 +34,14 @@ export default class StudiosDetails {
                 }
                 
                 if (telegramElement) {
-                    if (studio.telegram) {
-                        // Make telegram a clickable link
-                        telegramElement.innerHTML = `<a href="${studio.telegram}" target="_blank">${studio.telegram}</a>`;
+                    if (DataTableFactory.safeUrl(studio.telegram)) {
+                        // Make telegram a clickable link (created via DOM APIs — catalog data is external)
+                        const link = document.createElement('a');
+                        link.href = studio.telegram;
+                        link.target = '_blank';
+                        link.rel = 'noopener';
+                        link.textContent = studio.telegram;
+                        telegramElement.replaceChildren(link);
                     } else {
                         telegramElement.textContent = 'No telegram link';
                     }

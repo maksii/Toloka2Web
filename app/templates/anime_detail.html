@@ -16,8 +16,8 @@
                 <a href="#" id="linkMal" class="btn btn-outline-primary btn-sm me-2" target="_blank">
                     <i class="bi bi-box-arrow-up-right me-1"></i>MAL
                 </a>
-                <a href="#" id="linkImdb" class="btn btn-outline-primary btn-sm" target="_blank">
-                    <i class="bi bi-box-arrow-up-right me-1"></i>IMDb
+                <a href="#" id="linkHikka" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Hikka
                 </a>
             </div>',
             title_id='animeTitle',
@@ -37,6 +37,14 @@
             {{ tables.data_table_with_header(
                 table_id='studiosTable',
                 title='Voiceover Studios'
+            ) }}
+        </div>
+
+        <!-- Releases Table -->
+        <div class="mt-4">
+            {{ tables.data_table_with_header(
+                table_id='releasesTable',
+                title='Releases'
             ) }}
         </div>
     </div>

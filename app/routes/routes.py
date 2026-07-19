@@ -26,6 +26,7 @@ from flask_wtf.csrf import CSRFError
 
 # Local imports
 from app.routes.auth import check_auth
+from app.utils.auth_utils import multi_auth_required
 from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
 from app.models.registration_form import RegistrationForm
@@ -59,7 +60,9 @@ def proxy_image():
 
 
 def configure_routes(app, login_manager, admin_permission, user_permission):
-    # Configure CORS with explicit allowed origins
+    # Configure CORS with explicit allowed origins. Credentials must not be
+    # combined with a wildcard origin: flask-cors would reflect any Origin,
+    # letting arbitrary sites make credentialed requests.
     cors_origins = app.config["CORS_ORIGINS"]
 
     CORS(
@@ -67,7 +70,7 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         resources={
             r"/*": {
                 "origins": cors_origins,
-                "supports_credentials": True,
+                "supports_credentials": cors_origins != ["*"],
                 "allow_headers": [
                     "Content-Type",
                     "Authorization",
@@ -103,6 +106,7 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
         return render_template("settings.html")
 
     @app.route("/image/")
+    @multi_auth_required
     def proxy_image_route():
         return proxy_image()
 
