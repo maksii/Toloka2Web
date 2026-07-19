@@ -53,7 +53,7 @@ def get_anime_byid(anime_id):
 
 
 @anime_api_bp.route("/anime/<anime_id>/related", methods=["GET"])
-@login_required
+@multi_auth_required
 @handle_errors
 def get_anime_related(anime_id):
     """Get related anime for a given anime ID."""
@@ -62,7 +62,7 @@ def get_anime_related(anime_id):
 
 
 @anime_api_bp.route("/anime/<anime_id>/studios", methods=["GET"])
-@login_required
+@multi_auth_required
 @handle_errors
 def get_anime_studios(anime_id):
     """Get studios for a given anime ID."""

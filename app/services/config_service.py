@@ -49,7 +49,9 @@ class ConfigService(BaseService):
 
     @classmethod
     def add_new_setting(cls, section: str, key: str, value: str) -> None:
-        """Add a new setting to the database."""
+        """Add a new setting to the database (no-op if section+key already exists)."""
+        if ApplicationSettings.query.filter_by(section=section, key=key).first():
+            return
         new_setting = ApplicationSettings(section=section, key=key, value=value)
         db.session.add(new_setting)
         db.session.commit()

@@ -311,50 +311,17 @@ def create_app(test_config=None):
             title_config_path = "data/titles.ini"
             ConfigService.read_releases_ini_and_sync_to_db(title_config_path)
 
-    # Register blueprints
+    # Register blueprints. The flask-restx blueprint is the single /api
+    # surface — its resources delegate to the view functions in app/routes/.
+    # Only the HTML page blueprints are registered directly.
     from .routes.routes import configure_routes
-    from .routes.anime import anime_bp, anime_api_bp
-    from .routes.release import release_bp
-    from .routes.stream import stream_bp
-    from .routes.studio import studio_bp, studio_api_bp
-    from .routes.toloka import toloka_bp
-    from .routes.mal import mal_bp
-    from .routes.tmdb import tmdb_bp
-    from .routes.settings import setting_bp
-    from .routes.auth import auth_bp
-    from .routes.users import user_bp
-    from .api import api_bp  # Import the API blueprint
+    from .routes.anime import anime_bp
+    from .routes.studio import studio_bp
+    from .api import api_bp
 
-    # Register blueprints with URL prefixes
     app.register_blueprint(api_bp)  # api_bp already has url_prefix='/api'
-
-    # Define which blueprints should be registered with API prefix
-    api_blueprints = [
-        anime_api_bp,
-        studio_api_bp,
-        release_bp,
-        stream_bp,
-        toloka_bp,
-        mal_bp,
-        tmdb_bp,
-        setting_bp,
-        auth_bp,
-        user_bp,
-    ]
-
-    # Define blueprints that should be registered without API prefix (HTML pages)
-    html_blueprints = [
-        anime_bp,  # Contains HTML routes for anime pages
-        studio_bp,  # Contains HTML routes for studio pages
-    ]
-
-    # Register API blueprints with '/api' prefix
-    for blueprint in api_blueprints:
-        app.register_blueprint(blueprint, url_prefix="/api")
-
-    # Register HTML blueprints without prefix
-    for blueprint in html_blueprints:
-        app.register_blueprint(blueprint)
+    app.register_blueprint(anime_bp)  # HTML routes for anime pages
+    app.register_blueprint(studio_bp)  # HTML routes for studio pages
 
     # Configure main routes that should be registered directly with the app
     configure_routes(app, login_manager, admin_permission, user_permission)

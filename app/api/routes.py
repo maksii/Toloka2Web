@@ -1,4 +1,5 @@
 # Flask and extensions
+from flask import make_response
 from flask_restx import Resource, fields
 
 # Local imports - API
@@ -68,7 +69,7 @@ class Register(Resource):
         """Register a new user account"""
         from app.routes.auth import register
 
-        return register()
+        return make_response(register())
 
 
 # Anime Routes
@@ -89,7 +90,7 @@ class AnimeList(Resource):
         """List all anime or search by name"""
         from app.routes.anime import list_anime
 
-        return list_anime()
+        return make_response(list_anime())
 
 
 @anime_ns.route("/<string:anime_id>")
@@ -108,7 +109,7 @@ class AnimeDetail(Resource):
         """Get anime details by ID"""
         from app.routes.anime import get_anime_byid
 
-        return get_anime_byid(anime_id)
+        return make_response(get_anime_byid(anime_id))
 
 
 # Studio Routes
@@ -128,7 +129,7 @@ class StudioList(Resource):
         """List all studios or search by name"""
         from app.routes.studio import search_studio
 
-        return search_studio()
+        return make_response(search_studio())
 
 
 @studio_ns.route("/<string:studio_id>")
@@ -147,7 +148,7 @@ class StudioDetail(Resource):
         """Get studio details by ID"""
         from app.routes.studio import get_studio_details
 
-        return get_studio_details(studio_id)
+        return make_response(get_studio_details(studio_id))
 
 
 @studio_ns.route("/<string:studio_id>/anime")
@@ -165,7 +166,7 @@ class StudioAnime(Resource):
         """List all anime from a specific studio"""
         from app.routes.studio import list_titles_by_studio
 
-        return list_titles_by_studio(studio_id)
+        return make_response(list_titles_by_studio(studio_id))
 
 
 # MAL Routes
@@ -186,7 +187,7 @@ class MALSearch(Resource):
         """Search anime on MyAnimeList"""
         from app.routes.mal import search
 
-        return search()
+        return make_response(search())
 
 
 @mal_ns.route("/detail/<int:anime_id>")
@@ -205,7 +206,7 @@ class MALDetail(Resource):
         """Get anime details from MyAnimeList"""
         from app.routes.mal import get_detail
 
-        return get_detail(anime_id)
+        return make_response(get_detail(anime_id))
 
 
 # TMDB Routes
@@ -226,7 +227,7 @@ class TMDBSearch(Resource):
         """Search media on TMDB"""
         from app.routes.tmdb import search
 
-        return search()
+        return make_response(search())
 
 
 @tmdb_ns.route("/detail/<int:id>")
@@ -247,7 +248,7 @@ class TMDBDetail(Resource):
         """Get media details from TMDB"""
         from app.routes.tmdb import get_detail
 
-        return get_detail(id)
+        return make_response(get_detail(id))
 
 
 # Stream Routes
@@ -268,7 +269,7 @@ class Stream(Resource):
         """Search titles from streaming services"""
         from app.routes.stream import search_titles_from_streaming
 
-        return search_titles_from_streaming()
+        return make_response(search_titles_from_streaming())
 
     @api.doc(
         "add_stream",
@@ -285,7 +286,7 @@ class Stream(Resource):
         """Add a title from streaming service"""
         from app.routes.stream import add_title_from_streaming
 
-        return add_title_from_streaming()
+        return make_response(add_title_from_streaming())
 
 
 @stream_ns.route("/details")
@@ -305,7 +306,7 @@ class StreamDetails(Resource):
         """Get details of a streaming title"""
         from app.routes.stream import get_title_details
 
-        return get_title_details()
+        return make_response(get_title_details())
 
 
 # Settings Routes
@@ -324,7 +325,7 @@ class Settings(Resource):
         """List all application settings"""
         from app.routes.settings import list_setting
 
-        return list_setting()
+        return make_response(list_setting())
 
     @api.doc(
         "add_setting",
@@ -341,7 +342,7 @@ class Settings(Resource):
         """Add a new application setting"""
         from app.routes.settings import add
 
-        return add()
+        return make_response(add())
 
 
 # User Routes
@@ -361,7 +362,7 @@ class UserProfile(Resource):
         """Get user profile information"""
         from app.routes.users import get_profile
 
-        return get_profile()
+        return make_response(get_profile())
 
 
 @users_ns.route("")
@@ -379,7 +380,7 @@ class UserList(Resource):
         """List all users (admin only)"""
         from app.routes.users import list_users
 
-        return list_users()
+        return make_response(list_users())
 
 
 @users_ns.route("/<int:user_id>")
@@ -400,7 +401,23 @@ class UserDetail(Resource):
         """Update user details (admin only)"""
         from app.routes.users import update_user
 
-        return update_user(user_id)
+        return make_response(update_user(user_id))
+
+    @api.doc(
+        "delete_user",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+            404: ("Not Found", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    @multi_auth_admin_required
+    def delete(self, user_id):
+        """Delete a user (admin only)"""
+        from app.routes.users import delete_user
+
+        return make_response(delete_user(user_id))
 
 
 # Release Routes
@@ -419,7 +436,7 @@ class ReleaseList(Resource):
         """Get all releases with their torrent status"""
         from app.routes.release import get_titles
 
-        return get_titles()
+        return make_response(get_titles())
 
     @api.doc(
         "add_release",
@@ -436,7 +453,7 @@ class ReleaseList(Resource):
         """Add a new release"""
         from app.routes.release import add_release
 
-        return add_release()
+        return make_response(add_release())
 
     @api.doc(
         "edit_release",
@@ -453,7 +470,7 @@ class ReleaseList(Resource):
         """Edit an existing release"""
         from app.routes.release import edit_release
 
-        return edit_release()
+        return make_response(edit_release())
 
     @api.doc(
         "delete_release",
@@ -470,7 +487,7 @@ class ReleaseList(Resource):
         """Delete a release"""
         from app.routes.release import delete_release
 
-        return delete_release()
+        return make_response(delete_release())
 
 
 @releases_ns.route("/update")
@@ -490,7 +507,7 @@ class ReleaseUpdate(Resource):
         """Update release(s) - if no data provided, updates all releases"""
         from app.routes.release import update_release
 
-        return update_release()
+        return make_response(update_release())
 
 
 @releases_ns.route("/torrents")
@@ -508,7 +525,7 @@ class ReleaseTorrents(Resource):
         """Get torrent information for all releases"""
         from app.routes.release import torrent_info_all_releases
 
-        return torrent_info_all_releases()
+        return make_response(torrent_info_all_releases())
 
 
 @releases_ns.route("/defaults")
@@ -526,7 +543,7 @@ class ReleaseDefaults(Resource):
         """Get default values for the Add Release form"""
         from app.routes.release import get_release_defaults
 
-        return get_release_defaults()
+        return make_response(get_release_defaults())
 
 
 @releases_ns.route("/<string:hash>")
@@ -547,7 +564,7 @@ class ReleaseDetail(Resource):
         """Get details of a specific release"""
         from app.routes.release import recieve_request_from_client
 
-        return recieve_request_from_client(hash)
+        return make_response(recieve_request_from_client(hash))
 
 
 # Toloka Routes
@@ -569,7 +586,7 @@ class Toloka(Resource):
         """Search torrents on Toloka"""
         from app.routes.toloka import get_torrents
 
-        return get_torrents()
+        return make_response(get_torrents())
 
     @api.doc(
         "add_toloka",
@@ -586,7 +603,7 @@ class Toloka(Resource):
         """Add a torrent from Toloka"""
         from app.routes.toloka import add_torrent
 
-        return add_torrent()
+        return make_response(add_torrent())
 
 
 @toloka_ns.route("/<string:release_id>")
@@ -606,7 +623,7 @@ class TolokaDetail(Resource):
         """Get details of a specific torrent"""
         from app.routes.toloka import get_torrent
 
-        return get_torrent(release_id)
+        return make_response(get_torrent(release_id))
 
 
 # Search Routes
@@ -627,7 +644,7 @@ class AggregatedSearch(Resource):
         """Search across all services (anime, studios, toloka, streaming)"""
         from app.routes.routes import search_aggregated
 
-        return search_aggregated()
+        return make_response(search_aggregated())
 
 
 # Auth Check Routes
@@ -642,7 +659,7 @@ class AuthCheck(Resource):
     )
     def get(self):
         """Check authentication status"""
-        return check_auth()
+        return make_response(check_auth())
 
 
 # Image Proxy Routes
@@ -663,4 +680,268 @@ class ImageProxy(Resource):
         """Proxy an image through the server"""
         from app.routes.routes import proxy_image
 
-        return proxy_image()
+        return make_response(proxy_image())
+
+
+# The resources below delegate to view functions that were previously also
+# registered as raw blueprints under /api. The blueprints are no longer
+# registered — flask-restx is the single /api surface. Auth is enforced by
+# the decorators on the delegated view functions themselves.
+
+
+@anime_ns.route("/update")
+class AnimeCatalogUpdate(Resource):
+    @api.doc(
+        "update_anime_catalog",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+            502: ("Upstream Error", error_response),
+        },
+    )
+    @multi_auth_admin_required
+    def post(self):
+        """Refresh the local anime catalog from the CPRcatalog repo (admin only)"""
+        from app.services.services_db import DatabaseService
+
+        result = DatabaseService.update_database()
+        return result, 200 if result.get("status") == "success" else 502
+
+
+@anime_ns.route("/<string:anime_id>/related")
+class AnimeRelated(Resource):
+    @api.doc(
+        "get_anime_related",
+        responses={
+            200: ("Success", anime_list_response),
+            401: ("Unauthorized", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    def get(self, anime_id):
+        """Get related anime for a given anime ID"""
+        from app.routes.anime import get_anime_related
+
+        return make_response(get_anime_related(anime_id))
+
+
+@anime_ns.route("/<string:anime_id>/studios")
+class AnimeStudios(Resource):
+    @api.doc(
+        "get_anime_studios",
+        responses={
+            200: ("Success", studio_list_response),
+            401: ("Unauthorized", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    def get(self, anime_id):
+        """Get studios (fandub teams) for a given anime ID"""
+        from app.routes.anime import get_anime_studios
+
+        return make_response(get_anime_studios(anime_id))
+
+
+@anime_ns.route("/<string:anime_id>/releases")
+class AnimeReleases(Resource):
+    @api.doc(
+        "get_anime_releases",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    def get(self, anime_id):
+        """Get fandub releases (with torrent links) for a given anime ID"""
+        from app.routes.anime import get_anime_releases
+
+        return make_response(get_anime_releases(anime_id))
+
+
+@tmdb_ns.route("/trending")
+class TMDBTrending(Resource):
+    @api.doc(
+        "tmdb_trending",
+        responses={
+            200: ("Success", tmdb_search_response),
+            400: ("Bad Request", error_response),
+            401: ("Unauthorized", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    @api.param("type", "Media type (movie/tv)", required=True)
+    def get(self):
+        """Get trending media from TMDB"""
+        from app.routes.tmdb import get_trending
+
+        return make_response(get_trending())
+
+
+@settings_ns.route("/<int:setting_id>")
+class SettingUpdate(Resource):
+    @api.doc(
+        "update_setting",
+        responses={
+            200: ("Success", setting_model),
+            400: ("Bad Request", error_response),
+            401: ("Unauthorized", error_response),
+            403: ("Forbidden", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    @api.expect(setting_model)
+    def post(self, setting_id):
+        """Update an application setting (admin only)"""
+        from app.routes.settings import update
+
+        return make_response(update(setting_id))
+
+
+@settings_ns.route("/sync")
+class SettingsSync(Resource):
+    @api.doc(
+        "sync_settings",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+            403: ("Forbidden", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    def post(self):
+        """Sync settings between database and ini files (admin only)"""
+        from app.routes.settings import sync
+
+        return make_response(sync())
+
+
+@settings_ns.route("/versions")
+class SettingsVersions(Resource):
+    @api.doc(
+        "settings_versions",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+            403: ("Forbidden", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    def get(self):
+        """Get installed package versions (admin only)"""
+        from app.routes.settings import versions
+
+        return make_response(versions())
+
+
+@settings_ns.route("/files")
+class SettingsFiles(Resource):
+    @api.doc(
+        "settings_files",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+            403: ("Forbidden", error_response),
+            500: ("Server Error", error_response),
+        },
+    )
+    def get(self):
+        """Check config file status (admin only)"""
+        from app.routes.settings import check_config_files
+
+        return make_response(check_config_files())
+
+
+@auth_ns.route("/logout")
+class Logout(Resource):
+    @api.doc(
+        "logout",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+        },
+    )
+    def post(self):
+        """Revoke the current JWT token"""
+        from app.routes.auth import logout
+
+        return make_response(logout())
+
+
+@auth_ns.route("/me")
+class Me(Resource):
+    @api.doc(
+        "me",
+        responses={
+            200: ("Success", user_info),
+            401: ("Unauthorized", error_response),
+        },
+    )
+    def get(self):
+        """Get the current JWT user"""
+        from app.routes.auth import me
+
+        return make_response(me())
+
+
+@auth_ns.route("/validate")
+class ValidateToken(Resource):
+    @api.doc(
+        "validate_token",
+        responses={
+            200: ("Success", success_response),
+            401: ("Unauthorized", error_response),
+        },
+    )
+    def post(self):
+        """Validate the provided JWT token"""
+        from app.routes.auth import validate_token
+
+        return make_response(validate_token())
+
+
+@auth_ns.route("/change-password")
+class ChangePassword(Resource):
+    @api.doc(
+        "change_password",
+        responses={
+            200: ("Success", success_response),
+            400: ("Bad Request", error_response),
+            401: ("Unauthorized", error_response),
+        },
+    )
+    def post(self):
+        """Change the current user's password"""
+        from app.routes.auth import change_password
+
+        return make_response(change_password())
+
+
+@api.route("/profile")
+class Profile(Resource):
+    @api.doc(
+        "profile_get",
+        responses={
+            200: ("Success", user_info),
+            401: ("Unauthorized", error_response),
+        },
+    )
+    def get(self):
+        """Get the current user's profile"""
+        from app.routes.users import get_profile
+
+        return make_response(get_profile())
+
+    @api.doc(
+        "profile_update",
+        responses={
+            200: ("Success", user_info),
+            400: ("Bad Request", error_response),
+            401: ("Unauthorized", error_response),
+        },
+    )
+    def put(self):
+        """Update the current user's profile"""
+        from app.routes.users import update_profile
+
+        return make_response(update_profile())

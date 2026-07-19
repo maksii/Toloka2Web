@@ -25,7 +25,6 @@ from flask_cors import CORS
 from flask_wtf.csrf import CSRFError
 
 # Local imports
-from app.routes.auth import check_auth
 from app.utils.auth_utils import multi_auth_required
 from app.models.application_settings import ApplicationSettings
 from app.models.login_form import LoginForm
@@ -63,7 +62,7 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
     # Configure CORS with explicit allowed origins. Credentials must not be
     # combined with a wildcard origin: flask-cors would reflect any Origin,
     # letting arbitrary sites make credentialed requests.
-    cors_origins = app.config["CORS_ORIGINS"]
+    cors_origins = app.config.get("CORS_ORIGINS", ["*"])
 
     CORS(
         app,
@@ -110,17 +109,7 @@ def configure_routes(app, login_manager, admin_permission, user_permission):
     def proxy_image_route():
         return proxy_image()
 
-    @app.route("/api/search")
-    @login_required
-    def search_aggregated_route():
-        return search_aggregated()
-
-    @app.route("/api/auth/check")
-    def check_auth_route():
-        result = check_auth()
-        if isinstance(result, tuple):
-            return make_response(jsonify(result[0]), result[1])
-        return make_response(jsonify(result), 200)
+    # /api/search and /api/auth/check are served by the flask-restx layer
 
     @login_manager.user_loader
     def load_user(user_id):

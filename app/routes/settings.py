@@ -1,16 +1,12 @@
 """Settings routes for application configuration."""
 
 from flask import Blueprint, jsonify, request, make_response
-from flask_login import login_required
-from flask_principal import Permission, RoleNeed
-
 from app.utils.auth_utils import multi_auth_admin_required
 from app.utils.errors import handle_errors, ValidationError
 from app.services.config_service import ConfigService
 from app.services.route_service import RouteService
 
 setting_bp = Blueprint("setting", __name__)
-admin_permission = Permission(RoleNeed("admin"))
 
 
 @setting_bp.route("/settings", methods=["GET"])
@@ -43,8 +39,7 @@ def add():
 
 
 @setting_bp.route("/settings/<int:setting_id>", methods=["POST"])
-@login_required
-@admin_permission.require(http_exception=403)
+@multi_auth_admin_required
 @handle_errors
 def update(setting_id):
     """Update an existing setting."""
@@ -63,8 +58,7 @@ def update(setting_id):
 
 
 @setting_bp.route("/settings/sync", methods=["POST"])
-@login_required
-@admin_permission.require(http_exception=403)
+@multi_auth_admin_required
 @handle_errors
 def sync():
     """Sync settings between database and INI files."""
@@ -82,8 +76,7 @@ def sync():
 
 
 @setting_bp.route("/settings/versions", methods=["GET"])
-@login_required
-@admin_permission.require(http_exception=403)
+@multi_auth_admin_required
 @handle_errors
 def versions():
     """Get installed package versions."""
@@ -92,8 +85,7 @@ def versions():
 
 
 @setting_bp.route("/settings/files", methods=["GET"])
-@login_required
-@admin_permission.require(http_exception=403)
+@multi_auth_admin_required
 @handle_errors
 def check_config_files():
     """List configuration files."""

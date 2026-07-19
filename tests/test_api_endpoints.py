@@ -277,6 +277,14 @@ def test_anime_and_studio_endpoints(app, client, api_key_headers, monkeypatch):
     assert studio_anime_response.status_code == 200
     assert studio_anime_response.get_json()[0]["title"] == "Demo"
 
+    monkeypatch.setattr(
+        "app.services.services_db.DatabaseService.update_database",
+        classmethod(lambda cls: {"status": "success", "message": "ok"}),
+    )
+    update_response = client.post("/api/anime/update", headers=api_key_headers)
+    assert update_response.status_code == 200
+    assert update_response.get_json()["status"] == "success"
+
 
 def test_release_endpoints(client, api_key_headers, monkeypatch):
     monkeypatch.setattr(

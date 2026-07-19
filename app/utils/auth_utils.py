@@ -3,7 +3,7 @@
 import secrets
 from functools import wraps
 
-from flask import jsonify, request, current_app
+from flask import jsonify, make_response, request, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask_login import current_user
 
@@ -62,7 +62,7 @@ def multi_auth_required(fn):
         if api_key and _is_valid_api_key(api_key):
             return fn(*args, **kwargs)
 
-        return jsonify({"error": "Authentication required"}), 401
+        return make_response(jsonify({"error": "Authentication required"}), 401)
 
     return wrapper
 
@@ -72,8 +72,8 @@ def multi_auth_admin_required(fn):
 
     Checks in order:
     1. JWT token with admin role
-    2. Session authentication with admin role
-    3. API key (always has admin privileges)
+    2. API key (always has admin privileges)
+    3. Session authentication with admin role
 
     Returns 401 if not authenticated, 403 if authenticated but not admin.
     """
@@ -89,22 +89,24 @@ def multi_auth_admin_required(fn):
                 if jti and not RevokedToken.is_token_revoked(jti):
                     if jwt.get("roles") == "admin":
                         return fn(*args, **kwargs)
-                    return jsonify({"error": "Admin privileges required"}), 403
+                    return make_response(
+                        jsonify({"error": "Admin privileges required"}), 403
+                    )
         except Exception:
             pass  # JWT not present or invalid, continue to next auth method
 
-        # Then check for session auth
-        if current_user and current_user.is_authenticated:
-            if current_user.roles == "admin":
-                return fn(*args, **kwargs)
-            return jsonify({"error": "Admin privileges required"}), 403
-
-        # Finally check for API key (using constant-time comparison)
-        # API key always has admin privileges
+        # Then check for API key: an explicit admin credential, so it must win
+        # over a possibly non-admin browser session (constant-time comparison)
         api_key = request.headers.get("X-API-Key")
         if api_key and _is_valid_api_key(api_key):
             return fn(*args, **kwargs)
 
-        return jsonify({"error": "Authentication required"}), 401
+        # Finally check for session auth
+        if current_user and current_user.is_authenticated:
+            if current_user.roles == "admin":
+                return fn(*args, **kwargs)
+            return make_response(jsonify({"error": "Admin privileges required"}), 403)
+
+        return make_response(jsonify({"error": "Authentication required"}), 401)
 
     return wrapper
